@@ -20,13 +20,38 @@ const SHARED = { ok: 'mOk', act: 'mAct', timer: 'mTimer', reroll: 'mReroll' };
 const srid = (k) => `${BOOT}-${k}-${typeof MSEQ !== 'undefined' ? MSEQ : 0}`;
 // 진행폰은 한 대만: 처음 들어온 진행폰을 기억해요 (게임판 새로고침에도 유지)
 let hostPid = null;
+// 🔒 진행폰이 살아 있으면(최근 60초 안에 신호) 게임 중 게임판 버튼은 진행폰만 누를 수 있어요
+let hostSeen = 0, lockOff = false;
+const HOST_ALIVE_MS = 60000;
+function hostAlive() { return !!hostPid && Date.now() - hostSeen < HOST_ALIVE_MS; }
+// 팀마다 참가자 폰이 살아 있는지 (최근 60초 안에 신호). 차례 팀 폰이 있으면 주사위·스톱워치는 그 폰만
+const teamSeen = {};
+function teamAlive(i) { return Date.now() - (teamSeen[String(i)] || 0) < HOST_ALIVE_MS; }
+let lastAlive = null;
+function updLock() {
+  const alive = hostAlive(); if (alive !== lastAlive) { lastAlive = alive; if (typeof schedule === 'function' && tp) schedule(); }
+  const on = alive && !lockOff && typeof S !== 'undefined' && S.phase === 'play';
+  document.body.classList.toggle('hostLock', on);
+  document.body.classList.toggle('teamRoll', typeof S !== 'undefined' && S.phase === 'play' && teamAlive(S.cur) && !lockOff);
+  const n = $('npHost'); if (n) n.textContent = hostPid ? (hostAlive() ? '지금 진행폰: 연결됨' : '진행폰 신호 없음 (게임판에서 눌러도 돼요)') : '아직 진행폰 없음';
+  const lb = $('npLock'); if (lb) lb.textContent = lockOff ? '🔒 다시 진행폰만 누르게 하기' : '🔓 게임판에서도 누르기';
+}
 const throttle = {};
 const hostKey = () => 'jumarble-host-' + room;
 const tag = (pid) => { let h = 7; for (const c of String(pid || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0; return pid ? h.toString(36) : ''; };
 const shown = (el) => el && !el.hidden && el.offsetParent !== null;
 
 // 버튼이 누구 것인지: 가장 가까운 data-teams (팀 번호 목록 또는 'host'), 없으면 이 카드의 기본 참가 팀
+// 진행용 버튼(시작·공개·돌리기·셋 세기·레버)은 진행자만: 진행폰, 없으면 게임판. 참가자 폰엔 우리 팀이 고르는 버튼만
+function isProgress(el) {
+  if (!el || el.tagName !== 'BUTTON') return false;
+  if (el.classList.contains('countbtn')) return true;
+  const t = (el.innerText || el.textContent || '').trim();
+  return /^(▶|❓|🧩|🔔|⏲|⏱|🔁 한 번 더|🎰 룰렛)/.test(t) || /(시작|공개|돌리기|외치기)$/.test(t); // 주사위·잭팟 레버는 참가자(차례 팀) 몫
+}
 function teamsOf(el, def) {
+  if (el.dataset && el.dataset.teams) return String(el.dataset.teams); // 버튼에 직접 붙은 주인이 먼저 (예: 룰렛은 차례 팀)
+  if (isProgress(el)) return 'host';
   const z = el.closest('[data-teams]');
   return z ? String(z.dataset.teams) : def;
 }
@@ -74,7 +99,7 @@ function snapshot() {
   if (modalOn && typeof recSel !== 'undefined' && recSel && recSel.only) def = recSel.only.join(',');
   const box = $('mBox');
   return {
-    t: 'state', seq: ++seq, room, host: tag(hostPid), mseq: typeof MSEQ !== 'undefined' ? MSEQ : 0,
+    t: 'state', seq: ++seq, room, host: tag(hostPid), hostOn: hostAlive(), teamsOn: (S.teams || []).map((_, i) => i).filter(teamAlive), toast: window.__toast || null, mseq: typeof MSEQ !== 'undefined' ? MSEQ : 0,
     phase: S.phase, juru: JURU(), solo: SOLO(), cur: S.cur, goal: S.goal || 3, cap: S.cap || 0,
     sub: $('subT') ? $('subT').textContent : '', log: $('log').textContent, cast: $('cast') ? $('cast').textContent : '', final: !!S.final,
     // 게임 시작 전에도 설정 중인 팀 목록을 보내서 미리 팀을 고를 수 있게
@@ -82,19 +107,20 @@ function snapshot() {
       : (S.teams || []).map((t, i) => ({ i, name: t.name, color: t.color, mem: (t.members || []).join(' '), next: SOLO() ? '' : (typeof rotWho === 'function' ? rotWho(t) || '' : ''), drinks: t.drinks || 0, fire: typeof fireLv === 'function' ? fireLv(t) : 0, laps: t.laps || 0, pos: t.pos || 0,
       pass: t.pass || 0, streak: t.streak || 0, fin: !!t.fin, island: S.phase === 'play' ? onIsland(t) : false, lost: S.phase === 'play' ? lostT(t) : false })),
     roll: S.phase === 'play' && !busy && !$('rollBtn').disabled && !modalOn && !pickOn && !taxiOn,
-    spin: spinOn ? $('spinLbl').textContent + ' ' + $('spinName').textContent : '',
+    spin: spinOn ? ($('spinName').classList.contains('wheelHost') ? $('spinLbl').textContent : $('spinLbl').textContent + ' ' + $('spinName').textContent) : '',
     modal: modalOn ? {
       who: $('mWho').textContent, e: $('mEm').textContent, t: $('mT').textContent, d: $('mD').textContent,
       x: shown($('mX')) ? $('mX').textContent : '', q: shown($('mQ')) ? $('mQ').textContent : '',
       def, box: shown(box) ? blocks(box, def) : [],
-      sw: box.dataset.sw || '', react: box.dataset.react || '',
+      sw: box.dataset.sw || '', react: box.dataset.react || '', tap: box.dataset.tap || '',
       act: shown($('mAct')) ? { rid: srid('act'), label: $('mAct').textContent, dis: $('mAct').disabled } : null,
       reroll: shown($('mReroll')) ? srid('reroll') : null,
       timer: shown($('mTimer')) ? { rid: srid('timer'), label: $('mTimer').textContent } : null,
       rec: shown($('mRec')) ? { label: $('mRec').querySelector('span') ? $('mRec').querySelector('span').textContent : '',
         rows: [...$('mRecB').querySelectorAll('.recrow')].map((r) => ({ name: (r.querySelector('.rn') || r).textContent, off: r.classList.contains('off'), color: r.style.getPropertyValue('--c'),
-          btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true' })) })),
-        tgt: [...$('mRecT').querySelectorAll('.tgt')].map((r) => ({ label: (r.querySelector('span') || r).textContent, btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true' })) })) } : null,
+          ti: (() => { const b = r.querySelector('button[data-team]'); return b ? +b.dataset.team : null; })(),
+          btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true', v: b.dataset.v != null ? +b.dataset.v : null })) })),
+        tgt: [...$('mRecT').querySelectorAll('.tgt')].map((r) => ({ label: (r.querySelector('span') || r).textContent, ti: (() => { const b = r.querySelector('button[data-team]'); return b ? +b.dataset.team : null; })(), btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true', v: 3 })) })) } : null,
       ok: { rid: srid('ok'), label: $('mOk').textContent, pending: $('mOk').classList.contains('pendingOk') }
     } : null,
     pick: pickOn ? { title: $('pickT').textContent, opts: [...$('pickOpts').querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.innerText.replace(/\n+/g, ' '), dis: b.disabled })) } : null,
@@ -104,6 +130,7 @@ function snapshot() {
 }
 
 function publish(force) {
+  try { updLock(); } catch (e) { /* 무시 */ }
   if (!tp) return;
   const snap = snapshot();
   const key = JSON.stringify({ ...snap, seq: 0 });
@@ -125,10 +152,23 @@ function run(c) {
   const team = c.from === 'player' && c.team != null ? String(c.team) : null;
   const turn = () => team != null && String(S.cur) === team;
   const owns = (el) => {
-    if (isHost) return true;
+    // 🛡️ 면제권·🔁 반사는 마실 팀 폰에서 (그 팀 폰이 없을 때만 진행폰). 안 마심/마심 기록은 진행폰
+    if (el.closest('#mRecB,#mRecT') && el.dataset.team != null) {
+      const own = String(el.dataset.team), v = +el.dataset.v;
+      if (isHost) return v <= 1 || !teamAlive(own);
+      return team === own && v >= 1;
+    }
+    if (isHost && el.closest('#pickOpts')) return !teamAlive(S.cur); // ±1칸·카드·상자 고르기는 차례 팀 폰 (그 팀 폰이 없을 때만 진행폰)
+    if (isHost) { // 진행폰은 진행 버튼만. 팀 버튼은 그 팀 폰이 하나도 없을 때만 대신 눌러요
+      if (!el.closest('#mBox')) return true;
+      const o = teamsOf(el, defTeams());
+      if (o === 'host') return true;
+      if (o === 'board') return false;
+      return o.split(',').some((x) => x !== '' && !teamAlive(x));
+    }
     if (team == null) return false;
     if (el.closest('#pickOpts')) return turn();
-    if (!el.closest('#mBox')) return false; // 기록·확인·타이머 같은 진행 버튼은 진행폰만
+    if (!el.closest('#mBox')) return false; // 기록·확인·타이머 같은 진행 버튼은 진행폰만 (진행폰이 없으면 게임판에서)
     const o = teamsOf(el, defTeams());
     return o !== 'host' && o.split(',').includes(team);
   };
@@ -144,9 +184,10 @@ function run(c) {
       if (el && !el.disabled && shown(el) && owns(el)) { el.value = String(c.value || '').slice(0, 40); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); }
       break;
     }
-    case 'roll': if ((isHost || turn()) && !$('rollBtn').disabled && !busy && !$('modal').classList.contains('on')) $('rollBtn').click(); break;
-    case 'taxi': { if (!(isHost || turn())) break; const el = $('c' + c.cell); if (el && el.classList.contains('taxiok')) el.click(); break; }
-    case 'sw': { if (!(isHost || (team != null && defTeams().split(',').includes(team)))) break; const b = $('mBox'); if (b.__sw) b.__sw(+c.e); break; }
+    case 'roll': if ((turn() || (isHost && !teamAlive(S.cur))) && !$('rollBtn').disabled && !busy && !$('modal').classList.contains('on')) $('rollBtn').click(); break;
+    case 'taxi': { if (!(turn() || (isHost && !teamAlive(S.cur)))) break; const el = $('c' + c.cell); if (el && el.classList.contains('taxiok')) el.click(); break; }
+    case 'sw': { if (!(turn() || (isHost && !teamAlive(S.cur)))) break; const b = $('mBox'); if (+c.e < 0) { if (b.__swStart) b.__swStart(); } else if (b.__sw) b.__sw(+c.e); break; }
+    case 'tap': { if (team == null) break; const b = $('mBox'); if (b.__tap && (b.dataset.tap || '').split(',').includes(team)) b.__tap(+team, Math.min(25, Math.max(0, +c.n || 0))); return; }
     case 'react': { if (!isHost) break; const b = $('mBox'); if (b.__react) b.__react(c.w === 1 ? 1 : 0); break; }
     case 'mute': if (isHost) $('muteBtn').click(); break;
     // 📣 익명 응원 (폰마다 0.7초에 한 번까지)
@@ -160,16 +201,18 @@ function run(c) {
 function hello(m) {
   // 진행폰 자리가 비어 있으면 처음 인사한 진행폰이 차지해요
   if (m.from === 'host' && m.pid && !hostPid) { hostPid = m.pid; try { localStorage.setItem(hostKey(), hostPid); } catch (e) { /* 무시 */ } }
+  if (m.from === 'host' && m.pid && m.pid === hostPid) { hostSeen = Date.now(); updLock(); }
   publish(true);
 }
-function resetHost() { hostPid = null; try { localStorage.removeItem(hostKey()); } catch (e) { /* 무시 */ } publish(true); }
+function resetHost() { hostPid = null; hostSeen = 0; updLock(); try { localStorage.removeItem(hostKey()); } catch (e) { /* 무시 */ } publish(true); }
 
 async function connect(code) {
   room = code;
   try { hostPid = localStorage.getItem(hostKey()); } catch (e) { hostPid = null; }
   const kind = transportKind() === 'none' ? 'local' : transportKind();
   tp = await createTransport({ kind, room, role: 'host', url: WS_URL, firebase: FIREBASE });
-  tp.on((m) => { if (!m) return; if (m.t === 'hello') hello(m); else if (m.t === 'cmd') { if (m.from === 'host' && m.pid && !hostPid) hello(m); run(m); } });
+  tp.on((m) => { if (!m) return; if (m.from === 'player' && m.team != null) { const k = String(m.team), was = teamAlive(k); teamSeen[k] = Date.now(); if (!was) { updLock(); schedule(); } } if (m.t === 'hello') hello(m); else if (m.t === 'cmd') { if (m.from === 'host' && m.pid && !hostPid) hello(m); if (m.from === 'host' && m.pid && m.pid === hostPid) { hostSeen = Date.now(); updLock(); } run(m); } });
+  setInterval(updLock, 3000);
   tp.onStatus((st) => { const d = $('netDot'); if (d) d.dataset.st = st; if (st === 'online') publish(true);
     if (st === 'replaced' && typeof toast === 'function') toast('📡 다른 게임판이 이 방을 가져갔어요. 이 화면은 연결을 끊었어요'); });
   document.body.classList.add('netOn');
@@ -202,11 +245,14 @@ function showQR() {
       <h2>📱 폰으로 참가하기</h2><p>카메라로 QR을 찍고 우리 팀을 고르면 끝!</p>
       <div id="netQR"></div><div class="np-code"></div><a class="np-url" target="_blank" rel="noopener"></a>
       <details class="np-host"><summary>🎮 진행자 폰 연결 (진행자만)</summary><div id="netQRh"></div><p class="np-help">진행폰은 한 대만 들어올 수 있어요. 처음 들어온 폰이 진행폰이 돼요.</p>
-        <button class="ghost" id="npReset">🔁 진행폰 바꾸기</button> <span id="npHost"></span></details></div>`;
+        <button class="ghost" id="npReset">🔁 진행폰 바꾸기</button> <span id="npHost"></span>
+        <p class="np-help">진행폰이 연결돼 있으면 게임 중에는 게임판 버튼이 잠기고 진행폰으로만 진행해요. 진행폰 신호가 1분 동안 없으면 저절로 풀려요.</p>
+        <button class="ghost" id="npLock">🔓 게임판에서도 누르기</button></details></div>`;
     document.body.appendChild(o);
     o.querySelector('.np-x').onclick = () => o.classList.remove('on');
     o.onclick = (e) => { if (e.target === o) o.classList.remove('on'); };
     o.querySelector('#npReset').onclick = () => { resetHost(); o.querySelector('#npHost').textContent = '비웠어요. 새 진행폰이 들어오면 돼요'; };
+    o.querySelector('#npLock').onclick = () => { lockOff = !lockOff; updLock(); };
   }
   const url = remoteURL('player');
   o.querySelector('.np-code').textContent = room;
@@ -214,7 +260,7 @@ function showQR() {
   const big = Math.min(420, Math.floor(Math.min(innerWidth, innerHeight) * 0.5));
   const q = $('netQR'); const svg = qrSVG(url, big); q.innerHTML = svg || '(QR을 만들지 못했어요. 주소를 직접 알려 주세요)';
   const qh = $('netQRh'); qh.innerHTML = qrSVG(remoteURL('host'), 180) || '';
-  o.querySelector('#npHost').textContent = hostPid ? '지금 진행폰: 연결됨' : '아직 진행폰 없음';
+  updLock();
   o.classList.add('on');
 }
 // 게임 중에도 늦게 온 사람이 들어올 수 있게 구석에 작은 QR
@@ -242,6 +288,14 @@ function addButton() {
 }
 
 const st = document.createElement('style');
+const lockCss = document.createElement('style');
+lockCss.textContent = `body.teamRoll #rollBtn,body.teamRoll #mBox .swbtn,body.teamRoll #pick .opts,body.teamRoll .board .cell.taxiok,body.hostLock #rollBtn,body.hostLock #boostBtn,body.hostLock #mOk,body.hostLock #mBox button,body.hostLock #mBox input,body.hostLock #mRecB button,body.hostLock .tcard .minus,body.hostLock #pick .opts,body.hostLock #pick button,body.hostLock .board .cell,body.hostLock #modal .card button{pointer-events:none}
+body.hostLock #rollBtn,body.hostLock #mOk,body.teamRoll #rollBtn{opacity:.75}
+body.hostLock #modal #mBox .react-pad,body.hostLock #modal #mBox .reactgo,body.hostLock #modal #mBox .tappad{pointer-events:auto}
+#lockNote{display:none;position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:60;background:rgba(20,30,40,.82);color:#fff;font-size:14px;font-weight:700;padding:6px 14px;border-radius:999px;pointer-events:none}
+body.hostLock #lockNote{display:block}`;
+document.head.appendChild(lockCss);
+{ const ln = document.createElement('div'); ln.id = 'lockNote'; ln.textContent = '🎮 진행폰으로 진행 중 · 게임판 버튼은 잠겨 있어요'; document.body.appendChild(ln); }
 st.textContent = `#netDot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#bbb;margin-left:4px;vertical-align:middle}
 #netDot[data-st=online]{background:#13A36B}#netDot[data-st=offline]{background:#D64545}
 #netPanel{position:fixed;inset:0;background:rgba(10,30,40,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}

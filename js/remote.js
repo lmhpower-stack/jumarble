@@ -65,10 +65,16 @@ function h(tag, attrs = {}, ...kids) {
 }
 const send = (cmd) => { if (tp) tp.send({ t: 'cmd', from: me.role, team: me.team, pid: me.pid, ...cmd }); try { navigator.vibrate && navigator.vibrate(15); } catch (e) { /* 무시 */ } };
 const isHost = () => me.role === 'host';
-const mine = (teams) => isHost() ? teams !== 'board' : String(teams || '').split(',').includes(String(me.team));
+// 진행폰: 진행 버튼 + 폰이 없는 팀의 버튼만 (폰이 있는 팀의 선택은 그 팀 폰에서만)
+const mine = (teams) => isHost() ? (teams === 'host' || (teams !== 'board' && String(teams || '').split(',').some((x) => x !== '' && !(S.teamsOn || []).includes(+x)))) : String(teams || '').split(',').includes(String(me.team));
 const myTurn = () => S && S.cur === me.team;
+// 차례 주사위·스톱워치: 차례 팀 폰만. 그 팀 폰이 하나도 없을 때만 진행폰이 대신
+const teamHasPhone = () => !!(S && (S.teamsOn || []).includes(S.cur));
+const canTeamAct = () => (!isHost() && myTurn()) || (isHost() && !teamHasPhone());
+let lastPassAsk = null;
+let lastToast = -1, toastTimer = null; // -1 = 아직 첫 상태를 못 받음 (들어오기 전 알림은 안 띄움)
 function save() { try { localStorage.setItem(KEY, JSON.stringify(me)); } catch (e) { /* 무시 */ } }
-const hello = () => tp && tp.send({ t: 'hello', from: me.role, pid: me.pid });
+const hello = () => tp && tp.send({ t: 'hello', from: me.role, pid: me.pid, team: me.role === 'player' ? me.team : null });
 // 게임 중에 화면이 꺼지지 않게
 async function keepAwake() { try { if ('wakeLock' in navigator && !wake && document.visibilityState === 'visible') { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } } catch (e) { wake = null; } }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { keepAwake(); hello(); } });
@@ -81,6 +87,8 @@ async function connect() {
   tp.on((m) => { if (m && m.t === 'state' && (!m.room || m.room === me.room)) { S = m; checkTeams(); render(); } });
   tp.onStatus((st) => { $('dot').className = 'dot ' + st; if (st === 'online') hello(); });
   hello(); keepAwake();
+  // 진행폰은 30초마다 살아 있다고 알려요 (게임판 잠금용)
+  setInterval(() => { if ((me.role === 'host' || me.role === 'player') && document.visibilityState === 'visible') hello(); }, 30000);
 }
 
 // ---------- 참가 화면 ----------
@@ -95,7 +103,7 @@ function checkRoom() { if (!/^[A-Z0-9]{3,8}$/.test(me.room)) { alert('방 코드
 function drawTeamPick() {
   const box = $('teamBtns'); box.innerHTML = '';
   if (!S || !S.teams || !S.teams.length) { box.append(h('p', { class: 'muted small' }, '게임판에서 게임을 시작하면 팀 목록이 나와요…')); return; }
-  S.teams.forEach((t) => box.append(h('button', { class: 'btn', style: `border-color:${t.color};border-width:3px`, onclick: () => { me.team = t.i; me.sig = sigOf(S); save(); goLive(); } },
+  S.teams.forEach((t) => box.append(h('button', { class: 'btn', style: `border-color:${t.color};border-width:3px`, onclick: () => { me.team = t.i; me.sig = sigOf(S); save(); goLive(); hello(); } },
     h('b', {}, t.name), t.mem ? h('br') : null, t.mem ? h('span', { class: 'small muted' }, t.mem) : null)));
 }
 // 팀 구성이 바뀐 새 게임이면(팀 이름·순서가 다르면) 팀을 다시 고르게 해요 (예전 번호로 엉뚱한 팀 버튼이 보이지 않게)
@@ -131,6 +139,18 @@ function render() {
     st.append(...[h('div', { class: 'disp', style: `font-size:${mine0 ? 30 : 22}px;color:${mine0 ? '#fff' : ct.color};text-align:center` }, mine0 ? `🎲 우리 팀(${ct.name}) 차례예요!` : `🎲 ${ct.name} 차례`),
       wait ? h('p', { class: 'small', style: 'text-align:center;margin:4px 0 0;font-weight:700' }, wait) : null, h('p', { class: 'small muted', style: 'text-align:center;margin:4px 0 0' }, S.log || ''), S.cast ? h('p', { class: 'small', style: 'text-align:center;margin:4px 0 0;color:#e2571e;font-weight:700' }, S.cast) : null].filter(Boolean));
   }
+  // 📣 방금 일어난 일 (게임판 알림을 폰에도): 우리 팀 이야기면 크게 + 진동
+  if (lastToast === -1) lastToast = S.toast ? S.toast.n : 0;
+  else if (S.toast && S.toast.n && S.toast.n !== lastToast) {
+    lastToast = S.toast.n;
+    {
+      let f = $('feed'); if (!f) { f = h('div', { id: 'feed' }); document.body.append(f); }
+      const msg = S.toast.m || ''; const mineMsg = !isHost() && myT && msg.includes(myT.name);
+      f.textContent = msg; f.className = 'on' + (mineMsg ? ' mine' : '');
+      if (mineMsg) { try { navigator.vibrate && navigator.vibrate([200, 80, 200]); } catch (e) { /* 무시 */ } }
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => { f.className = ''; }, mineMsg ? 7000 : 4500);
+    }
+  }
   // 본문
   const main = $('main'); main.innerHTML = '';
   if (S.over) main.append(overView());
@@ -138,11 +158,12 @@ function render() {
   else if (S.taxi) main.append(taxiView());
   else if (S.modal) main.append(cardView(S.modal));
   else if (S.spin) main.append(h('div', { class: 'panel wait' }, S.spin));
-  else if (S.roll && (isHost() || myTurn())) main.append(h('div', { class: 'panel' }, h('button', { class: 'big roll', onclick: () => send({ op: 'roll' }) }, '🎲 굴리기')));
+  else if (S.roll && canTeamAct()) main.append(h('div', { class: 'panel' }, h('button', { class: 'big roll', onclick: () => send({ op: 'roll' }) }, '🎲 굴리기')));
+  else if (S.roll && isHost()) main.append(h('div', { class: 'panel wait' }, `🎲 ${S.teams[S.cur] ? S.teams[S.cur].name : '차례 팀'} 폰에서 굴려요`));
   else if (S.phase === 'play') main.append(h('div', { class: 'panel wait' }, '👀 게임판을 봐 주세요'));
   // 대기 중이면 위스키 상식, 게임 중엔 언제나 익명 응원
   const nothing = !main.querySelector('button:not([disabled]),input:not([disabled])');
-  if (!isHost() && S.phase === 'play' && !mine0 && !S.over && nothing) main.append(quizView());
+  if (!isHost() && S.phase === 'play' && !mine0 && !S.over && !S.modal && !S.pick && !S.taxi && nothing) main.append(quizView());
   if (S.phase === 'play') main.append(cheerBar());
   if (isHost() && S.phase === 'play') main.append(h('div', { style: 'text-align:right;margin-top:6px' }, h('button', { class: 'btn', style: 'font-size:13px;min-height:0;padding:6px 10px', onclick: () => send({ op: 'mute' }) }, '🔊 게임판 소리 켜기/끄기')));
   // 팀 현황
@@ -150,19 +171,34 @@ function render() {
   (S.teams || []).forEach((t) => tb.append(h('div', { class: 'tm' + (t.i === me.team ? ' me' : '') + (S.juru && t.fire ? ' fire f' + t.fire : ''), style: `--c:${t.color}` },
     h('b', {}, t.name), h('br'), `🏁 ${Math.min(t.laps, S.goal)}/${S.goal}바퀴${t.fin ? ' 골인' : ''} · `,
     S.juru ? h('span', { class: 'nw' }, `🍻 ${t.drinks}잔${t.fire ? ' ' + '🔥'.repeat(t.fire) : ''}`) : (t.lost ? '💧 패배' : `🥃 ${t.drinks}${S.cap ? '/' + S.cap : ''}`),
-    !S.juru && t.pass ? ` · 🛡️${t.pass}` : '', t.island ? ' · 🏝️' : '', t.streak >= 2 ? ` · ${S.juru ? '⚡' : '🔥'}${t.streak}연승` : '', t.next ? h('br') : null, t.next ? h('span', { class: 'small muted' }, `🎯 다음 걸린 사람: ${t.next}`) : null)));
+    !S.juru && t.pass ? ` · 🛡️${t.pass}` : '', t.island ? ' · 🏝️' : '', t.streak >= 2 ? ` · ${S.juru ? '⚡' : '🔥'}${t.streak}연승` : '', t.next ? h('br') : null, t.next ? h('span', { class: 'small muted' }, `🎯 벌주 걸리면: ${t.next}`) : null)));
 }
 
 function cardView(m) {
   const p = h('div', { class: 'panel' });
   p.append(h('div', { class: 'who' }, m.who), h('div', { class: 'card-e' }, m.e), h('div', { class: 'card-t' }, m.t));
+  if (!isHost() && S.teams && S.teams[me.team]) {
+    const myT = S.teams[me.team]; const txt = (m.d || '') + ' ' + (m.x || '');
+    const ppl = (myT.mem || '').split(/\s+/).filter((n) => n && txt.includes(n));
+    if (ppl.length && !/전원/.test(m.x || '')) p.append(h('div', { class: 'involve' }, `🙋 우리 팀 ${ppl.join('·')} 님이 나가요!`));
+    else if (txt.includes(myT.name) || (m.who || '').includes(myT.name)) p.append(h('div', { class: 'involve soft' }, '🙋 우리 팀도 걸린 미션이에요'));
+  }
   if (m.d) p.append(h('div', { class: 'card-d' }, m.d));
   if (m.x) p.append(h('div', { class: 'card-x' }, m.x));
   if (m.reroll && isHost()) p.append(h('div', { style: 'text-align:center;margin-top:6px' }, h('button', { class: 'btn', style: 'font-size:13px;min-height:0;padding:6px 10px', onclick: () => send({ op: 'click', rid: m.reroll }) }, '🎲 다른 조건으로')));
   if (m.q) p.append(h('div', { class: 'oxq' }, m.q));
   let acted = false;
   // 폰에서 직접 하는 미니게임
-  if (m.sw && (isHost() || mine(m.def))) { p.append(stopwatchView(+m.sw)); acted = true; }
+  // 👆 연타 레이스: 우리 팀이 참가 중이면 큰 버튼 (누른 횟수는 0.2초마다 묶어서 보내요)
+  if (m.tap && !isHost() && m.tap.split(',').includes(String(me.team))) {
+    if (!local.tap) { local.tap = { n: 0, q: 0 }; local.tapIv = setInterval(() => { if (local.tap && local.tap.q) { send({ op: 'tap', n: local.tap.q }); local.tap.q = 0; } }, 200); }
+    const L = local.tap; const cnt = h('div', { class: 'txt big-num' }, String(L.n));
+    const pad = h('button', { class: 'tapbig' }, '👆 연타!');
+    pad.addEventListener('pointerdown', (e) => { e.preventDefault(); L.n++; L.q++; cnt.textContent = String(L.n); try { navigator.vibrate && navigator.vibrate(8); } catch (er) { /* 무시 */ } });
+    p.append(h('p', { class: 'sec' }, '5초! 최대한 많이 누르세요'), cnt, pad); acted = true;
+  } else if (local.tap) { if (local.tap.q) send({ op: 'tap', n: local.tap.q }); clearInterval(local.tapIv); local.tap = null; }
+  if (m.sw && canTeamAct()) { p.append(stopwatchView(+m.sw)); acted = true; }
+  else if (m.sw) p.append(h('p', { class: 'wait' }, '⏱️ 선수가 폰으로 재는 중! 게임판에서 시간을 보세요'));
   else if (m.react) {
     if (isHost()) { p.append(reactView(JSON.parse(m.react))); acted = true; }
     else p.append(h('p', { class: 'wait' }, '⚡ 진행폰 한 대로 순발력 대결 중!'));
@@ -173,6 +209,7 @@ function cardView(m) {
   for (const b of m.box) {
     if (b.k === 'txt') { if (!(m.react && /react/.test(b.cls))) p.append(h('div', { class: 'txt ' + (b.cls || '') }, b.text)); continue; }
     if (!mine(b.teams) || skipLocal(b)) continue;
+    if (!acted && !isHost()) p.append(h('p', { class: 'sec' }, '👇 우리 팀이 눌러요'));
     acted = true;
     if (b.k === 'btn') p.append(h('div', { style: 'margin:6px 0' }, h('button', { class: 'btn ' + (b.cls || '').replace(/ghost|cbtn|btn fill/g, '').replace(isHost() ? /selO|selX/g : /$^/, ''), style: 'width:100%', disabled: b.dis, onclick: () => send({ op: 'click', rid: b.rid }) }, b.label.replace(/👉 (.+?) 대표에게 폰 넘기기/, '👉 $1 선택하기'))));
     else if (b.k === 'grid') p.append(h('div', { class: 'grid' }, b.btns.map((x) => h('button', { class: 'btn', disabled: x.dis, onclick: () => send({ op: 'click', rid: x.rid }) }, x.label))));
@@ -189,14 +226,30 @@ function cardView(m) {
   }
   if (m.act && isHost()) { p.append(h('div', { style: 'margin:8px 0' }, h('button', { class: 'btn', style: 'width:100%', disabled: m.act.dis, onclick: () => send({ op: 'click', rid: m.act.rid }) }, m.act.label))); acted = true; }
   if (m.timer && isHost()) p.append(h('div', { style: 'margin:6px 0' }, h('button', { class: 'btn', style: 'width:100%', onclick: () => send({ op: 'click', rid: m.timer.rid }) }, m.timer.label)));
+  // 🛡️ 우리 팀이 마시게 됐고 면제권이 있으면: 쓸지 말지 우리 폰에서
+  if (!isHost() && m.rec) {
+    const r = (m.rec.rows || []).find((x) => x.ti === me.team && !x.off);
+    const st = r && r.btns.find((b) => b.on);
+    if (r && st && st.v >= 1 && r.btns.some((b) => b.v >= 2)) {
+      const box = h('div', { class: 'passpick' }, h('p', { class: 'sec' }, '🛡️ 우리 팀이 마실 차례! 면제권 쓸까요?'),
+        h('div', { class: 'seg' }, r.btns.filter((b) => b.v >= 1).map((b) => h('button', { class: 'btn' + (b.on ? ' on' : ''), onclick: () => send({ op: 'click', rid: b.rid }) }, b.v === 1 ? '🥃 그냥 마실게요' : b.label === '🛡️ 면제권' ? '🛡️ 면제권 쓰기' : '🔁 반사 (면제권 2개)'))));
+      const tg = (m.rec.tgt || []).find((x) => x.ti === me.team);
+      if (tg && st.v === 3) box.append(h('p', { class: 'sec' }, '🔁 벌주를 넘길 팀'), h('div', { class: 'seg' }, tg.btns.map((b) => h('button', { class: 'btn' + (b.on ? ' on' : ''), onclick: () => send({ op: 'click', rid: b.rid }) }, b.label))));
+      p.append(box); acted = true;
+      if (lastPassAsk !== S.mseq) { lastPassAsk = S.mseq; try { navigator.vibrate && navigator.vibrate([150, 60, 150]); } catch (e) { /* 무시 */ } }
+    }
+  }
   if (isHost()) {
     if (m.rec) {
       p.append(h('p', { class: 'sec' }, m.rec.label));
+      const teamPhone = (ti) => ti != null && (S.teamsOn || []).includes(ti);
       for (const r of m.rec.rows || []) {
+        const tp = teamPhone(r.ti), bs = r.btns.filter((b) => !(tp && b.v >= 2)); // 폰이 있는 팀의 🛡️·🔁는 그 팀 폰에서
+        const pick = tp && r.btns.some((b) => b.v >= 2) ? h('span', { class: 'small muted' }, (r.btns.find((b) => b.on && b.v >= 2) ? '📱 팀이 ' + r.btns.find((b) => b.on).label + ' 선택' : '📱 면제권은 팀 폰에서')) : null;
         p.append(h('div', { class: 'recrow' + (r.off ? ' off' : ''), style: `--c:${/^#[0-9a-f]{3,8}$/i.test(r.color || '') ? r.color : '#888'}` }, h('b', {}, r.name),
-          r.off ? h('span', { class: 'small muted' }, '관련 없음') : h('div', { class: 'seg' }, r.btns.map((b) => h('button', { class: 'btn' + (b.on ? ' on' : ''), onclick: () => send({ op: 'click', rid: b.rid }) }, b.label)))));
+          r.off ? h('span', { class: 'small muted' }, '관련 없음') : h('div', { class: 'seg' }, bs.map((b) => h('button', { class: 'btn' + (b.on ? ' on' : ''), onclick: () => send({ op: 'click', rid: b.rid }) }, b.label))), pick));
       }
-      for (const r of m.rec.tgt || []) p.append(h('div', { class: 'recrow' }, h('b', {}, r.label), h('div', { class: 'seg' }, r.btns.map((b) => h('button', { class: 'btn' + (b.on ? ' on' : ''), onclick: () => send({ op: 'click', rid: b.rid }) }, b.label)))));
+      for (const r of m.rec.tgt || []) { if (teamPhone(r.ti)) continue; p.append(h('div', { class: 'recrow' }, h('b', {}, r.label), h('div', { class: 'seg' }, r.btns.map((b) => h('button', { class: 'btn' + (b.on ? ' on' : ''), onclick: () => send({ op: 'click', rid: b.rid }) }, b.label))))); }
     }
     p.append(h('button', { class: 'big' + (m.ok.pending ? ' pending' : ''), style: 'margin-top:12px', onclick: () => send({ op: 'click', rid: m.ok.rid }) }, m.ok.label));
   } else if (!acted) p.append(h('p', { class: 'wait' }, '👀 지금은 누를 게 없어요. 게임판을 봐 주세요'));
@@ -204,13 +257,13 @@ function cardView(m) {
 }
 
 function pickView() {
-  const can = isHost() || myTurn();
+  const can = canTeamAct();
   return h('div', { class: 'panel' }, h('div', { class: 'card-t' }, S.pick.title),
     can ? h('div', { class: 'choice' }, S.pick.opts.map((o) => h('button', { class: 'btn', disabled: o.dis, onclick: () => send({ op: 'pick', rid: o.rid }) }, o.label)))
       : h('p', { class: 'wait' }, '보물상자를 고르는 중…'));
 }
 function taxiView() {
-  const can = isHost() || myTurn();
+  const can = canTeamAct();
   return h('div', { class: 'panel' }, h('div', { class: 'card-t' }, '🚕 어디로 갈까요?'),
     can ? h('div', { class: 'choice' }, S.taxi.cells.map((c) => h('button', { class: 'btn', onclick: () => send({ op: 'taxi', cell: c.i }) }, `${c.i}번 · ${c.label}`)))
       : h('p', { class: 'wait' }, '택시 목적지를 고르는 중…'));
@@ -228,7 +281,7 @@ function stopwatchView(target) {
   const bt = h('button', { class: 'big', disabled: L.done }, L.done ? '기록 완료' : L.t0 ? '■ 멈춤' : '▶ 시작');
   const tick = () => { if (!L.t0 || L.done) return; L.txt = ((performance.now() - L.t0) / 1000).toFixed(2); num.textContent = L.txt; L.raf = requestAnimationFrame(tick); };
   bt.onclick = () => {
-    if (!L.t0) { L.t0 = performance.now(); bt.textContent = '■ 멈춤'; tick(); return; }
+    if (!L.t0) { L.t0 = performance.now(); bt.textContent = '■ 멈춤'; tick(); send({ op: 'sw', e: -1 }); return; }
     L.done = true; cancelAnimationFrame(L.raf); const e = (performance.now() - L.t0) / 1000; L.txt = e.toFixed(2) + '초'; num.textContent = L.txt; bt.disabled = true; bt.textContent = '기록 완료';
     send({ op: 'sw', e: Math.round(e * 1000) / 1000 });
   };
