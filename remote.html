@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>주류마블 · 폰</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eaf6ff;--card:#fff;--ink:#1d2b33;--muted:#5b6b75;--tarp:#e2571e;--line:#d6e6ef;--ok:#13A36B;--no:#D64545;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1b22;--card:#17262f;--ink:#e8f1f5;--muted:#9fb3bf;--line:#26404d;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+body{padding:calc(12px + env(safe-area-inset-top,0px)) 14px calc(24px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto}
+h1{font-family:"Black Han Sans",sans-serif;color:var(--tarp);font-size:30px;margin:4px 0}
+.disp{font-family:"Black Han Sans",sans-serif}
+.panel{background:var(--card);border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 3px 0 var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+button{font:inherit;cursor:pointer;touch-action:manipulation}
+.btn{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:12px 16px;font-size:17px;font-weight:700;min-height:48px}
+.btn:disabled{opacity:.35}
+.btn.on,.btn.selO,.btn.selX{background:#26324a;color:#fff;border-color:#26324a}
+.btn.okPick{background:var(--ok);color:#fff}.btn.wrongPick{background:var(--no);color:#fff}.btn.isAns{box-shadow:0 0 0 3px var(--ok)}
+.big{display:block;width:100%;border:0;border-radius:999px;padding:16px;font-size:22px;color:#fff;background:linear-gradient(180deg,#ff8f55,#e2571e);box-shadow:0 5px 0 #a33a0e;font-family:"Black Han Sans",sans-serif}
+.big.roll{background:linear-gradient(180deg,#ffd84d,#f2b705);color:#4a2b00;box-shadow:0 5px 0 #b07f00}
+.big.gray{background:#dfe7ec;color:#33424d;box-shadow:0 4px 0 #b9c5cc}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.grid .btn{padding:10px 0;min-height:42px;font-size:16px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.card-e{font-size:46px;text-align:center;line-height:1.1}
+.card-t{font-family:"Black Han Sans",sans-serif;font-size:28px;text-align:center;margin:2px 0 6px}
+.card-d{text-align:center;line-height:1.55;white-space:pre-line}
+.card-x{color:var(--tarp);text-align:center;white-space:pre-line;margin-top:6px}
+.oxq{margin:10px 0;padding:12px;border-radius:14px;background:#fff7d6;border:3px solid #f2b705;color:#3a2700;font-weight:700;text-align:center;white-space:pre-line}
+.txt{text-align:center;margin:6px 0;white-space:pre-line}
+.txt.res{font-weight:800;font-size:18px}.txt.big-num,.txt.cd{font-family:"Black Han Sans",sans-serif;font-size:42px}
+.who{font-size:13px;color:var(--muted);text-align:center}
+.wait{text-align:center;color:var(--muted);padding:18px 6px;font-size:16px}
+input[type=text]{width:100%;font:inherit;font-size:18px;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tm{border-left:6px solid var(--c);background:var(--card);border-radius:12px;padding:8px 10px;font-size:14px}
+.tm b{font-size:16px}.tm.me{box-shadow:0 0 0 3px var(--c)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#bbb}.dot.online{background:var(--ok)}.dot.offline{background:var(--no)}
+.pad{height:150px;border-radius:18px;border:4px solid #fff;background:var(--c);color:#fff;font-family:"Black Han Sans",sans-serif;font-size:24px}
+.rst{font-family:"Black Han Sans",sans-serif;font-size:26px;text-align:center;padding:10px;border-radius:14px;background:var(--line);margin:8px 0}
+.rst.wait{background:#ffdede;color:#b3261e}.rst.go{background:#c9f5d9;color:#0b7a3b}
+.sec{font-size:12px;color:var(--muted);text-align:center;margin:10px 0 4px}
+[hidden]{display:none!important}
+.warn{background:#fff3cd;color:#6b4e00;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:700;margin:0 0 8px}
+html:has(body.myturn),body.myturn{background:var(--my)}
+body.myturn #status{background:var(--my);color:#fff;border:0}
+body.myturn #status .small{color:#fff}
+.recrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border-left:5px solid var(--c);padding:6px 0 6px 10px;margin:6px 0}
+.recrow b{flex:1 1 100%;font-size:15px}.recrow.off{opacity:.45}
+.seg{display:flex;flex-wrap:wrap;gap:6px}.seg .btn{min-height:42px;padding:8px 12px;font-size:15px}
+.big.pending{background:#e9eef2!important;color:#33424d!important;font-size:16px!important}
+.cheerbar{display:flex;gap:6px;justify-content:center;margin:10px 0}.cheerbar .btn{font-size:24px;padding:6px 10px;min-height:44px;flex:1}
+.quiz .choice .btn{min-height:56px}
+.tm.f1{box-shadow:0 0 0 2px #ffc94a}.tm.f2{box-shadow:0 0 0 2px #ff9f1c,0 0 10px rgba(255,140,0,.55)}
+.tm.f3{box-shadow:0 0 0 2px #ff7b00,0 0 16px 3px rgba(255,100,0,.6);animation:tmburn 1.2s ease-in-out infinite alternate}
+.tm.f4{box-shadow:0 0 0 3px #ff4d00,0 0 22px 6px rgba(255,70,0,.7);background:linear-gradient(0deg,rgba(255,70,0,.22),transparent 70%);animation:tmburn .7s ease-in-out infinite alternate}
+@keyframes tmburn{0%{box-shadow:0 0 0 2px #ff7b00,0 0 10px 2px rgba(255,100,0,.5)}100%{box-shadow:0 0 0 3px #ff4d00,0 0 24px 7px rgba(255,60,0,.75)}}
+@media (prefers-reduced-motion:reduce){.tm.f3,.tm.f4{animation:none}}
+.nw{white-space:nowrap;letter-spacing:-.5px}
+</style>
+</head>
+<body>
+<div id="join">
+  <h1>🍺 주류마블</h1>
+  <div class="panel">
+    <p class="muted small">게임판 화면에 나온 방 코드를 넣어 주세요</p>
+    <input id="room" type="text" maxlength="8" placeholder="방 코드 (예: ABCD)" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:4px;text-align:center">
+    <p class="muted small" style="margin-top:14px">나는…</p>
+    <div class="choice">
+      <button class="btn" id="asHost">🎮 진행폰<br><span class="small muted">주사위·기록·진행</span></button>
+      <button class="btn" id="asPlayer">📱 플레이어<br><span class="small muted">우리 팀 버튼</span></button>
+    </div>
+    <div id="teamPick" hidden>
+      <p class="muted small" style="margin-top:14px">우리 팀은? (게임판에서 게임이 시작되면 목록이 나와요)</p>
+      <div id="teamBtns" class="choice"></div>
+    </div>
+  </div>
+</div>
+<div id="live" hidden>
+  <div class="row between"><h1 style="font-size:24px">🍺 주류마블</h1><span class="small muted"><span id="dot" class="dot"></span> <span id="me"></span> · <a href="#" id="leave">나가기</a></span></div>
+  <div class="panel" id="status"></div>
+  <div id="main"></div>
+  <p class="sec">팀 현황</p>
+  <div class="teams" id="teams"></div>
+</div>
+<script type="module" src="js/remote.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        ".read": true,
+        ".validate": "$room.matches(/^[A-Z0-9]{3,8}$/)",
+        "state": {
+          ".write": true,
+          ".validate": "newData.child('json').isString() && newData.child('json').val().length < 30000"
+        },
+        "inbox": {
+          "$m": {
+            ".write": true,
+            ".validate": "!newData.exists() || (newData.child('json').isString() && newData.child('json').val().length < 2000)"
+          }
+        }
+      }
+    }
+  }
+}

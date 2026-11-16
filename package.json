@@ -1,0 +1,11 @@
+{
+  "name": "jumarble",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python3 build.py jumarble.html",
+    "start": "node server/server.js"
+  },
+  "dependencies": { "ws": "^8.18.0" }
+}

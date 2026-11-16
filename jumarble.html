@@ -1,0 +1,1982 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>주류마블 팀전</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --edge:#145234;--bg:#E4F0E7;--ink:#10251B;--muted:#4C6658;--cell:#FFFFFF;--board:#1F7A4D;
+  --center:#CFE3D5;--tarp:#E2571E;--tarp-deep:#9B3509;--gold:#F2B705;--gold-ink:#2A1D00;
+  --scrim:rgba(6,20,13,.6);
+  color-scheme:light;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --edge:#0B3A22;--bg:#0A1C14;--ink:#E6F1EA;--muted:#9BB5A6;--cell:#14311F;--board:#2E9A62;
+    --center:#0F2719;--scrim:rgba(0,0,0,.7);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --edge:#0B3A22;--bg:#0A1C14;--ink:#E6F1EA;--muted:#9BB5A6;--cell:#14311F;--board:#2E9A62;
+  --center:#0F2719;--scrim:rgba(0,0,0,.7);color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Gowun Dodum",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:760px;margin:0 auto;padding:14px 12px 40px}
+.disp{font-family:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-weight:400}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin:6px 2px 12px}
+h1{margin:0;font-size:clamp(40px,12vw,58px);line-height:.9;color:var(--tarp);letter-spacing:-1px}
+.sub{color:var(--muted);font-size:14px;margin:6px 0 0}
+.ghost{background:none;border:1.5px solid var(--muted);color:var(--muted);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* setup */
+.setup{max-width:560px;margin-left:auto;margin-right:auto;background:var(--cell);border-radius:16px;padding:18px;border-top:8px solid var(--tarp)}
+.setup h2{margin:0 0 4px;font-size:24px}
+.setup p{margin:0 0 14px;color:var(--muted);font-size:14px}
+.team{border-left:5px solid var(--c);padding:2px 0 2px 10px;margin-bottom:14px}
+.trow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.team input{min-width:0;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--center);background:var(--bg);color:var(--ink);width:100%}
+.trow input{flex:1;font-family:"Black Han Sans",sans-serif}
+.trow .x{width:40px;height:40px;flex:none;border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;border-radius:10px}
+.team .mem{font-size:15px}
+.addp{width:100%;padding:10px;border:1.5px dashed var(--muted);background:none;color:var(--muted);border-radius:10px;font:inherit;font-size:15px;cursor:pointer;margin:0 0 16px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;font-size:15px;flex-wrap:wrap}
+.seg{display:flex;background:var(--bg);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;color:var(--ink);font:inherit;font-size:15px;padding:7px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--tarp);color:#fff}
+.big{width:100%;font-size:22px;background:var(--tarp);color:#fff;border:0;border-radius:999px;padding:13px 20px;box-shadow:0 4px 0 var(--tarp-deep);cursor:pointer;margin-top:6px}
+.big:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tarp-deep)}
+.rank{margin:0 0 18px;padding:0;list-style:none;counter-reset:r}
+.rank li{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--center);font-size:17px;counter-increment:r}
+.rank li::before{content:counter(r);font-family:"Black Han Sans",sans-serif;width:24px;text-align:center;color:var(--muted)}
+.rank li:first-child::before{content:"🏆"}
+.rank li::before{display:none}.rank li .rk{min-width:34px;text-align:center;font-family:"Black Han Sans",sans-serif;color:var(--muted);font-weight:400;white-space:nowrap}
+.rank .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.rank small{margin-left:auto;color:var(--muted);font-size:14px}
+.setup .ovmsg{font-size:16px;color:var(--ink);line-height:1.55}
+
+/* board (3D) */
+.stage3d{perspective:1100px;perspective-origin:50% 0%;padding:2px 2px 30px;margin-top:-2%}
+.board{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:3px;aspect-ratio:1;width:100%;
+  background:var(--board);padding:4px;border-radius:12px;transform:rotateX(28deg);transform-origin:50% 55%;transform-style:preserve-3d;
+  box-shadow:0 12px 0 var(--edge),0 30px 36px rgba(0,0,0,.35)}
+.cell{background:var(--cell);border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding-top:10%;position:relative;text-align:center;min-width:0;cursor:pointer;border:0;color:inherit;font:inherit;
+  transform-style:preserve-3d;box-shadow:0 3px 0 rgba(0,0,0,.2);transition:transform .2s}
+.cell .e{font-size:clamp(15px,4.6vw,24px);line-height:1}
+.cell .t{font-size:clamp(9px,2.5vw,13px);line-height:1.15;margin-top:2px;white-space:nowrap;max-width:100%;overflow:hidden}
+.cell.gold{background:var(--gold);color:var(--gold-ink)}
+.cell.start{background:var(--tarp);color:#fff}
+.cell.lit{box-shadow:inset 0 0 0 3px var(--tarp),0 3px 0 rgba(0,0,0,.2);transform:translateZ(5px)}
+.cell.start.lit,.cell.gold.lit{box-shadow:inset 0 0 0 3px var(--ink),0 3px 0 rgba(0,0,0,.2)}
+.toks{position:absolute;left:1px;right:1px;bottom:8%;display:flex;flex-wrap:wrap;gap:1px;justify-content:center;transform-style:preserve-3d;pointer-events:none}
+.tok{width:clamp(8px,2.4vw,13px);height:clamp(13px,3.8vw,20px);border-radius:50% 50% 38% 38%/42% 42% 32% 32%;border:1.5px solid #fff;
+  transform-origin:50% 100%;transform:rotateX(-28deg);box-shadow:inset -2px -3px 0 rgba(0,0,0,.28);filter:drop-shadow(0 2px 1px rgba(0,0,0,.35))}
+.tok.me{animation:hop .9s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:rotateX(-28deg) translateY(0)}50%{transform:rotateX(-28deg) translateY(-35%)}}
+
+.center{grid-column:2/7;grid-row:2/7;background:var(--center);border-radius:8px;display:flex;flex-direction:column;transform-style:preserve-3d;
+  align-items:center;justify-content:center;gap:clamp(5px,1.8vw,11px);padding:8px;text-align:center}
+.turn{font-size:clamp(16px,4.6vw,22px);display:flex;align-items:center;gap:6px}
+.turn .dot{width:14px;height:14px;border-radius:50%;border:2px solid #fff}
+.rep{font-size:clamp(12px,3.4vw,15px);color:var(--muted);margin-top:-4px}
+.dice{display:flex;gap:12px}
+.dice{transform-style:preserve-3d;gap:clamp(14px,5vw,30px)}
+.die3{--s:clamp(30px,9vw,52px);width:var(--s);height:var(--s);transform-style:preserve-3d;transform:translateZ(calc(var(--s) / 2))}
+.cube{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.2,.75,.25,1)}
+.f{position:absolute;inset:0;background:#fff;border-radius:18%;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:14%;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),inset -3px -3px 6px rgba(0,0,0,.12);backface-visibility:hidden}
+.f i{width:62%;height:62%;margin:auto;border-radius:50%;background:#1d1d1d;visibility:hidden}
+.f i.on{visibility:visible}.f.f1 i.on{background:#D7262E;width:80%;height:80%}
+.f1{transform:translateZ(calc(var(--s) / 2))}.f6{transform:rotateY(180deg) translateZ(calc(var(--s) / 2))}
+.f2{transform:rotateY(90deg) translateZ(calc(var(--s) / 2))}.f5{transform:rotateY(-90deg) translateZ(calc(var(--s) / 2))}
+.f3{transform:rotateX(90deg) translateZ(calc(var(--s) / 2))}.f4{transform:rotateX(-90deg) translateZ(calc(var(--s) / 2))}
+.logo{font-family:"Black Han Sans",sans-serif;color:var(--tarp);font-size:clamp(20px,6vw,34px);opacity:.9;letter-spacing:-.5px}
+.ctrl{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;margin-top:4px}
+.roll{font-size:clamp(17px,5vw,22px);background:var(--tarp);color:#fff;border:0;border-radius:999px;padding:9px 26px;
+  box-shadow:0 4px 0 var(--tarp-deep);cursor:pointer}
+.roll:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tarp-deep)}
+.roll:disabled{opacity:.55;cursor:default}
+.log{font-size:clamp(11px,3.2vw,14px);color:var(--muted);min-height:1.3em;max-width:100%;padding:0 4px}
+
+.players{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+.chip{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:var(--cell);font-size:14px}
+.chip .dot{width:12px;height:12px;border-radius:50%}
+.chip.cur{box-shadow:0 0 0 2px var(--tarp)}
+.chip small{color:var(--muted)}
+.note{color:var(--muted);font-size:13px;margin:16px 2px 0;line-height:1.5}
+.note b{color:var(--ink);font-weight:400;font-family:"Black Han Sans",sans-serif}
+
+/* modal */
+.modal{position:fixed;inset:0;background:var(--scrim);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal.on{display:flex}
+.card{background:var(--cell);width:100%;max-width:360px;border-radius:18px;padding:22px 22px 20px;text-align:center;
+  border-top:12px solid var(--tarp);animation:pop .28s ease-out}
+.card.goldc{border-top-color:var(--gold)}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+.card .who{color:var(--muted);font-size:14px;margin:0}
+.card .em{font-size:60px;line-height:1.1;margin-top:6px}
+.card h2{font-size:34px;margin:4px 0 8px}
+.card p{font-size:18px;line-height:1.55;margin:0 0 6px}
+.card .extra{color:var(--tarp);font-size:16px;margin:8px 0 0;white-space:pre-line}
+.card .big{margin-top:16px;font-size:20px;padding:11px}
+.card{max-height:calc(100dvh - 40px);overflow:auto}
+.rec{margin-top:14px;padding-top:12px;border-top:1.5px dashed var(--center)}
+.rec span{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+.recb{display:flex;flex-direction:column;gap:6px}
+.recrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;padding:4px 0;border-left:5px solid var(--c);padding-left:8px}
+.recrow .rn{flex:1 1 90px;font-weight:700;text-align:left;color:var(--ink);font-size:15px;margin:0}
+.recrow.off{opacity:.4}.recrow .rz{font-size:13px;color:var(--muted);margin:0}
+.recrow .rw{flex-basis:100%;text-align:right;font-size:13px;font-weight:700;color:var(--c)}
+.recrow button[data-v="0"][aria-pressed="true"]{background:#8a97a3;border-color:#8a97a3}
+#mOk.pendingOk{background:#e9eef2!important;color:#33424d!important;box-shadow:0 4px 0 #c5ccd3!important;font-size:16px!important}
+.tgt{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;margin-top:10px;font-size:14px;color:var(--muted)}
+.recb button.off{opacity:.3;border-style:dashed;cursor:not-allowed}
+.recb button,.tgt button{font:inherit;font-size:15px;padding:7px 13px;border-radius:999px;border:2px solid var(--c);background:none;color:var(--ink);cursor:pointer}
+.recb button[aria-pressed="true"],.tgt button[aria-pressed="true"]{background:var(--c);color:#fff}
+.chip .minus{border:0;background:var(--bg);color:var(--muted);width:24px;height:24px;border-radius:50%;font:inherit;font-size:16px;line-height:1;cursor:pointer;padding:0}
+.card #mAct{margin-top:12px;font-size:16px;padding:8px 18px;color:var(--ink);border-color:var(--ink);margin-right:6px}
+.card #mTimer{margin-top:12px;font-size:16px;padding:8px 18px;color:var(--ink);border-color:var(--ink)}
+
+.spin{position:fixed;inset:0;background:var(--scrim);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:25;padding:20px}
+.spin.on{display:flex}
+.spin .lbl{color:#fff;font-size:18px}
+.spin .nm{font-family:"Black Han Sans",sans-serif;font-size:clamp(40px,13vw,72px);color:#fff;padding:16px 34px;border-radius:22px;min-width:min(80vw,420px);text-align:center;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.spin.done .nm{animation:pop .35s ease-out}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;
+  background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:15px;transition:.25s;pointer-events:none;z-index:30;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ===== 보드 v4: 밝은 하늘 배경 + 입체 블록 타일 + 세워진 표지판 ===== */
+.stage3d{perspective:1300px;perspective-origin:50% -25%;padding:26px 6px 56px;border-radius:24px;margin-top:0;
+  background:radial-gradient(130px 34px at 16% 18%,rgba(255,255,255,.95),transparent 72%),radial-gradient(170px 44px at 82% 10%,rgba(255,255,255,.9),transparent 72%),
+  radial-gradient(120px 30px at 70% 88%,rgba(255,255,255,.7),transparent 72%),linear-gradient(180deg,#4fbdf2,#9fe0ff 55%,#d6f5ff)}
+.board{--tx:44deg;--tz:-30deg;transform:rotateX(var(--tx)) rotateZ(var(--tz));transform-origin:50% 55%;width:68%;margin:0 auto;
+  gap:5px;padding:8px;border-radius:18px;background:linear-gradient(135deg,#fff6df,#f5dca6);
+  box-shadow:0 0 0 4px #fff,0 0 0 9px #f2a93b,0 12px 0 9px #c6741a,0 30px 44px 10px rgba(20,60,95,.45)}
+.cell{border-radius:8px;padding:0;background:#fff;color:#1b2a22;--top:#c9d1d6;--side:#9aa6ad;
+  box-shadow:0 5px 0 var(--side),0 8px 8px rgba(0,0,0,.18);transform:translateZ(0);transition:transform .2s}
+.cell::before{content:"";position:absolute;left:0;right:0;top:0;height:30%;border-radius:8px 8px 3px 3px;background:var(--top)}
+.cell.vs{--top:#F0524F;--side:#B3302D}
+.cell.team{--top:#2FB36B;--side:#1D7C47}
+.cell.all{--top:#3E7BFA;--side:#2350B0}
+.cell.rest{--top:#22B8D8;--side:#127F98}
+.cell.drink{--top:#E8436A;--side:#A3213F}
+.cell.game{--top:#3E7BFA;--side:#2350B0}
+.cell.choose{--top:#9B51E0;--side:#6A2BA8}
+.cell.gold{--side:#9b6800;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.6) 50%,transparent 62%) 0 0/300% 100% no-repeat,linear-gradient(135deg,#ffe58a,#f6b90b 48%,#d39100);animation:sheen 3.4s ease-in-out infinite}
+.cell.start{--side:#9B3509;background:linear-gradient(160deg,#ff9255,#e2571e 60%,#c4440f)}
+.cell.gold::before,.cell.start::before{display:none}
+@keyframes sheen{0%,55%{background-position:130% 0,0 0}100%{background-position:-30% 0,0 0}}
+.cell.lit{transform:translateZ(8px);box-shadow:0 5px 0 var(--side),0 0 0 3px #fff,0 0 0 6px var(--tarp),0 12px 12px rgba(0,0,0,.25)}
+.cell.lit::after{content:"";position:absolute;inset:-2px;border-radius:10px;border:3px solid #fff;animation:ring 1.3s ease-out infinite;pointer-events:none}
+@keyframes ring{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(1.25)}}
+/* 칸 표지판: 화면을 향해 세워져서 글씨가 똑바로 보임 */
+.sign{position:absolute;left:-14%;right:-14%;bottom:42%;display:flex;flex-direction:column;align-items:center;gap:1px;
+  transform-origin:50% 100%;transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1));pointer-events:none}
+.sign .t{order:0;max-width:none;overflow:visible;margin:0;font-size:clamp(8px,2.1vw,13px);line-height:1.2;color:#17241c;background:rgba(255,255,255,.95);
+  padding:1px 5px;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.3);white-space:nowrap}
+.sign .e{order:1;margin:0;font-size:clamp(14px,4vw,28px);line-height:1;filter:drop-shadow(0 2px 1px rgba(0,0,0,.3))}
+/* 체스말 */
+.toks{left:0;right:0;bottom:3%;gap:0;flex-wrap:nowrap}
+.tok{width:clamp(10px,2.7vw,17px);height:clamp(15px,4vw,25px);border:0;border-radius:0;background:none!important;box-shadow:none;margin:0 -1px;
+  transform-origin:50% 100%;transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1));filter:drop-shadow(0 2px 1.5px rgba(0,0,0,.45))}
+.tok svg{display:block;width:100%;height:100%;overflow:visible}
+.tok.me{animation:hop3 .9s ease-in-out infinite}
+@keyframes hop3{0%,100%{transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1)) translateY(0)}50%{transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1)) translateY(-40%)}}
+/* 가운데 판 */
+.center{background:linear-gradient(135deg,#ffffff,#e6f5ff);border-radius:14px;box-shadow:inset 0 0 0 3px #f2a93b,inset 0 4px 14px rgba(0,0,0,.12)}
+.logo{color:#ff6a2b;font-size:clamp(20px,5vw,40px);text-shadow:2px 2px 0 #fff,-2px 2px 0 #fff,2px -2px 0 #fff,-2px -2px 0 #fff,0 5px 0 rgba(0,0,0,.18)}
+.dice{padding:clamp(8px,2vw,14px) clamp(14px,4vw,26px);border-radius:16px;background:rgba(40,110,170,.16);box-shadow:inset 0 3px 8px rgba(0,0,0,.2)}
+/* 버튼과 차례 표시 */
+.roll{background:linear-gradient(180deg,#ffd84d,#f5a50c);color:#5a2c00;border:3px solid #fff;box-shadow:0 5px 0 #c26a00,0 9px 14px rgba(0,0,0,.25);font-size:clamp(20px,5.5vw,28px);padding:10px 34px}
+.roll:active{transform:translateY(3px);box-shadow:0 2px 0 #c26a00}
+.turn{font-family:"Black Han Sans",sans-serif;font-size:clamp(22px,6vw,32px);padding:10px 26px;border-radius:999px;background:var(--tarp);color:#fff;
+  box-shadow:0 4px 0 rgba(0,0,0,.28),0 0 0 3px rgba(255,255,255,.85);letter-spacing:-.3px;gap:6px}
+.turn .dot{display:none}
+.turn b{font-weight:400}
+#rep{font-size:15px;color:var(--ink);opacity:.8}
+.chip{border-radius:14px;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.chip.cur{box-shadow:0 0 0 3px var(--tarp),0 3px 0 rgba(0,0,0,.12)}
+@media (prefers-reduced-motion:reduce){.cell.gold{animation:none}.cell.lit::after{display:none}}
+/* v5: 판 크게 + 아래 글씨와 겹치지 않게 (원근은 JS가 폭에 맞춰 조절) */
+.stage3d{padding:9% 0 21%}
+.board{--tx:40deg;--tz:-24deg;width:76%;margin:0 auto}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;font-size:12px;color:var(--muted);margin:8px 0 10px}.legend b{font-weight:inherit}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+/* v6: 쿼터뷰(마름모) 시점 — 출발 칸이 맨 앞 꼭짓점에 오도록 판을 45도 돌리고 위에서 비스듬히 내려다봄 */
+.stage3d{padding:5% 0 8%}
+.board{--tx:56deg;--tz:45deg;width:70%;transform-origin:50% 50%;
+  box-shadow:0 0 0 4px #fff,0 0 0 9px #f2a93b,9px 9px 0 9px #c6741a,22px 22px 40px 12px rgba(20,60,95,.4)}
+.cell{box-shadow:3.5px 3.5px 0 var(--side),6px 6px 8px rgba(0,0,0,.16)}
+.cell.lit{box-shadow:3.5px 3.5px 0 var(--side),0 0 0 3px #fff,0 0 0 6px var(--tarp),8px 8px 12px rgba(0,0,0,.22)}
+.sign .e{font-size:clamp(12px,3.4vw,24px)}
+.logo{transform-origin:50% 100%;transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1))}
+/* v7: 테두리 칸을 안쪽으로 길쭉하게(직사각형) 키워서 표지판이 자기 칸 안에 들어가게 */
+.board{grid-template-columns:1.8fr repeat(5,1fr) 1.8fr;grid-template-rows:1.8fr repeat(5,1fr) 1.8fr;width:72%}
+.cell::before{height:20%}
+.sign{bottom:28%;left:-30%;right:-30%}
+.sign .t{font-size:clamp(8px,2vw,12px);padding:1px 4px}
+.sign .e{font-size:clamp(12px,3.2vw,22px)}
+.cell.corner .sign .e{font-size:clamp(15px,4vw,28px)}
+.toks{bottom:6%}
+/* v8: 칸 이름을 판 위에 인쇄된 것처럼 납작하게 (세운 표지판 X)
+   판 회전(45°)을 되돌리고 기울기로 눌린 만큼(1/cos56° ≈ 1.79) 세로로 늘려서 화면에서 반듯하게 보이게 함 */
+.sign{inset:0;left:0;right:0;bottom:auto;top:0;height:100%;justify-content:center;gap:0;
+  transform-origin:50% 50%;transform:rotateZ(calc(var(--tz) * -1)) scaleY(1.79)}
+.sign .t{background:none;box-shadow:none;padding:0;border-radius:0;font-size:clamp(7px,1.9vw,11px);line-height:1.1;color:#17241c;
+  text-shadow:0 1px 0 rgba(255,255,255,.85)}
+.sign .e{font-size:clamp(10px,2.8vw,18px);filter:none}
+.cell.corner .sign .e{font-size:clamp(13px,3.6vw,24px)}
+.cell.corner .sign .t{font-size:clamp(9px,2.3vw,13px)}
+.cell.start .sign .t{color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.cell.gold .sign .t{color:#3a2700;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.logo{transform-origin:50% 50%;transform:rotateZ(calc(var(--tz) * -1)) scaleY(1.79);text-shadow:2px 2px 0 #fff,-2px 2px 0 #fff,2px -2px 0 #fff,-2px -2px 0 #fff}
+/* v9: 칸 이름을 칸 방향을 따라 자연스럽게 인쇄 (모노폴리처럼 칸의 긴 방향으로)
+   아래/위 줄 칸은 세로로 긴 칸 → 글씨를 90° 돌려 긴 방향으로, 왼쪽/오른쪽 줄 칸은 가로로 긴 칸 → 그대로 */
+.sign{position:absolute;inset:auto;left:50%;top:50%;width:100%;height:100%;flex-direction:row;justify-content:center;align-items:center;gap:3%;
+  transform-origin:50% 50%;transform:translate(-50%,-50%)}
+.cell.side-b .sign,.cell.side-t .sign{width:180%;height:55.5%;transform:translate(-50%,-50%) rotate(-90deg)}
+.cell.corner .sign{flex-direction:column;gap:2px;transform:translate(-50%,-50%) rotate(calc(var(--tz) * -1))}
+.sign .t{font-size:clamp(7px,1.9vw,12px);letter-spacing:-.4px;color:#17241c;text-shadow:0 1px 0 rgba(255,255,255,.9)}
+.sign .e{font-size:clamp(10px,2.8vw,19px);order:-1}
+.cell.corner .sign .t{order:1}
+/* 색 띠는 판 바깥쪽 가장자리에 */
+.cell.side-b::before{top:auto;bottom:0;height:18%;border-radius:3px 3px 8px 8px}
+.cell.side-t::before{top:0;height:18%}
+.cell.side-l::before{left:0;right:auto;top:0;bottom:0;width:18%;height:auto;border-radius:8px 3px 3px 8px}
+.cell.side-r::before{right:0;left:auto;top:0;bottom:0;width:18%;height:auto;border-radius:3px 8px 8px 3px}
+/* v10: 칸 전체를 색으로 칠하고 이름을 흰 글씨로 인쇄, 나무 테두리, 밝은 석판 가운데, 모서리는 도드라진 큰 판 */
+.board{background:linear-gradient(135deg,#8c5c3b,#6b4128);gap:3px;padding:7px;border-radius:16px;
+  box-shadow:0 0 0 3px #d9a866,0 0 0 9px #7b4b2c,9px 9px 0 9px #4a2b18,24px 24px 42px 14px rgba(25,45,70,.45)}
+.cell{border-radius:5px;color:#fff;background:linear-gradient(135deg,color-mix(in srgb,var(--top) 78%,#fff),var(--top) 55%);
+  box-shadow:2.5px 2.5px 0 var(--side),5px 5px 6px rgba(0,0,0,.18)}
+.cell::before{display:none}
+.cell.rest{--top:#25AFCF;--side:#13788F}
+.sign .t{color:#fff;font-size:clamp(8px,2.1vw,13px);letter-spacing:-.3px;text-shadow:0 1px 0 rgba(0,0,0,.28)}
+.cell:not(.corner):not(.gold) .sign .e{display:none}
+/* 황금카드: 금박 카드 칸 */
+.cell.gold .sign .t{color:#4a3000;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+.cell.gold .sign .e{font-size:clamp(9px,2.4vw,15px)}
+/* 모서리: 살짝 떠 있는 하얀 판 */
+.cell.corner{background:linear-gradient(135deg,#ffffff,#e3f0f8);--side:#9fb3c2;border-radius:12px;transform:translateZ(5px);
+  box-shadow:3px 3px 0 var(--side),7px 7px 10px rgba(0,0,0,.22)}
+.cell.corner .sign .t{color:#1f3a52;text-shadow:none;font-size:clamp(9px,2.4vw,14px)}
+.cell.corner .sign .e{display:block;font-size:clamp(16px,4.6vw,32px);filter:drop-shadow(0 2px 1px rgba(0,0,0,.25))}
+.cell.start.corner{background:linear-gradient(135deg,#ffffff,#ffe9dc);--side:#d39a7a}
+.cell.start .sign .t{color:#e2571e;text-shadow:none}
+.cell.lit.corner{transform:translateZ(9px)}
+/* 가운데: 밝은 석판 + 이중 테두리 */
+.center{background:radial-gradient(circle at 50% 45%,#fbf8f2,#e8e1d3 80%);border-radius:6px;
+  box-shadow:inset 0 0 0 3px #f8f3ea,inset 0 0 0 5px #cdb27c,inset 0 0 0 9px #f8f3ea,inset 0 0 0 10px #d8c497,inset 0 6px 18px rgba(0,0,0,.12)}
+.logo{color:#c4561d;text-shadow:0 1px 0 #fff,0 2px 0 rgba(0,0,0,.12)}
+.dice{background:rgba(120,90,50,.12);box-shadow:inset 0 3px 8px rgba(80,50,20,.25)}
+/* v11: 사람 모양 말 + 한 칸씩 폴짝 걷는 움직임 */
+.tok{width:clamp(12px,3.2vw,20px);height:clamp(18px,4.8vw,30px);margin:0 -2px;filter:drop-shadow(0 3px 2px rgba(0,0,0,.4))}
+.tok svg .lgl,.tok svg .lgr,.tok svg .arl,.tok svg .arr{transform-box:fill-box;transform-origin:50% 8%}
+.tok.walk{animation:stepHop .38s ease-out;z-index:3}
+.tok.walk .lgl,.tok.walk .arr{animation:swingA .38s ease-in-out}
+.tok.walk .lgr,.tok.walk .arl{animation:swingB .38s ease-in-out}
+@keyframes stepHop{0%{transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1)) translateY(0) scaleY(.92)}
+  40%{transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1)) translateY(-55%) scaleY(1.04)}
+  85%{transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1)) translateY(0) scaleY(.94)}
+  100%{transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1)) translateY(0) scaleY(1)}}
+@keyframes swingA{0%,100%{transform:rotate(0)}30%{transform:rotate(28deg)}70%{transform:rotate(-22deg)}}
+@keyframes swingB{0%,100%{transform:rotate(0)}30%{transform:rotate(-28deg)}70%{transform:rotate(22deg)}}
+.tok.me:not(.walk) .arr{animation:cheers 1.8s ease-in-out infinite}
+@keyframes cheers{0%,70%,100%{transform:rotate(0)}80%{transform:rotate(-55deg)}90%{transform:rotate(-40deg)}}
+@media (prefers-reduced-motion:reduce){.tok.walk,.tok.walk *,.tok.me .arr{animation:none!important}}
+/* v12: 글씨 잘 보이게 — 덜 기울이고, 칸을 더 길게, 글자 수에 맞춘 크기 + 테두리 */
+.stage3d{padding:7% 0 12%}
+.board{--tx:50deg;grid-template-columns:2.1fr repeat(5,1fr) 2.1fr;grid-template-rows:2.1fr repeat(5,1fr) 2.1fr}
+.cell.side-b .sign,.cell.side-t .sign{width:210%;height:47.6%}
+.cell{background:linear-gradient(135deg,color-mix(in srgb,var(--top) 88%,#fff),var(--top) 60%)}
+.sign .t{color:#fff;font-size:clamp(9px,2.6vw,16px);letter-spacing:-.2px;transform:scaleY(1.18);
+  text-shadow:0 0 2px rgba(0,0,0,.6),0 1px 1px rgba(0,0,0,.6),1px 0 1px rgba(0,0,0,.4),-1px 0 1px rgba(0,0,0,.4)}
+.sign .t[data-len="1"],.sign .t[data-len="2"]{font-size:clamp(10px,3vw,18px)}
+.sign .t[data-len="4"]{font-size:clamp(8px,2.25vw,14px)}
+.sign .t[data-len="5"],.sign .t[data-len="6"]{font-size:clamp(7.5px,1.95vw,12px)}
+.cell.gold .sign .t{color:#3a2600;text-shadow:0 0 2px rgba(255,255,255,.9),0 1px 0 rgba(255,255,255,.7)}
+.cell.corner .sign .t{transform:none;text-shadow:none}
+/* 미션 카드 속 주사위 */
+.mdice{display:flex;justify-content:center;gap:22px;margin:14px 0 6px;perspective:600px}
+.mdice .die3{--s:58px;transform:rotateX(-22deg) rotateY(-28deg)}
+.mdice .cube{transition:transform 1.1s cubic-bezier(.15,.8,.25,1)}
+.mdice .lbl{display:block;text-align:center;font-size:13px;color:var(--muted);margin-top:6px}
+/* 패배(상한 도달) 팀: 유령 말 */
+.tok.spirit{opacity:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.25))}
+.tok.spirit:not(.walk){animation:ghostFloat 2.4s ease-in-out infinite}
+@keyframes ghostFloat{0%,100%{transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1)) translateY(-8%)}50%{transform:rotateZ(calc(var(--tz) * -1)) rotateX(calc(var(--tx) * -1)) translateY(-26%)}}
+.tcard.lost{opacity:.75;background:repeating-linear-gradient(135deg,var(--cell) 0 10px,rgba(120,140,160,.12) 10px 20px)}
+@media (prefers-reduced-motion:reduce){.tok.spirit{animation:none!important}}
+/* 특별 모서리: 보물창고 카드 고르기, 택시 칸 고르기 */
+.pick{position:fixed;inset:0;background:var(--scrim);display:none;align-items:center;justify-content:center;padding:18px;z-index:28}
+.pick.on{display:flex}
+.pick .box{width:100%;max-width:440px;text-align:center}
+.pick h2{color:#fff;font-family:"Black Han Sans",sans-serif;font-size:26px;margin:0 0 12px;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+.pick .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pick .opt{background:linear-gradient(160deg,#fff7d6,#ffe08a);border:4px solid #fff;border-radius:18px;padding:14px 10px;box-shadow:0 6px 0 #c79a1e;cursor:pointer;color:#3a2700;font:inherit}
+.pick .opt .oe{font-size:44px;line-height:1.1}
+.pick .opt .ot{font-family:"Black Han Sans",sans-serif;font-size:20px;margin:4px 0}
+.pick .opt .od{font-size:13px;line-height:1.45;opacity:.85}
+.pick .opt:active{transform:translateY(3px);box-shadow:0 3px 0 #c79a1e}
+.taxibar{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:27;background:#ffd84d;color:#4a2b00;
+  border:3px solid #fff;border-radius:999px;padding:10px 20px;font-family:"Black Han Sans",sans-serif;font-size:18px;box-shadow:0 5px 0 #c26a00;display:none;white-space:nowrap}
+.taxibar.on{display:block}
+.board.picking .cell{cursor:pointer}
+.board.picking .cell:not(.taxiok){filter:grayscale(.7) brightness(.85)}
+.board.picking .cell:not(.here)::after{content:"";position:absolute;inset:1px;border-radius:6px;border:2px dashed rgba(255,255,255,.95);animation:ring 1.4s ease-out infinite;pointer-events:none}
+/* v13: 말 크게 + 현재 칸은 네모 테두리 대신 바닥 빛 + 위쪽 줄 글씨 방향 수정 */
+.toks{bottom:16%;gap:0}
+.tok{width:clamp(20px,5.6vw,32px);height:clamp(30px,8.4vw,48px);margin:0 -6px}
+.cell.lit,.cell.start.lit,.cell.gold.lit,.cell.lit.corner{box-shadow:3.5px 3.5px 0 var(--side),6px 6px 8px rgba(0,0,0,.16)}
+.cell.lit::after{inset:auto;left:50%;top:50%;width:78%;height:auto;aspect-ratio:1;transform:translate(-50%,-50%);border:0;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,214,70,.95) 0,rgba(255,214,70,.55) 40%,rgba(255,214,70,0) 70%);animation:floorGlow 1.4s ease-in-out infinite}
+@keyframes floorGlow{0%,100%{opacity:.55}50%{opacity:1}}
+.logo{white-space:nowrap;font-size:clamp(14px,3.6vw,26px)!important}
+.center .die3{--s:clamp(24px,6vw,44px)}
+.oxq{white-space:pre-line;margin:12px 0 4px;padding:14px 12px;border-radius:14px;background:#fff7d6;border:3px solid #f2b705;color:#3a2700;font-size:19px;line-height:1.45;font-weight:700;animation:pop .3s ease-out}
+/* 미션 속 인터랙션 */
+.mbox{margin:12px 0 4px;text-align:center}
+.mbox .row2{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px 0}
+.mbox .cbtn{font-size:20px!important;padding:12px 26px!important;min-width:96px}
+.mbox .cap{font-size:14px;color:var(--muted);margin:6px 0}
+.mbox .res{font-size:18px;font-weight:700;margin-top:10px;line-height:1.5}
+.mbox input{width:100%;font:inherit;font-size:18px;padding:10px 12px;border-radius:12px;border:2px solid var(--center);background:var(--bg);color:var(--ink);text-align:center}
+.cd{font-family:"Black Han Sans",sans-serif;font-size:72px;line-height:1;color:var(--tarp);margin:6px 0}
+.cd.pulse{animation:cdp .6s ease-out}
+@keyframes cdp{from{transform:scale(1.7);opacity:.15}to{transform:none;opacity:1}}
+.big-num{font-family:"Black Han Sans",sans-serif;font-size:56px;line-height:1.1;letter-spacing:2px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.numgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.numgrid button{padding:9px 0;font:inherit;font-size:16px;border-radius:10px;border:2px solid var(--center);background:var(--bg);color:var(--ink)}
+.numgrid button:disabled{opacity:.2}
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;perspective:600px}
+.duel button{font-size:15px!important;padding:9px 12px!important;min-width:0!important}
+.duel .die3{--s:58px;margin:8px auto;transform:rotateX(-22deg) rotateY(-28deg)}
+.duel .cube{transition:transform 1.1s cubic-bezier(.15,.8,.25,1)}
+.chests{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.chest{background:linear-gradient(160deg,#fff7d6,#ffe08a);border:4px solid #fff;border-radius:18px;padding:14px 6px;box-shadow:0 6px 0 #c79a1e;cursor:pointer;color:#3a2700;font:inherit}
+.chest .ce{font-size:46px;line-height:1.1}
+.chest .ct{font-family:"Black Han Sans",sans-serif;font-size:15px;margin-top:4px;min-height:2.4em}
+.chest.open{animation:pop .35s ease-out}
+.chest.dim{opacity:.45;filter:grayscale(.6)}
+.chest.picked{box-shadow:0 0 0 4px var(--tarp),0 6px 0 #c79a1e}
+/* 고른 것 = 남색(중립), 정답 공개 후 = 초록 테두리(정답) / 빨간 배경(틀린 선택) */
+.mbox .selO,.mbox .selX{background:#26324a!important;color:#fff!important;border-color:#26324a!important}
+/* 폰이 연결된 게임판(TV)에서는 OX 선택을 공개 전까지 숨겨요 (다른 팀이 따라 고르지 못하게) */
+.netOn .mbox .picked .row2{visibility:hidden}.netOn .mbox .picked{position:relative}
+.netOn .mbox .picked::after{content:'✔ 선택 완료';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--muted)}
+.mbox .isAns{box-shadow:0 0 0 3px #13A36B,0 0 12px rgba(19,163,107,.6)!important}
+.mbox .wrongPick{background:#D64545!important;border-color:#D64545!important}
+.mbox .okPick{background:#13A36B!important;border-color:#13A36B!important}
+.mbox .tag{font-size:13px;font-weight:700;margin-left:6px}
+.mbox .btn.fill{display:block;border:3px solid #fff;border-radius:999px;padding:11px 18px;background:linear-gradient(180deg,#ff8f55,#e2571e);color:#fff;font-family:"Black Han Sans",sans-serif;box-shadow:0 4px 0 var(--tarp-deep);cursor:pointer}
+.mbox .btn.fill:disabled{opacity:.4}
+.mbox input{margin-top:6px}
+.mbox .stage{height:136px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mbox .stage .mdice{margin:0}
+#card{scrollbar-gutter:stable}
+/* 손 들기: 예상(파랑) / 실제(주황) */
+.numgrid.pred button{background:#e7eeff;border-color:#9fb7f2;color:#1d3b8f}
+.numgrid.real button{background:#fff0d9;border-color:#f3b56a;color:#7a3d00}
+.capPred{color:#2b55c9!important;font-weight:700}.capReal{color:#c0620b!important;font-weight:700}
+.mbox .chip{display:inline-block;padding:6px 16px;border-radius:999px;font-weight:800;font-size:17px;color:#fff}
+.mbox .chip.pred{background:#2b6ce0}.mbox .chip.real{background:#e8811f}
+.tcard.bump{animation:bump .6s ease-out}@keyframes bump{0%{transform:scale(1)}30%{transform:scale(1.06);box-shadow:0 0 0 4px #ffd84d}100%{transform:scale(1)}}
+.boostB{display:block;margin:8px auto 0;font-size:16px!important}
+.boostB.on{background:#ffd84d!important;color:#4a2b00!important}
+.rerollP{display:block;margin:4px auto 0;font-size:13px!important;padding:5px 12px!important}
+/* 순발력 대결 */
+.react-st{font-family:"Black Han Sans",sans-serif;font-size:26px;margin:6px 0 10px;padding:10px;border-radius:14px;background:var(--center)}
+.react-st.wait{background:#ffdede;color:#b3261e}.react-st.go{background:#c9f5d9;color:#0b7a3b;font-size:34px}.react-st.bad{background:#ffe6c7;color:#9a4b00}
+.react-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.react-pad{height:120px;border-radius:18px;border:4px solid #fff;background:var(--c);color:#fff;font-family:"Black Han Sans",sans-serif;font-size:22px;box-shadow:0 6px 0 rgba(0,0,0,.25);touch-action:manipulation}
+.react-pad:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.react-pad:disabled{opacity:.6}
+#mOk.cancelStyle{background:#e9eef2!important;color:#33424d!important;box-shadow:0 4px 0 #c5ccd3!important}
+/* 주루마블 모드 판: 밤 술집 느낌 (보라·네온 핑크) */
+body.juru .board{background:linear-gradient(135deg,#3a1f5c,#1e0f36);box-shadow:0 0 0 3px #ff4fa3,0 0 0 9px #2c1650,9px 9px 0 9px #140826,24px 24px 42px 14px rgba(30,10,60,.5)}
+body.juru .center{background:linear-gradient(135deg,#fff0f7,#ffe1f0);box-shadow:inset 0 0 0 3px #ff4fa3,inset 0 4px 14px rgba(0,0,0,.12)}
+body.juru .logo{color:#e8436a}
+.react-score{font-family:"Black Han Sans",sans-serif;font-size:28px;margin-bottom:4px}
+.streak{background:#ff6a00;color:#fff;border-radius:999px;padding:1px 8px;font-weight:800}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.confetti i{position:absolute;top:-12px;width:8px;height:14px;border-radius:2px;animation:fall 1.9s cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes fall{to{top:105%;transform:rotate(720deg) translateX(40px)}}
+/* 위쪽 줄 글씨 방향: 아래쪽 줄과 같은 방향으로 (정투영 쿼터뷰에서 바로 읽히게) */
+#board .cell.side-t .sign{transform:translate(-50%,-50%) rotate(-90deg)!important}
+/* 중계 · 파이널 랩 · 시상 */
+.cast{font-size:14px;font-weight:700;color:var(--tarp);min-height:1.3em}
+body.final .stage3d{animation:finalGlow 1.6s ease-in-out infinite}
+@keyframes finalGlow{0%,100%{filter:drop-shadow(0 0 10px rgba(255,60,0,.55))}50%{filter:drop-shadow(0 0 26px rgba(255,170,0,.85))}}
+.awards{display:grid;gap:6px;margin:12px 0}.awards div{background:var(--cell,#fff);border-radius:12px;padding:8px 12px;font-weight:700}
+@media (prefers-reduced-motion:reduce){body.final .stage3d{animation:none;filter:drop-shadow(0 0 14px rgba(255,90,0,.7))}}
+/* ===== PC·TV 화면 (가로가 넓을 때): 왼쪽은 큰 판, 오른쪽은 차례·팀 현황, 미션 카드는 오른쪽에 떠서 판을 가리지 않아요 ===== */
+@media (min-width:1100px) and (min-aspect-ratio:5/4){
+  .wrap{max-width:none;padding:10px 28px 20px}
+  header{max-width:none}
+  #game:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr) 420px;column-gap:28px;align-items:start}
+  #game>.stage3d{grid-column:1;grid-row:1/span 5;margin:0;padding:2% 0 3%}
+  #game>.legend{grid-column:1;grid-row:6}
+  #game>.ctrl,#game>.note{grid-column:2}
+  #game>.ctrl{grid-row:1;background:var(--cell,#fff);border-radius:22px;padding:18px 16px;box-shadow:0 6px 0 rgba(0,0,0,.08)}
+  /* 팀 현황은 판 아래 한 줄로: 미션 카드가 오른쪽을 덮어도 몇 잔인지 보이게 */
+  #game>.players{grid-column:1;grid-row:7;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+  #game>.players .tcard{font-size:20px}#game>.players .tcard .ts{font-size:18px}
+  #game>.note{grid-row:2}
+  .board{width:min(calc((100vw - 540px)/1.5),calc(100vh - 355px));max-width:none}
+  .legend{font-size:16px}
+  #board .tok .tl{font-size:clamp(11px,.9vw,18px)}
+  #board .sign .t{font-size:clamp(14px,1.15vw,24px)!important}
+  #board .sign .t[data-len="1"],#board .sign .t[data-len="2"]{font-size:clamp(16px,1.4vw,28px)!important}
+  #board .sign .t[data-len="5"],#board .sign .t[data-len="6"]{font-size:clamp(12px,.95vw,19px)!important}
+  #board .sign .e{font-size:clamp(18px,1.5vw,30px)!important}
+  #board .cell.corner .sign .e{font-size:clamp(28px,2.4vw,48px)!important}
+  #board .cell.corner .sign .t{font-size:clamp(14px,1.2vw,22px)!important}
+  #board .tok{width:clamp(28px,2.4vw,46px);height:clamp(42px,3.6vw,70px);margin:0 -8px}
+  #board .center .die3{--s:clamp(44px,4vw,80px)}
+  #board .logo{font-size:clamp(28px,2.6vw,52px)!important}
+  .turn{font-size:34px!important}
+  .roll{font-size:30px!important;padding:16px 56px!important}
+  .log{font-size:16px}
+  .cast{font-size:18px}
+  .modal#modal,.pick{justify-content:flex-end;padding:20px 28px;background:linear-gradient(90deg,transparent 0 40%,var(--scrim) 66%)}
+  #modal .card{width:600px;max-width:600px;max-height:calc(100vh - 40px);overflow:auto}
+  /* TV 3m 거리에서도 읽히게 카드 글씨 키우기 */
+  #modal #mT{font-size:42px}#modal #mD{font-size:25px;line-height:1.45}#modal #mX{font-size:23px}#modal #mWho{font-size:20px}
+  #modal .mbox .cap,#modal .mbox .res,#modal .oxq{font-size:23px}#modal .recrow .rn{font-size:19px}#modal .recb button{font-size:17px}
+  .pick .box{max-width:600px}#pickT{font-size:28px}
+  .setup{max-width:760px;margin-left:auto;margin-right:auto}
+}
+/* 말 머리 글자 (색약 대비) */
+.tok{position:relative}.tok .tl{position:absolute;left:50%;top:-4%;transform:translateX(-50%);z-index:2;font-style:normal;font-weight:800;font-size:clamp(8px,1.9vw,12px);line-height:1;padding:2px 3px;border-radius:6px;border:1.5px solid #fff;pointer-events:none;white-space:nowrap}
+/* 칸 종류 아이콘 (색만으로 구분하지 않게) */
+#board .cell.vs .sign::before,#board .cell.team .sign::before,#board .cell.all .sign::before{position:static;order:-2;flex:none;font-size:clamp(8px,2vw,12px);line-height:1;margin-right:2px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+@media (min-width:1100px) and (min-aspect-ratio:5/4){#board .cell.vs .sign::before,#board .cell.team .sign::before,#board .cell.all .sign::before{font-size:clamp(11px,1vw,18px)}}
+@media (min-width:560px) and (max-width:1099px){.board{width:62%}}
+#board .cell.vs:not(.corner) .sign::before{content:'⚔️'}#board .cell.team:not(.corner) .sign::before{content:'🏠'}#board .cell.all:not(.corner) .sign::before{content:'👥'}
+h1.disp{white-space:nowrap}
+.cheer{position:fixed;bottom:-60px;font-size:clamp(34px,4vw,72px);z-index:80;pointer-events:none;animation:cheerUp 2.5s ease-out forwards}
+@keyframes cheerUp{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translateY(-75vh) scale(1.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){.cheer{animation-duration:1.2s}}
+.tok.stopped{opacity:.4;filter:grayscale(1)}
+.wheel{position:relative;width:min(72vw,36vh,300px);aspect-ratio:1;margin:14px auto 12px}
+#mBox .btn.busy{opacity:.6;pointer-events:none}
+.wheel .wdisc{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.28));overflow:visible}
+.wheel .wdisc>g{transform-origin:0 0;transform-box:view-box}
+.wheel .whub{fill:#fff;stroke:#f2b705;stroke-width:4}
+.wheel .wbulb{fill:#ffe98a;animation:bulb .7s steps(1) infinite}
+@keyframes bulb{50%{fill:#ff8a00}}
+.wheel.done .wbulb{animation-duration:.18s}
+.wheel .wptr{position:absolute;left:50%;top:-6px;width:0;height:0;transform:translateX(-50%);z-index:2;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid #e2571e;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));transform-origin:50% 0}
+.wheel .wptr.kick{animation:wkick .12s ease-out}
+@keyframes wkick{0%{transform:translateX(-50%) rotate(-14deg)}100%{transform:translateX(-50%) rotate(0)}}
+.wheel .wsl.win path{stroke:#fff;stroke-width:5;animation:wwin .45s ease-in-out infinite alternate}
+@keyframes wwin{from{filter:brightness(1)}to{filter:brightness(1.35) drop-shadow(0 0 6px #fff)}}
+.wheel.done .wsl:not(.win){opacity:.45}
+@media (min-width:1100px) and (min-aspect-ratio:5/4){.wheel{width:min(26vw,34vh,340px)}}
+@media (prefers-reduced-motion:reduce){.wheel .wbulb,.wheel .wsl.win path,.wheel .wptr.kick{animation:none}}
+/* 🔥 주루마블 불꽃 */
+.tok.fire{filter:none!important;transform-style:preserve-3d}.tok.fire svg{position:relative;z-index:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.4))}
+.tok .fl{position:absolute;left:50%;bottom:-6%;width:170%;height:135%;z-index:0;pointer-events:none;transform-origin:50% 100%;
+  background:radial-gradient(closest-side at 50% 58%,#fff6c2 0%,#ffd23f 30%,#ff7b00 58%,rgba(230,40,0,.75) 78%,rgba(230,40,0,0) 100%);
+  --fs:.7;transform:translateX(-50%) translateZ(-1px) scale(var(--fs));animation:flick .45s ease-in-out infinite alternate}
+.tok .fl2{width:100%;height:170%;bottom:20%;opacity:.8;animation-duration:.33s;animation-delay:-.2s;background:radial-gradient(closest-side at 50% 60%,#ffe27a 0%,#ff8a00 45%,rgba(255,40,0,.6) 75%,rgba(255,40,0,0) 100%)}
+.tok.f1 .fl{--fs:.75;opacity:.75}.tok.f2 .fl{--fs:1}.tok.f3 .fl{--fs:1.25}.tok.f4 .fl{--fs:1.55}
+.tok.f3 .fl2{--fs:1.1}.tok.f4 .fl2{--fs:1.45}
+.tok.f3 svg{filter:drop-shadow(0 3px 2px rgba(0,0,0,.4)) drop-shadow(0 0 3px #ff8a00)}.tok.f4 svg{filter:drop-shadow(0 3px 2px rgba(0,0,0,.4)) drop-shadow(0 0 6px #ff5400)}
+@keyframes flick{0%{transform:translateX(-50%) translateZ(-1px) scale(var(--fs),var(--fs)) skewX(-3deg)}50%{transform:translateX(-50%) translateZ(-1px) scale(calc(var(--fs)*.94),calc(var(--fs)*1.1)) skewX(3deg)}100%{transform:translateX(-50%) translateZ(-1px) scale(calc(var(--fs)*1.04),calc(var(--fs)*.96)) skewX(-1deg)}}
+.tcard.fire .flames{font-weight:400;letter-spacing:-3px;margin-left:2px;white-space:nowrap}
+.tcard .ts>span{white-space:nowrap}
+html,body{overflow-x:clip}
+.tcard.f1{box-shadow:0 0 0 2px #ffc94a,0 3px 0 rgba(20,70,110,.15)}
+.tcard.f2{box-shadow:0 0 0 2px #ff9f1c,0 0 10px 1px rgba(255,140,0,.55)}
+.tcard.f3{box-shadow:0 0 0 2px #ff7b00,0 0 16px 3px rgba(255,100,0,.6);background:linear-gradient(0deg,rgba(255,120,0,.16),transparent 70%),var(--cell);animation:burn 1.2s ease-in-out infinite alternate}
+.tcard.f4{box-shadow:0 0 0 3px #ff4d00,0 0 24px 6px rgba(255,70,0,.7);background:linear-gradient(0deg,rgba(255,70,0,.28),rgba(255,180,0,.08) 60%,transparent),var(--cell);animation:burn .7s ease-in-out infinite alternate}
+@keyframes burn{0%{box-shadow:0 0 0 2px #ff7b00,0 0 12px 2px rgba(255,100,0,.5)}100%{box-shadow:0 0 0 3px #ff4d00,0 0 26px 7px rgba(255,60,0,.75)}}
+@media (prefers-reduced-motion:reduce){.tok .fl,.tcard.f3,.tcard.f4{animation:none!important}}
+#pickOpts.adj{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px}#pickOpts.adj .opt{padding:10px 6px}#pickOpts.adj .opt .ot{font-size:15px}#pickOpts.adj .opt .od{font-size:12px}#pickOpts.adj .opt.keep{outline:4px solid #E2571E;outline-offset:-4px}
+/* ===== 화면 전체 테마: 보드와 같은 밝은 게임 느낌 ===== */
+:root{--sky-a:#79cdf6;--sky-b:#c6edff;--sky-c:#fff3dc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sky-a:#0c2340;--sky-b:#143657;--sky-c:#1a2c3d}}
+:root[data-theme="dark"]{--sky-a:#0c2340;--sky-b:#143657;--sky-c:#1a2c3d}
+body{background:linear-gradient(180deg,var(--sky-a),var(--sky-b) 42%,var(--sky-c)) fixed;min-height:100vh}
+.stage3d{background:radial-gradient(130px 34px at 16% 18%,rgba(255,255,255,.85),transparent 72%),radial-gradient(170px 44px at 82% 10%,rgba(255,255,255,.8),transparent 72%),radial-gradient(120px 30px at 70% 88%,rgba(255,255,255,.55),transparent 72%)}
+h1{color:#ff6a2b!important;text-shadow:3px 3px 0 #fff,-3px 3px 0 #fff,3px -3px 0 #fff,-3px -3px 0 #fff,0 3px 0 #fff,0 -3px 0 #fff,3px 0 0 #fff,-3px 0 0 #fff,0 7px 0 rgba(0,0,0,.15)}
+.sub{color:var(--ink)!important;font-weight:700}
+header .hbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.ghost,.btn.ghost{background:rgba(255,255,255,.85)!important;border:2px solid #fff!important;color:#1b3247!important;box-shadow:0 3px 0 rgba(20,70,110,.18);font-weight:700}
+.setup,.panel,.card{border-radius:22px;border:4px solid #fff;box-shadow:0 8px 0 rgba(20,70,110,.16),0 16px 30px rgba(20,70,110,.16)}
+.setup,.panel.accent{border-top:4px solid #fff}
+.setup h2,.panel h2{color:var(--tarp)}
+.card{border-top:12px solid var(--tarp)}
+.card.goldc,.card.gold{border-top-color:var(--gold)}
+.big{background:linear-gradient(180deg,#ff8f55,#e2571e)!important;border:3px solid #fff!important;box-shadow:0 5px 0 var(--tarp-deep),0 9px 16px rgba(0,0,0,.2)!important}
+.seg{background:rgba(255,255,255,.7);box-shadow:inset 0 1px 3px rgba(0,0,0,.12)}
+.chip{background:var(--cell);border:2px solid #fff}
+.legend,.log,#rep,.rep{color:var(--ink)!important}
+.note{display:none}
+.help h3{margin:14px 0 6px;font-size:18px;color:var(--tarp)}
+.help ul{margin:0;padding-left:20px;line-height:1.6;font-size:15px}
+.help li{margin:2px 0}
+/* 팀 현황 카드 (면제권 항상 표시) */
+.players,.tcards{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:12px}
+.tcard{display:block!important;position:relative;padding:8px 34px 8px 16px;border-radius:14px;background:var(--cell);border:2px solid #fff;box-shadow:0 3px 0 rgba(20,70,110,.15);color:var(--ink)}
+.tcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;border-radius:12px 0 0 12px;background:var(--c)}
+.tcard.cur{box-shadow:0 0 0 3px var(--tarp),0 3px 0 rgba(20,70,110,.15)}
+.tcard .tn{font-family:"Black Han Sans",sans-serif;font-size:18px;line-height:1.2}
+.tcard .ts{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:14px;margin-top:3px}
+.tcard .pass{border-radius:999px;padding:0 7px;background:rgba(0,0,0,.06)}
+.tcard .pass.has{background:#ffe9a8;color:#5a3d00;font-weight:700}
+.tcard .tskip{font-size:12px;color:var(--muted);margin-top:2px}
+.tcard .minus,.tcard .x{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:0;background:var(--bg);color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 class="disp">주류마블</h1>
+      <p class="sub"><span id="subT">팀전 · 적게 마신 팀이 이긴다</span></p>
+    </div>
+    <div class="hbtns"><button class="ghost" id="muteBtn" aria-label="소리 켜기/끄기">🔊</button><button class="ghost" id="themeBtn" aria-label="밝게/어둡게">🌙</button><button class="ghost" id="helpBtn">📖 규칙</button><button class="ghost" id="resetBtn" hidden>새 게임</button></div>
+  </header>
+
+  <section class="setup" id="setup">
+    <div class="opt"><span>게임 방식</span><div class="seg" id="modeSeg"></div></div>
+    <h2 class="disp" id="setupH">팀을 짜 주세요</h2>
+    <p id="setupP">앉은 순서대로 팀을 적어 주세요. 2~6팀. 멤버 이름을 적으면 미션마다 앱이 선수를 골라줘요. 많이 뽑힌 사람은 덜 뽑히게 돌아가요.</p>
+    <div id="tlist"></div>
+    <button class="addp" id="addT">+ 팀 추가</button>
+    <div class="opt"><span>승리 조건</span><div class="seg" id="winSeg"></div></div>
+    <div class="opt" id="doseOpt"><span>벌주 양</span><div class="seg" id="doseSeg"></div></div>
+    <div class="opt"><span>팀 벌주 상한</span><div class="seg" id="capSeg"></div></div>
+    <div class="opt" id="lostOpt"><span>상한에 닿은 팀은</span><div class="seg" id="lostSeg"></div></div>
+    <div class="opt"><span>게임 길이</span><div class="seg" id="goalSeg"></div></div>
+    <button class="big disp" id="startBtn">게임 시작</button>
+  </section>
+
+  <section class="setup" id="over" hidden>
+    <h2 class="disp" id="ovT"></h2>
+    <p class="ovmsg" id="ovMsg">이긴 팀이 마지막 건배 한 마디(한 단어도 OK) 하고, 다 같이 마무리 건배.</p>
+    <ol class="rank" id="rank"></ol>
+    <button class="big disp" id="againBtn">같은 팀으로 한 판 더</button>
+    <button class="addp" id="newBtn" style="margin:12px 0 0">팀 바꿔서 새 게임</button>
+  </section>
+
+  <section id="game" hidden>
+    <div class="stage3d"><div class="board" id="board">
+      <div class="center">
+        <div class="dice"><div class="die3" id="d1"></div><div class="die3" id="d2"></div></div>
+        <div class="logo">주류마블</div>
+      </div>
+    </div></div>
+    <div class="legend"><span><i style="background:#F0524F"></i><b class="lgA">상대 팀과</b></span><span><i style="background:#2FB36B"></i><b class="lgB">우리 팀</b></span><span><i style="background:#3E7BFA"></i><b class="lgC">모든 팀</b></span><span><i style="background:#22B8D8"></i>쉬어가기</span><span><i style="background:#F6B90B"></i>황금카드</span></div>
+    <div class="ctrl">
+      <div class="turn" id="turn"></div>
+      <div class="rep" id="rep"></div>
+      <button class="roll disp" id="rollBtn">굴리기</button>
+      <button class="ghost boostB" id="boostBtn" hidden>🍺 원샷 부스트 (한 잔 마시고 +2칸)</button>
+      <div class="log" id="log"></div>
+      <div class="cast" id="cast"></div>
+    </div>
+    <div class="players" id="chips"></div>
+    <p class="note" id="note"></p>
+  </section>
+</div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+  <div class="card" id="card">
+    <p class="who" id="mWho"></p>
+    <div class="em" id="mEm"></div>
+    <h2 class="disp" id="mT"></h2>
+    <p id="mD"></p>
+    <p class="extra" id="mX"></p>
+    <button class="ghost rerollP" id="mReroll" hidden>🎲 다른 조건으로</button>
+    <div class="oxq" id="mQ" hidden></div>
+    <div class="mbox" id="mBox" hidden></div>
+    <div class="mdice" id="mDice" hidden></div>
+    <button class="ghost" id="mAct" hidden></button><button class="ghost" id="mTimer" hidden></button>
+    <div class="rec" id="mRec" hidden><span>🥃 기록</span><div class="recb" id="mRecB"></div><div id="mRecT"></div></div>
+    <button class="big disp" id="mOk">확인</button>
+  </div>
+</div>
+<div class="spin" id="spin" aria-live="polite"><div class="lbl" id="spinLbl"></div><div class="nm" id="spinName"></div></div>
+<div class="modal" id="help" role="dialog" aria-modal="true" aria-labelledby="helpT">
+  <div class="card help" style="text-align:left">
+    <h2 class="disp" id="helpT" style="text-align:center">📖 게임 규칙</h2>
+    <div id="helpBody"></div>
+    <button class="big disp" id="helpClose">닫기</button>
+  </div>
+</div>
+<div class="pick" id="pick" role="dialog" aria-modal="true"><div class="box"><h2 id="pickT">🎁 보물창고</h2><div class="opts" id="pickOpts"></div></div></div>
+<div class="taxibar" id="taxibar">🚕 빛나는 칸(앞쪽 8칸) 중에서 누르세요</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ⏳ 미션 수명 관리: 카드가 열려 있는 동안 만든 타이머는 그 카드가 닫히면(또는 다음 카드가 열리면) 더 이상 실행되지 않아요.
+//    늦게 끝난 미션 결과가 다음 카드에 잘못 기록되는 문제를 막아요.
+let MSEQ=0,MOPEN=false;
+const _ST=window.setTimeout.bind(window),_SI=window.setInterval.bind(window),_CI=window.clearInterval.bind(window),_CT=window.clearTimeout.bind(window);
+window.__native={setTimeout:_ST,setInterval:_SI,clearInterval:_CI,clearTimeout:_CT};
+window.setTimeout=function(fn,ms,...a){if(!MOPEN||typeof fn!=='function')return _ST(fn,ms,...a);const s=MSEQ;return _ST(function(){if(s===MSEQ)fn.apply(this,a)},ms)};
+window.setInterval=function(fn,ms,...a){if(!MOPEN||typeof fn!=='function')return _SI(fn,ms,...a);const s=MSEQ;const id=_SI(function(){if(s!==MSEQ){_CI(id);return}fn.apply(this,a)},ms);return id};
+// 팀 색: 색약에서도 이웃 팀끼리 덜 헷갈리게 (말 머리에 이름 첫 글자도 표시)
+const COLORS=['#E2571E','#2B6CE0','#F2B705','#13A36B','#8E44C9','#E83F8A','#0FA3B1','#8B5E34','#5B6B7A','#C2185B'];
+const LETTERS='ABCDEF';
+const CELLS=[
+ {e:'🏁',t:'출발',d:'한 바퀴 돈 팀에 박수! 딱 멈췄다면 우리 팀 면제권 하나 획득.',k:'start'},
+ {e:'⭕',t:'OX 퀴즈',d:'OX 서바이벌! 팀마다 대표를 정하고 최대 3문제. 문제마다 10초 동안 O/X, 틀리거나 못 고른 팀은 탈락! 탈락 팀은 걸린 사람 벌주 한 잔 + 2칸 뒤로.',k:'ox'},
+ {e:'✊',t:'참참참',d:'{me} vs {them} 참참참 한 판! 진 사람은 벌주 한 잔 + 1칸 뒤로, 이긴 팀은 2칸 앞으로.',k:'rps'},
+ {e:'🃏',t:'황금카드',k:'gold'},
+ {e:'🎰',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 하나 뽑아요. 당첨된 팀 벌주 한 잔!',k:'roulette'},
+ {e:'✋',t:'손 들기',d:'“{hand}” 손 들기 전에 우리 팀이 먼저 몇 명이 손 들지 예상해요! 그다음 해당하는 사람 모두 손. 예상과 ±1명 이내면 우리 팀 면제권, 아니면 우리 팀 걸린 사람 벌주 한 잔.',k:'handbet'},
+ {e:'🏝️',t:'무인도',d:'다음 차례 한 번 쉬어요. 대신 무인도에 있는 동안은 모든 미션과 벌주를 피해요!',k:'island'},
+ {e:'🤝',t:'합동',d:'우리 팀 + {vsTeam} 합동 미션! 공통점 찾기 · 합동 업다운 · 숫자 텔레파시 · 합동 주사위 중 하나가 랜덤으로 나와요. 성공하면 두 팀 모두 면제권, 실패하면 두 팀 각각 걸린 사람 벌주 한 잔.',k:'joint'},
+ {e:'👉',t:'가리키기',d:'“{point}” 상의 없이, 셋에 우리 팀원 모두 동시에 한 명을 가리켜요 (자기 자신도 OK). 손가락 끝이 모두 같은 사람이면 우리 팀 면제권, 한 명이라도 다르거나 늦게 가리키면 우리 팀 걸린 사람 벌주 한 잔. 팀원이 한 명뿐이면 자동 성공.',k:'unan'},
+ {e:'⚡',t:'순발력 대결',d:'{me} vs {them}! 폰을 가운데 두고 각자 자기 쪽 버튼에 손가락 준비. 화면이 🟢초록으로 바뀌는 순간 먼저 누르는 쪽이 이겨요! 초록 전에 누르면 부정출발! 3판 2선승, 진 사람이 벌주 한 잔.',k:'react'},
+ {e:'⚡',t:'단체 승부',d:'팀마다 한 명씩 동시에 가위바위보! 선수: {all}. 끝까지 진 팀은 걸린 사람 벌주 한 잔 + 2칸 뒤로.',k:'group'},
+ {e:'🃏',t:'황금카드',k:'gold'},
+ {e:'🎁',t:'보물창고',d:'보물상자 3개 중 하나를 열어요! 면제권 2개, 택시 탑승권, 저격권… 꽝도 있어요.',k:'treasure'},
+ {e:'🔗',t:'공통점',d:'시작을 누르면 30초 동안 우리 팀 모두에게 해당하는 공통점을 찾아 글씨로 입력해요 (오늘 옷·취향·위스키 취향처럼, 개인 사정은 빼고). 다른 팀들이 손을 들어 과반이 인정하면 통과(동수면 인정). ‘사람이다’ 같은 당연한 건 불인정. 불인정이거나 시간이 끝나면 우리 팀 걸린 사람 벌주 한 잔.',k:'common'},
+ {e:'🎲',t:'홀짝',d:'우리 팀이 홀이나 짝을 누르면 4·3·2·1 카운트 후 주사위가 자동으로 굴러가요! 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'oddeven'},
+ {e:'⚖️',t:'밸런스',d:'밸런스 질문이 나와요. 셋 세고 우리 팀원 전원이 동시에 손가락으로 A(왼쪽) 또는 B(오른쪽)를 가리켜요. 전원이 같은 쪽이면 면제권, 한 명이라도 갈리면 우리 팀 걸린 사람 벌주 한 잔.',k:'bal'},
+ {e:'🔢',t:'업다운',d:'앱이 1~20 중 숫자 하나를 숨겼어요. 우리 팀이 4번 안에 맞히기! (UP/DOWN 힌트) 맞히면 면제권, 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'updown'},
+ {e:'🃏',t:'황금카드',k:'gold'},
+ {e:'🚕',t:'택시',d:'앞쪽 8칸 안에서 가고 싶은 칸을 골라 이동! 도착한 칸 미션도 진행해요.',k:'taxi'},
+ {e:'⏱️',t:'10초 멈춰',d:'선수 {me}: 시작을 누르고 화면의 숫자를 보면서 정확히 10.00초에 멈추기! ±0.05초 안이면 면제권, 아니면 우리 팀 걸린 사람 벌주 한 잔.',k:'stopwatch'},
+ {e:'🎯',t:'주사위전',d:'{me} vs {them}! 각자 자기 주사위를 직접 굴려요. 낮은 쪽은 벌주 한 잔 + 1칸 뒤로, 같으면 다시. 이긴 팀은 2칸 앞으로.',k:'dicebattle'},
+ {e:'🧊',t:'체이서',d:'우리 팀 모두 물 한 잔 마시고 숨 고르기. 면제권 +1!',k:'chaser'},
+ {e:'🕵️',t:'진짜 가짜',d:'1:1 대결! 상대 선수 {them} ({vsTeam}): “{fact}” 빈칸을 채워 한 문장을 말해요. 말하기 전에 진짜인지 지어낸 건지 폰에 몰래 먼저 입력! 우리 팀이 맞히면 우리 팀 승리(2칸 앞으로) + 상대 선수 벌주 한 잔·1칸 뒤로, 틀리면 반대로 우리 팀 선수가 벌주 한 잔·1칸 뒤로.',k:'realfake'},
+ {e:'🃏',t:'황금카드',k:'gold'}
+];
+const GOLD=[
+ {e:'🛡️',t:'면제권',d:'우리 팀 면제권 1개 획득! 벌주를 막거나, 주사위를 ±1칸 조정할 때 써요. 남으면 끝날 때 2개마다 벌주 −1.',pass:true},
+ {e:'🔙',t:'3칸 뒤로',d:'3칸 뒤로 이동!',mv:-3},
+ {e:'🏁',t:'출발로',d:'출발 칸으로 바로 이동. 바퀴 수는 그대로예요.',to:0},
+ {e:'⏩',t:'2칸 앞으로',d:'2칸 앞으로 이동!',mv:2},
+ {e:'🏝️',t:'무인도행',d:'무인도로 직행! 다음 차례 쉬기.',to:6,island:true},
+ {e:'🔀',t:'역전 찬스',d:'지금 1등 팀과 칸 위치를 바꿔요. 이미 1등이면 면제권 하나.',swap:true},
+ {e:'🎁',t:'떠넘기기',d:'우리 팀 벌주 기록 하나를 원하는 팀에 넘겨요! 그 팀 걸린 사람이 지금 벌주 한 잔, 우리 팀 기록은 −1. 넘길 기록이 없으면 대신 면제권 하나.',k:'handoff'},
+ {e:'🍻',t:'우리 빼고',d:'우리 팀 빼고 다른 팀마다 걸린 사람 벌주 한 잔!'},
+ {e:'🧩',t:'위스키 초성',d:'‘초성 공개’를 누르면 15초! 우리 팀이 위스키 단어를 글씨로 입력해서 맞혀요 (여러 번 시도 가능). 맞히면 면제권, 시간 안에 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'chosung'},
+ {e:'🍢',t:'안주 텔레파시',d:'상의 없이, 셋에 팀원 모두 동시에 ‘치즈 · 견과류 · 초콜릿 · 육포 · 과일’ 중 하나를 외쳐요. 같은 걸 외친 사람이 두 명 이상이면 면제권, 모두 다르면 우리 팀 걸린 사람 벌주 한 잔. (팀원이 두 명이면 둘이 같아야 성공)',k:'snack'},
+ {e:'🐌',t:'2칸 뒤로',d:'2칸 뒤로 이동! 도착한 칸 미션도 진행해요.',mv:-2},
+ {e:'🤝',t:'동맹 혹은 배신',d:'상대: {vsTeam}. 두 팀 대표가 각자 몰래 🤝협력 또는 🗡️배신을 골라요. 둘 다 협력 → 두 팀 모두 면제권 / 한쪽만 배신 → 배신한 팀 면제권 2개, 당한 팀 걸린 사람 벌주 한 잔 / 둘 다 배신 → 두 팀 모두 걸린 사람 벌주 한 잔 + 1칸 뒤로.',k:'pd'},
+ {e:'🔢',t:'팀 눈치게임',d:'30초 안에 팀원들이 1부터 팀원 수까지 숫자를 한 명씩 눈치껏 외치기! 끝까지 안 겹치면 우리 팀 면제권, 두 명이 동시에 외치면 우리 팀 걸린 사람 벌주 한 잔.',k:'nunchi'},
+ {e:'🎲',t:'하이로우',d:'주사위 2개의 합이 7보다 높을지(8↑) 낮을지(6↓) 정확히 7일지 맞혀요! 맞히면 면제권(7은 2개), 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'hilo'},
+ {e:'🍺',t:'꽝 카드',d:'꽝! 우리 팀 걸린 사람 벌주 한 잔.'},
+ {e:'🎯',t:'저격',d:'우리 팀 혜택! 벌주 기록이 가장 적은 팀(우리 팀 제외)의 걸린 사람 벌주 한 잔!',k:'leader'},
+ {e:'🍀',t:'행운',d:'우리 팀 벌주 기록 −1!',k:'luck'},
+ {e:'🐢',t:'거북이',d:'우리 팀 혜택! 다음 차례 팀을 2칸 뒤로 보내요.',k:'turtle'},
+ {e:'🚀',t:'4칸 앞으로',d:'4칸 앞으로 이동!',mv:4},
+ {e:'🎲',t:'보너스 주사위',d:'주사위를 한 번 더 굴려요!',k:'again2'},
+ {e:'⏱️',t:'5초 멈춰',d:'선수 {me}: 시작을 누르고 화면의 숫자를 보면서 정확히 5.00초에 멈추기! ±0.05초 안이면 면제권, 아니면 우리 팀 걸린 사람 벌주 한 잔.',k:'stopwatch5'},
+ {e:'🔢',t:'업다운',d:'앱이 1~20 중 숫자 하나를 숨겼어요. 우리 팀이 4번 안에 맞히기! 맞히면 면제권, 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'updown'},
+ {e:'🧠',t:'위스키 퀴즈',d:'우리 팀만 푸는 보너스 OX! ‘문제 공개’를 누르면 10초 동안 O/X를 골라요. 시간이 끝나면 정답 공개. 맞히면 면제권, 틀리거나 못 고르면 우리 팀 걸린 사람 벌주 한 잔.',k:'soloox'},
+ {e:'🔮',t:'운명의 홀짝',d:'우리 팀이 홀이나 짝을 누르면 4·3·2·1 카운트 후 주사위가 굴러가요! 맞히면 면제권, 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'fate'},
+ {e:'🤞',t:'손가락 텔레파시',d:'우리 팀에서 두 명이 셋 세고 동시에 손가락 1~5개! 같은 숫자면 면제권, 다르면 우리 팀 걸린 사람 벌주 한 잔.',k:'finger'},
+ {e:'💦',t:'물 한 컵',d:'우리 팀 전원이 물 한 컵씩 비우면 면제권! 안 마시면 우리 팀 걸린 사람 벌주 한 잔.',k:'water'},
+ {e:'🎰',t:'잭팟',d:'주사위 2개를 굴려요! 더블이면 면제권 2개, 합이 10 이상이면 면제권 1개, 그 외엔 우리 팀 걸린 사람 벌주 한 잔.',k:'jackpot'},
+];
+const OX=[
+ {q:'버번은 미국에서 만든 위스키다.',a:'O'},
+ {q:'버번은 반드시 켄터키에서 만들어야 한다.',a:'X (미국 어디서든 가능)'},
+ {q:'스카치 위스키는 최소 3년 이상 숙성해야 한다.',a:'O'},
+ {q:'싱글 몰트는 한 증류소에서 만든 몰트 위스키다.',a:'O'},
+ {q:'블렌디드 위스키는 몰트 위스키만 섞어 만든다.',a:'X (그레인 위스키도 섞어요)'},
+ {q:'피트 향은 보리를 말릴 때 피트를 태워서 생긴다.',a:'O'},
+ {q:'버번은 새로 그을린 오크통에서 숙성해야 한다.',a:'O'},
+ {q:'아일라는 스코틀랜드의 위스키 산지다.',a:'O'},
+ {q:'위스키는 병에 담은 뒤에도 계속 숙성된다.',a:'X'},
+ {q:'아일랜드 위스키는 보통 Whiskey라고 e를 넣어 쓴다.',a:'O'},
+ {q:'엔젤스 셰어는 숙성 중 증발해서 사라지는 위스키를 말한다.',a:'O'},
+ {q:'캐스크 스트렝스는 물을 타서 도수를 낮춘 위스키다.',a:'X (물을 안 탄 원액 도수)'},
+ {q:'스카치는 스코틀랜드에서 증류하고 숙성해야 한다.',a:'O'},
+ {q:'버번은 원료 곡물의 51% 이상이 옥수수여야 한다.',a:'O'},
+ {q:'버번은 옥수수만으로 만들어야 한다.',a:'X (옥수수 51% 이상이면 돼요)'},
+ {q:'미국 라이 위스키는 호밀이 51% 이상 들어가야 한다.',a:'O'},
+ {q:'버번은 2년 이상 숙성해야 버번이라고 부를 수 있다.',a:'X (2년 조건은 ‘스트레이트 버번’ 기준)'},
+ {q:'버번에는 물 말고는 색소나 향료를 넣을 수 없다.',a:'O'},
+ {q:'버번은 쓰던 통을 재사용해서 숙성할 수 있다.',a:'X (매번 새로 그을린 오크통)'},
+ {q:'테네시 위스키는 켄터키에서 만든다.',a:'X (테네시주에서 만들어요)'},
+ {q:'테네시 위스키는 보통 단풍나무 숯으로 거르는 과정을 거친다.',a:'O (링컨 카운티 공정)'},
+ {q:'스카치 위스키는 최소 10년 숙성해야 한다.',a:'X (최소 3년)'},
+ {q:'스카치 위스키는 병입할 때 도수가 40% 이상이어야 한다.',a:'O'},
+ {q:'스카치 위스키는 오크통에서 숙성해야 한다.',a:'O'},
+ {q:'스카치 위스키에는 색을 맞추는 캐러멜 색소를 넣을 수 있다.',a:'O (E150a 허용)'},
+ {q:'스카치 위스키는 미국산 버번 통을 쓰면 안 된다.',a:'X (버번 통을 아주 많이 써요)'},
+ {q:'싱글 몰트 스카치는 단식 증류기(팟 스틸)로 증류해야 한다.',a:'O'},
+ {q:'싱글 몰트는 한 통(캐스크)에서 나온 위스키만 담은 것이다.',a:'X (한 증류소 원액, 여러 통 섞기 가능)'},
+ {q:'싱글 캐스크 위스키는 여러 통을 섞어서 만든다.',a:'X (한 통에서만 나와요)'},
+ {q:'블렌디드 몰트는 여러 증류소의 몰트 위스키만 섞은 것이다.',a:'O'},
+ {q:'라벨에 적힌 숙성 연수는 가장 어린 원액 기준이다.',a:'O'},
+ {q:'NAS는 숙성 연수를 표기하지 않은 위스키를 말한다.',a:'O (No Age Statement)'},
+ {q:'캐스크 스트렝스 위스키는 보통 일반 위스키보다 도수가 높다.',a:'O'},
+ {q:'칠 필터링은 차갑게 해서 흐려짐을 줄이는 여과 방법이다.',a:'O'},
+ {q:'몰트 위스키의 주원료는 싹 틔운 보리(맥아)다.',a:'O'},
+ {q:'보리를 싹 틔워 말리는 과정을 ‘몰팅’이라고 한다.',a:'O'},
+ {q:'피트는 숙성할 때 오크통 안에 넣는 나무 조각이다.',a:'X (보리를 말릴 때 태우는 이탄)'},
+ {q:'그레인 위스키는 보통 연속식 증류기로 만든다.',a:'O'},
+ {q:'셰리 캐스크는 스페인의 주정강화 와인 ‘셰리’를 담았던 통이다.',a:'O'},
+ {q:'스페이사이드는 스코틀랜드에서 증류소가 가장 많이 모인 지역이다.',a:'O'},
+ {q:'캠벨타운은 스코틀랜드 위스키 산지 중 하나다.',a:'O'},
+ {q:'아일라에는 피트 향이 강한 위스키를 만드는 증류소가 많다.',a:'O'},
+ {q:'아이리시 위스키는 반드시 피트 향이 난다.',a:'X (피트 없는 게 대부분)'},
+ {q:'아이리시 위스키는 3번 증류하는 경우가 많다.',a:'O'},
+ {q:'일본 최초의 상업 위스키 증류소는 야마자키다.',a:'O (1923년)'},
+ {q:'캐나다 위스키를 흔히 ‘라이’라고 부르기도 한다.',a:'O'},
+ {q:'위스키는 냉장고에 보관해야 상하지 않는다.',a:'X (상온 보관 OK)'},
+ {q:'코르크 마개 위스키는 병을 눕혀서 보관하는 것이 좋다.',a:'X (세워서 보관)'},
+ {q:'위스키는 도수가 높아서 따놓아도 맛이 전혀 변하지 않는다.',a:'X (오래 두면 서서히 변해요)'},
+ {q:'위스키에 물 몇 방울을 넣으면 향이 더 잘 느껴질 수 있다.',a:'O'},
+ {q:'‘니트’는 물이나 얼음 없이 그대로 마시는 것이다.',a:'O'},
+ {q:'얼음 위에 위스키를 부어 마시는 것을 ‘온 더 록’이라고 한다.',a:'O'},
+ {q:'하이볼은 위스키에 탄산수 등을 섞은 음료다.',a:'O'},
+ {q:'위스키의 ‘피니시’는 마신 뒤 입에 남는 여운을 말한다.',a:'O'},
+ {q:'글렌캐런은 위스키 시음용 잔 이름이다.',a:'O'},
+ {q:'퀘익(Quaich)은 스코틀랜드 전통 술잔이다.',a:'O'},
+ {q:'위스키 한 잔을 ‘드램(dram)’이라고 부르기도 한다.',a:'O'},
+ {q:'바에서 쓰는 ‘지거’는 술을 재는 계량컵이다.',a:'O'},
+ {q:'영화 《엔젤스 셰어》는 스코틀랜드가 배경이다.',a:'O'}
+];
+const BAL=['평생 라면만 vs 평생 치킨만?','여름에 패딩 vs 겨울에 반팔?','피트 vs 셰리?','주말 내내 집 vs 주말 내내 밖?','전화 vs 문자?','아침형 vs 저녁형?','부먹 vs 찍먹?','산 vs 바다?','민초 vs 반민초?','혼자 여행 vs 같이 여행?','과거로 가기 vs 미래로 가기?','투명인간 vs 하늘 날기?','짜장 vs 짬뽕?','여행 계획 꼼꼼히 vs 즉흥 여행?'];
+const TALK=['최애 술안주는?', '처음 마셔본 위스키는?', '제일 좋아하는 계절은?', '최애 라면은?', '최애 과일은?', '최애 치킨 메뉴는?', '좋아하는 색깔은?', '1~10 중 좋아하는 숫자는?', '가장 좋아하는 동물은?', '최애 디저트는?', '가장 좋아하는 위스키 산지는?', '가보고 싶은 나라 하나는?', '최애 하이볼 조합은?', '자주 마시는 커피 메뉴는?', '최애 분식은?', '제일 좋아하는 피자 토핑은?'];
+const MINDQ=[["최애 술안주는?", ["치킨", "피자", "마른안주", "과일"]], ["위스키 마시는 방법은?", ["니트", "온더록", "하이볼", "물 몇 방울"]], ["좋아하는 계절은?", ["봄", "여름", "가을", "겨울"]], ["라면은 어떻게?", ["꼬들꼬들", "푹 익힌 면", "국물 많이", "볶음면"]], ["중국집 메뉴 하나만?", ["짜장면", "짬뽕", "볶음밥", "탕수육"]], ["여행 가면 어디?", ["바다", "산", "도시", "집콕"]], ["위스키 취향은?", ["피트", "셰리", "버번", "아직 몰라요"]], ["커피는?", ["아메리카노", "라떼", "달달한 거", "안 마셔요"]], ["치킨은?", ["후라이드", "양념", "간장", "반반"]], ["디저트는?", ["케이크", "아이스크림", "빵", "과일"]], ["쉬는 날엔?", ["집에서 쉬기", "외출", "운동", "하루 종일 잠"]], ["동물은?", ["강아지", "고양이", "둘 다", "둘 다 별로"]], ["영화 장르는?", ["코미디", "액션", "로맨스", "스릴러"]], ["아침은?", ["밥", "빵", "커피만", "안 먹어요"]], ["2차는?", ["노래방", "술집", "카페", "집"]], ["피자 토핑은?", ["페퍼로니", "불고기", "하와이안", "포테이토"]]];
+const pickQ=()=>TALK[Math.floor(Math.random()*TALK.length)];
+const POINT=['우리 팀에서 제일 먼저 취할 것 같은 사람은?','여행 계획을 제일 꼼꼼히 짤 것 같은 사람은?','숨은 맛집을 제일 많이 알 것 같은 사람은?','어릴 때 반장이었을 것 같은 사람은?','노래방에서 의외로 잘할 것 같은 사람은?','위스키를 제일 잘 알 것 같은 사람은?','길을 제일 잘 찾을 것 같은 사람은?','오늘 제일 늦게까지 남아 있을 것 같은 사람은?','방 정리를 제일 잘할 것 같은 사람은?','무인도에 같이 가고 싶은 사람은?'];
+const HAND=['민트초코 좋아하는 사람', '피트 위스키 좋아하는 사람', '하이볼보다 니트를 좋아하는 사람', '고양이파', '강아지파', '매운 음식 잘 먹는 사람', '아침형 인간', '운동화 신고 온 사람', '안경 쓴 사람', '오늘 커피 마신 사람', '악기를 하나 이상 연주할 수 있는 사람', '혼자 영화관에 가본 사람', '캠핑 좋아하는 사람', '위스키 증류소에 가본 사람'];
+const FACT=['나는 ○○에 가본 적 있다','나는 ○○을(를) 할 줄 안다','나는 ○○을(를) 해본 적 있다','나는 ○○을(를) 못 먹는다','나는 ○○을(를) 키워본 적 있다','나는 어릴 때 꿈이 ○○였다','나는 ○○ 자격증이 있다','나는 ○○을(를) 모은다','나는 ○○ 팬이다','나는 ○○에서 일해본 적 있다','나는 ○○을(를) 배워본 적 있다','나는 ○○을(를) 직접 만들어본 적 있다'];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const KEY='jumarble-team-v2';
+let S={phase:'setup',setup:[{name:'',mem:''},{name:'',mem:''},{name:'',mem:''},{name:'',mem:''}],teams:[],cur:0,log:'',goal:3,rule:'split',winner:-1};
+let busy=false;
+const $=id=>document.getElementById(id);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+// 공정한 섞기 (피셔-예이츠): 모든 순서가 같은 확률
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const RULE={split:'걸린 사람',all:'전원 벌주 한 잔씩'};
+// 걸린 사람 조건: 팀 안에서 반드시 한 명이 나오는 '제일 ~한 사람' 위주 (해당자 없음 방지)
+const PICK=['이름이 가나다순으로 제일 빠른 사람', '휴대폰 배터리가 제일 적은 사람', '잔에 술이 제일 많이 남은 사람', '셋 세고 손 제일 늦게 든 사람', '팀에서 가위바위보 진 사람', '오늘 제일 늦게 온 사람', '오늘 제일 먼저 온 사람', '키가 제일 큰 사람', '손이 제일 큰 사람 (손바닥 대보기)', '머리카락이 제일 긴 사람', '생일이 1월 1일에 제일 가까운 사람', '팀에서 제일 오른쪽에 앉은 사람'];
+const MULTI=()=>!SOLO()&&!JURU()&&(S.teams||[]).some(o=>rotK(o)>1);
+function pickLine(d){
+  if(SOLO())return '';
+  if(/진 사람|낮은 쪽|vs /.test(d))return MULTI()&&/잔/.test(d)?'🎯 진 쪽 걸린 사람: {ROT}':'';
+  if(S.rule==='all'||!/팀[^.!]*(잔|모금)/.test(d)||/물 한|빼고|다 같이|지목된|폰을 든|폰을 들고/.test(d))return '';
+  return '🎯 걸린 사람: {ROT}';
+}
+// 🎯 걸린 사람 순번제: 팀 안에서 돌아가며 한 명씩 (같은 사람만 계속 걸리는 문제 방지). 멤버 이름이 없는 팀은 조건으로
+// 🥃 벌주 양: 팀전 적게 마시기에서는 팀 인원에 맞춰 한 번에 걸리는 사람 수(K)를 정해요 → 인당 목표 잔 수에 맞춤
+const DOSE_E=2.4,DOSE_EJ=10; // 한 게임에서 팀 하나가 받는 평균 벌주(주루마블은 한 잔) 횟수 (시뮬레이션으로 맞춘 값)
+const DOSE=()=>S.dose||4.5;
+function rotK(t){if(SOLO()||!t||!t.members||!t.members.length)return 1;const n=t.members.length;return Math.max(1,Math.min(n,Math.round(n*DOSE()/(JURU()?DOSE_EJ:DOSE_E))))}
+// 🥂 라운드 건배: 적게 마시기에서 벌주만으로 목표 잔 수가 안 나올 때, 몇 라운드마다 모두 같이 한 잔 (순위에는 안 들어가요)
+const TOAST_EVERY=()=>DOSE()<4?0:JURU()?(SOLO()?3:5):3;
+const rotWho=t=>{if(!t||!t.members||!t.members.length)return null;const n=t.members.length,k=rotK(t),r=t.rot||0;return k>=n&&n>1?'전원':Array.from({length:k},(_,j)=>t.members[(r+j)%n]).join('·')};
+function rotNext(t){if(t&&t.members&&t.members.length)t.rot=((t.rot||0)+rotK(t))%t.members.length}
+function rotText(idx){const ts=(idx&&idx.length?idx.map(i=>S.teams[i]):S.teams.filter(o=>!onIsland(o)&&!lostT(o))).filter(Boolean);
+  const named=ts.filter(rotWho);if(!named.length)return null;
+  const rest=ts.length>named.length?` · 그 밖의 팀: ${PICK[Math.floor(Math.random()*PICK.length)]}`:'';
+  return named.map(o=>`${o.name} ${rotWho(o)}`).join(' · ')+(named.every(o=>rotWho(o)==='전원')?' (각자 자기 잔으로 한 잔)':named.some(o=>rotK(o)>1)?' (순번 · 각자 자기 잔으로 한 잔)':' (순번)')+rest}
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&v.phase)S=v}catch(e){}}
+
+function coord(i){
+  if(i<=6)return[7,7-i];
+  if(i<=12)return[13-i,1];
+  if(i<=18)return[1,i-11];
+  return[i-17,7];
+}
+function pickMember(t,ex){
+  if(!t.members.length)return null;
+  if(!t.cnt||t.cnt.length!==t.members.length)t.cnt=t.members.map(()=>0);
+  let idx=t.members.map((_,i)=>i).filter(i=>t.members[i]!==ex);
+  if(!idx.length)idx=[0];
+  const min=Math.min(...idx.map(i=>t.cnt[i]));
+  const c=idx.filter(i=>t.cnt[i]===min);const i=c[Math.floor(Math.random()*c.length)];
+  t.cnt[i]++;return t.members[i];
+}
+// 무인도 '쉬는 중'은 무인도 칸에 미션으로 도착했을 때만 (다른 이동으로 6번 칸에 서면 그냥 지나가는 칸)
+const onIsland=o=>!!(o&&o.pos===6&&o.isle);
+function fill(s,t,ctx={}){
+  s=soloText(s);if(JURU()&&/\{first\}|\{last\}/.test(s)){const f=juruFirst(),z=juruLast();s=s.split('{first}').join(f?f.name:'1등').split('{last}').join(z?z.name:'꼴찌')}s=s.split('{left}').join(nb(t,-1).name).split('{right}').join(nb(t,1).name).split('{next}').join(nb(t,1).name);
+  let others=S.teams.filter(o=>o!==t&&!onIsland(o)&&!lostT(o));if(!others.length)others=S.teams.filter(o=>o!==t&&!onIsland(o));
+  if(!others.length){others=S.teams.filter(o=>o!==t);if(/\{vsTeam\}|\{them\}/.test(s))ctx.noVs=true}
+  if(/\{vsTeam\}|\{them\}/.test(s))ctx.vs=others[Math.floor(Math.random()*others.length)];
+  const me=/\{me\}/.test(s)?(pickMember(t)||`${t.name} 대표`):'';
+  const mate=/\{mate\}/.test(s)?(pickMember(t,me)||'팀원 한 명'):'';
+  const them=/\{them\}/.test(s)?(pickMember(ctx.vs)||ctx.vs.name+' 대표'):'';
+  const all=/\{all\}/.test(s)?S.teams.filter(o=>o===t||!onIsland(o)).map(o=>SOLO()?o.name:`${o.name} ${pickMember(o)||'한 명'}`).join(', '):'';
+  return s.split('{me}').join(me).split('{mate}').join(mate).split('{them}').join(them)
+    .split('{vsTeam}').join(ctx.vs?ctx.vs.name:'').split('{all}').join(all).replace('{q}',pickQ())
+    .replace('{point}',pick(POINT)).replace('{hand}',pick(HAND)).replace('{fact}',pick(FACT));
+}
+function generic(s){
+  return s.split('{me}').join('우리 팀 한 명').split('{mate}').join('한 명').split('{them}').join('상대 팀 한 명')
+    .split('{vsTeam}').join('랜덤 상대 팀').split('{all}').join('팀마다 한 명씩 앱이 뽑아요').replace('“{q}”','(랜덤 질문)')
+    .replace('“{point}”','(랜덤 질문)').replace('“{hand}”','(랜덤 질문)').replace('“{fact}”','의외의 사실');
+}
+// 미션에서 진 쪽 표시. 적게 마시기: 진 쪽이 마심 / 많이 마시기: 진 쪽 빼고(이긴 쪽) 마심
+function markRec(team){mDone();if(!recSel)return;sfx('lose');const i=S.teams.indexOf(team);if(i<0||(recSel.only&&!recSel.only.includes(i)))return;
+  if(JURU())toast(`💧 ${team.name} 벌칙! 물 한 잔`);
+  if(MOST()||JURU()){recSel.lose=recSel.lose||new Set();recSel.lose.add(i);(recSel.only||S.teams.map((_,j)=>j)).forEach(j=>{recSel.st[j]=recSel.lose.has(j)?0:1});drawRec();return}
+  recSel.st[i]=1;drawRec()}
+// 운으로 정해진 벌주 (룰렛, 지목 등): 모드와 상관없이 그 팀이 마심
+function markLuck(team){mDone();if(!recSel)return;const i=S.teams.indexOf(team);if(i<0||(recSel.only&&!recSel.only.includes(i)))return;recSel.st[i]=1;drawRec()}
+async function rollInModal(nums,labels){
+  const box=$('mDice');box.hidden=false;box.innerHTML='';
+  const dice=nums.map((_,i)=>{const w=document.createElement('div');const d=document.createElement('div');d.className='die3';w.appendChild(d);
+    if(labels){const l=document.createElement('span');l.className='lbl';l.textContent=labels[i];w.appendChild(l)}
+    box.appendChild(w);setDie(d,1+Math.floor(Math.random()*6));return d});
+  await sleep(30);
+  nums.forEach((n,i)=>setDie(dice[i],n,true));
+  await sleep(reduce?100:1200);
+}
+const CHOSUNG=[["ㅂㅂ", "버번"], ["ㅅㅋㅊ", "스카치"], ["ㅍㅌ", "피트"], ["ㅅㄹ", "셰리"], ["ㅎㅇㅂ", "하이볼"], ["ㅇㅇㄹ", "아일라"], ["ㅅㄱㅁㅌ", "싱글몰트"], ["ㅇㅈㅅㅅㅇ", "엔젤스셰어"], ["ㅋㅅㅋ", "캐스크"], ["ㅂㄹㄷㄷ", "블렌디드"], ["ㄷㄹ", "드램"], ["ㅇㄷㄹ", "온더록"], ["ㅊㅇㅅ", "체이서"], ["ㅅㅍㅇㅅㅇㄷ", "스페이사이드"], ["ㅇㅁㅈㅋ", "야마자키"], ["ㄱㄹㅋㄹ", "글렌캐런"], ["ㅌㄴㅅ", "테네시"], ["ㅈㄹㅅ", "증류소"], ["ㅇㅋㅌ", "오크통"], ["ㅁㅇ", "맥아"], ["ㅅㅅ", "숙성"], ["ㅎㅇㄹㄷ", "하이랜드"], ["ㅈㄷㄴㅇ", "잭다니엘"], ["ㅂㄹㅌㅇ", "발렌타인"]];
+function mk(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=juruText(soloText(String(txt)));return e}
+function mbtn(label,fn,cls){const b=mk('button',cls||'ghost cbtn',label);b.onclick=fn;return b}
+async function countdown(box){const c=mk('div','cd');box.appendChild(c);
+  for(const n of ['4','3','2','1']){sfx('tick');c.textContent=n;c.classList.remove('pulse');void c.offsetWidth;c.classList.add('pulse');await sleep(reduce?80:650)}c.remove()}
+function oddevenUI(box,t,onResult){
+  const cap=mk('p','cap','우리 팀 선택');const row=mk('div','row2');const stage=mk('div','stage');const rr=mk('div','res');rr.style.minHeight='3em';box.append(cap,row,stage,rr);
+  ['홀','짝'].forEach(lab=>row.appendChild(mbtn(lab,async()=>{
+    row.querySelectorAll('button').forEach(x=>x.disabled=true);cap.textContent=`${t.name}: ${lab}!`;
+    await countdown(stage);const n=1+Math.floor(Math.random()*6);const dw=mk('div','mdice');const die=mk('div','die3');dw.appendChild(die);stage.appendChild(dw);
+    buildDie(die);setDie(die,1+Math.floor(Math.random()*6));await sleep(40);setDie(die,n,true);await sleep(reduce?100:1200);
+    const res=n%2?'홀':'짝',win=res===lab;onResult(win,n,res,rr)})));
+}
+function duelUI(box,a,b,onDone){
+  const wrap=mk('div','duel');box.appendChild(wrap);const res=mk('div','res');box.appendChild(res);
+  const rolls={};const cols=[a,b].map(tm=>{const col=mk('div');const die=mk('div','die3');buildDie(die);setDie(die,1);
+    const lab=mk('div','cap',tm.name);const bt=mbtn(`🎲 ${tm.name} 대표`,async()=>{bt.disabled=true;const n=1+Math.floor(Math.random()*6);
+      setDie(die,n,true);await sleep(reduce?100:1150);rolls[tm.name]=n;lab.textContent=`${tm.name} · ${n}`;
+      if(Object.keys(rolls).length===2){const x=rolls[a.name],y=rolls[b.name];
+        if(x===y){res.textContent=`${x} : ${y} 무승부! 두 대표 다시 굴려요`;delete rolls[a.name];delete rolls[b.name];cols.forEach(c=>c.bt.disabled=false)}
+        else{const loser=x<y?a:b;res.textContent=`${a.name} ${x} : ${y} ${b.name} → ${loser.name} 걸린 사람 ${amt('벌주 한 잔')}`;onDone(loser)}}});
+    col.append(die,lab,bt);wrap.appendChild(col);return {bt}});
+}
+function twoWay(t,okLabel,failLabel){return{custom:box=>{const r=mk('div','row2');box.appendChild(r);
+    r.append(mbtn(okLabel,()=>{r.remove();box.appendChild(mk('div','res','🛡️ 면제권 획득!'));grantPass(t)}),
+      mbtn(failLabel,()=>{r.remove();box.appendChild(mk('div','res',`걸린 사람 벌주 한 잔`));markRec(t)}))}}}
+// 정답 비교: 띄어쓰기·기호·대소문자 무시, 한쪽이 다른 쪽을 포함하면(2글자 이상) 정답
+function normAns(x){return String(x||'').toLowerCase().replace(/[\s.,!?~'"()\-·]/g,'')}
+function sameAns(a,b){a=normAns(a);b=normAns(b);if(!a||!b)return false;return a===b||(Math.min(a.length,b.length)>=2&&(a.includes(b)||b.includes(a)))}
+// 공개 → 자동 타이머 → 글씨로 정답 입력 (여러 번 시도 가능). onEnd(성공여부)
+function timedTextGuess(box,sec,check,placeholder,onEnd){
+  const cd=mk('div','cd',String(sec));const inp=mk('input');inp.placeholder=placeholder;inp.maxLength=30;inp.enterKeyHint='done';
+  const tries=mk('p','cap','');const sub=mbtn('입력',null,'btn fill');sub.style.cssText='width:100%;margin-top:8px;font-size:18px';
+  box.append(cd,inp,sub,tries);setTimeout(()=>inp.focus(),50);let left=sec,done=false;const wrong=[];
+  const finish=ok=>{if(done)return;done=true;clearInterval(iv);inp.disabled=true;sub.disabled=true;onEnd(ok)};
+  const tryIt=()=>{const v=inp.value.trim();if(!v||done)return;if(check(v)){cd.textContent='🎯';finish(true)}else{wrong.push(v);tries.textContent='땡! '+wrong.join(' · ');inp.value='';inp.focus()}};
+  sub.onclick=tryIt;inp.onkeydown=e=>{if(e.key==='Enter')tryIt()};
+  const iv=setInterval(()=>{left--;cd.textContent=left>0?String(left):'⏰';if(left<=0)finish(false)},1000);
+}
+// 시간 안에 공통점 입력 → 다른 팀이 인정해야 성공 (억지 공통점 방지)
+function timedFound(box,sec,label,judges,onEnd,judgeTeams){
+  const go=mbtn('▶ 시작',null,'btn fill');go.style.cssText='width:100%;font-size:20px';box.appendChild(go);
+  go.onclick=()=>{go.remove();let found='';
+    timedTextGuess(box,sec,v=>{found=v;return true},label,ok=>{
+      if(!ok)return onEnd(false);
+      const shown=mk('div','oxq',`🔎 “${found}”`);box.appendChild(shown);
+      const jt=(judgeTeams||[]).filter(o=>!onIsland(o)&&!lostT(o));
+      if(!jt.length){const cap=mk('p','cap',`${judges} 판정: 손을 들어 과반이 인정하면 ✅ (동수면 인정). “사람이다”, “숨 쉰다” 같은 당연한 건 불인정`);
+        const r=mk('div','row2');r.dataset.teams='host';box.append(cap,r);
+        r.append(mbtn('✅ 인정',()=>{r.remove();cap.remove();onEnd(true)}),mbtn('❌ 불인정',()=>{r.remove();cap.remove();onEnd(false,true)}));return}
+      // 🗳️ 판정 투표: 판정하는 팀마다 한 표 (폰이 있으면 각 팀 폰에서), 과반이면 인정·동수면 인정
+      const cap=mk('p','cap',`🗳️ ${judges} 투표: 진짜 공통점인가요? (“사람이다” 같은 당연한 건 불인정)`);const wrap=mk('div');box.append(cap,wrap);
+      const votes=new Map();let done=false;
+      const finish=(ok)=>{if(done)return;done=true;wrap.remove();hostRow.remove();const y=[...votes.values()].filter(Boolean).length,n=votes.size-y;cap.textContent=votes.size?`🗳️ 인정 ${y} : 불인정 ${n}`:'🗳️ 진행자 판정';onEnd(ok,!ok)};
+      jt.forEach(o=>{const r=mk('div','row2');r.dataset.teams=S.teams.indexOf(o);r.style.cssText='justify-content:space-between;align-items:center;margin:4px 0';
+        const nm=mk('span',null,o.name);nm.style.cssText=`font-weight:700;color:${o.color}`;const w=mk('div','row2');w.style.margin='0';
+        const yes=mbtn('👍 인정',null),no=mbtn('👎 불인정',null);
+        const vote=v=>{if(done)return;votes.set(o,v);yes.disabled=no.disabled=true;(v?yes:no).classList.add('okPick');
+          if(votes.size>=jt.length){const y=[...votes.values()].filter(Boolean).length;finish(y*2>=votes.size)}};
+        yes.onclick=()=>vote(true);no.onclick=()=>vote(false);w.append(yes,no);r.append(nm,w);wrap.appendChild(r)});
+      const hostRow=mk('div','row2');hostRow.dataset.teams='host';hostRow.style.marginTop='8px';
+      hostRow.append(mbtn('⏩ 진행자가 바로 ✅',()=>finish(true)),mbtn('⏩ 진행자가 바로 ❌',()=>finish(false)));box.appendChild(hostRow)})};
+}
+// 단체 게임 패자: 벌주 + 2칸 뒤로 (도착한 칸 미션은 없음)
+// 자리 바꾸기: 칸 위치뿐 아니라 바퀴 수·무인도 상태까지 통째로 바꿔요 (칸만 바꾸면 오히려 1등을 도와주는 문제 수정)
+function swapSpots(a,b){for(const k of ['pos','laps','skip','isle']){const v=a[k];a[k]=b[k];b[k]=v}}
+const BACK=2;
+function groupLose(tm){markRec(tm);backN(tm,BACK);renderBoard();toast(`🔙 ${tm.name} ${BACK}칸 뒤로`)}
+// 받침에 맞는 조사 (팀과/팀이, 지수와/지수가)
+function hasB(w){const c=(w||'').trim().slice(-1).charCodeAt(0)-0xAC00;return c>=0&&c<=11171&&c%28!==0}
+const JWA=w=>w+(hasB(w)?'과':'와'),JGA=w=>w+(hasB(w)?'이':'가');
+const JEUN=w=>w+(hasB(w)?'은':'는');
+function backN(tm,n){mDone();if(n){tm.isle=false;tm.lastDir=-1}tm.back=(tm.back||0)+n;for(let k=0;k<n;k++){if(tm.pos===0){if(tm.laps>0){tm.laps--;tm.pos=23}else break}else tm.pos--}}
+function makeAct(k,t,ctx){
+  const r6=()=>1+Math.floor(Math.random()*6);
+  if(k==='finger')return twoWay(t,'✅ 같은 숫자!','❌ 달랐어요');
+  if(k==='jackpot')return{custom:box=>{const go=mbtn('🎰 레버 당기기',null,'btn fill');go.style.cssText='width:100%;font-size:20px';const stage=mk('div','stage');const rr=mk('div','res');rr.style.minHeight='3em';box.append(go,stage,rr);
+    go.onclick=async()=>{go.remove();const a=r6(),b=r6();const dw=mk('div','mdice');const d1=mk('div','die3'),d2=mk('div','die3');dw.append(d1,d2);stage.appendChild(dw);
+      [d1,d2].forEach(d=>{buildDie(d);setDie(d,r6())});sfx('roll');await sleep(40);setDie(d1,a,true);setDie(d2,b,true);await sleep(reduce?100:1200);
+      if(a===b){rr.textContent=`🎰 ${a}·${b} 더블 잭팟! 🛡️ 면제권 2개`;grantPass(t);grantPass(t);confetti(50);sfx('win')}
+      else if(a+b>=10){rr.textContent=`🎰 ${a}+${b}=${a+b}! 🛡️ 면제권 획득`;grantPass(t);sfx('win')}
+      else{rr.textContent=`🎰 ${a}+${b}=${a+b}… 꽝! 걸린 사람 벌주 한 잔`;markRec(t)}}}};
+  if(k==='soloox')return{custom:box=>{
+    const go=mbtn('❓ 문제 공개',null,'btn fill');go.style.cssText='width:100%;font-size:20px';box.appendChild(go);
+    go.onclick=()=>{go.remove();$('mQ').textContent='❓ '+ctx.ox.q;$('mQ').hidden=false;const cd=mk('div','cd','10');const row=mk('div','row2');let pick=null;
+      const bo=mbtn('⭕',()=>{pick='O';bo.classList.add('selO');bx.classList.remove('selX');left=0}),bx=mbtn('❌',()=>{pick='X';bx.classList.add('selX');bo.classList.remove('selO');left=0});
+      row.append(bo,bx);box.append(cd,row);var left=10;const iv=setInterval(()=>{left--;cd.textContent=left>0?String(left):'⏰';if(left>0)return;clearInterval(iv);
+        bo.disabled=bx.disabled=true;const ans=String(ctx.ox.a)[0];(ans==='O'?bo:bx).classList.add('isAns');if(pick)(pick==='O'?bo:bx).classList.add(pick===ans?'okPick':'wrongPick');$('mQ').textContent=`❓ ${ctx.ox.q}\n✅ 정답: ${ctx.ox.a}`;const r=mk('div','res');box.appendChild(r);
+        if(pick===ans){r.textContent='정답! 🛡️ 면제권 획득';grantPass(t)}else{r.textContent=(pick?'틀렸어요':'시간 초과')+' · 걸린 사람 벌주 한 잔';markRec(t)}},1000)};
+  }};
+  if(k==='oddeven')return{custom:box=>oddevenUI(box,t,(win,n,res,r)=>{r.textContent=`🎲 ${n} → ${res}! ${win?'맞혔어요 🎉 🛡️ 면제권 획득':'틀렸어요… 걸린 사람 '+amt('벌주 한 잔')}`;if(!win)markRec(t);else markWin(t)})};
+  if(k==='fate')return{custom:box=>oddevenUI(box,t,(win,n,res,r)=>{r.textContent=`🎲 ${n} → ${res}! ${win?'맞혔어요! 🛡️ 면제권 획득':'틀렸어요… 걸린 사람 '+amt('벌주 한 잔')}`;if(win)grantPass(t);else markRec(t)})};
+  if(k==='dicebattle')return{custom:box=>duelUI(box,t,ctx.vs,loser=>duelResult(loser===t?ctx.vs:t,loser))};
+  if(k==='realfake')return{custom:box=>{
+    const cap=mk('p','cap','🤫 상대 선수만 보세요! 다른 사람은 잠깐 눈 감기');const row=mk('div','row2');row.dataset.teams=S.teams.indexOf(ctx.vs);box.append(cap,row);let truth=null;
+    [['진짜 이야기','real'],['지어낸 이야기','fake']].forEach(([lab,v])=>row.appendChild(mbtn(lab,()=>{truth=v;row.remove();
+      cap.textContent='🔒 정답 입력 완료! 이제 한 문장을 말해 주세요.';const c2=mk('p','cap',`${t.name}의 추측은?`);const r2=mk('div','row2');r2.dataset.teams=S.teams.indexOf(t);box.append(c2,r2);
+      [['진짜','real'],['가짜','fake']].forEach(([l2,g])=>r2.appendChild(mbtn(l2,()=>{r2.querySelectorAll('button').forEach(x=>x.disabled=true);
+        const ok=g===truth,loser=ok?ctx.vs:t;duelResult(loser===t?ctx.vs:t,loser);const res=mk('div','res',`정답은 ${truth==='real'?'진짜':'가짜'}! ${ok?'맞혔어요 🎉':'틀렸어요'} → ${loser.name} 걸린 사람 ${amt('벌주 한 잔')}`);box.appendChild(res)})))})));
+  }};
+  if(k==='stopwatch'||k==='stopwatch5')return{custom:box=>{
+    const TG=k==='stopwatch5'?5:10,TOL=0.05,HIDE=999;
+    const num=mk('div','big-num','0.00');const bt=mbtn('▶ 시작',null);const res=mk('div','res');box.append(num,bt,res);let t0=0,iv=0;
+    box.dataset.sw=TG;let doneSW=false;
+    const fin=e=>{if(doneSW)return;doneSW=true;clearInterval(iv);const dv=Math.abs(e-TG);num.textContent=e.toFixed(2)+'초';bt.disabled=true;
+      if(dv<=TOL){res.textContent=`🎯 ${dv.toFixed(2)}초 차이! 🛡️ 면제권 획득`;grantPass(t)}
+      else{res.textContent=`😵 ${dv.toFixed(2)}초 차이 · 걸린 사람 벌주 한 잔`;markRec(t)}};
+    box.__sw=e=>fin(+e);
+    bt.onclick=()=>{if(!t0){t0=performance.now();bt.textContent='■ 멈춤';iv=setInterval(()=>{const e=(performance.now()-t0)/1000;num.textContent=e<HIDE?e.toFixed(2):'?.??'},30);return}
+      fin((performance.now()-t0)/1000);return;const e=0,dv=0;
+      if(dv<=TOL){res.textContent=`🎯 ${dv.toFixed(2)}초 차이! 🛡️ 면제권 획득`;grantPass(t)}
+      else{res.textContent=`😵 ${dv.toFixed(2)}초 차이 · 걸린 사람 벌주 한 잔`;markRec(t)}};
+  }};
+  if(k==='hilo')return{custom:box=>{
+    const cap=mk('p','cap','우리 팀 예상');const row=mk('div','row2');const stage=mk('div','stage');const rr=mk('div','res');rr.style.minHeight='3em';box.append(cap,row,stage,rr);
+    [['⬆️ 8 이상','hi'],['7','seven'],['⬇️ 6 이하','lo']].forEach(([lab,v])=>row.appendChild(mbtn(lab,async()=>{
+      row.querySelectorAll('button').forEach(x=>x.disabled=true);cap.textContent=`${t.name}: ${lab}!`;await countdown(stage);
+      const a=1+Math.floor(Math.random()*6),b=1+Math.floor(Math.random()*6),sum=a+b;
+      const dw=mk('div','mdice');const d1=mk('div','die3'),d2=mk('div','die3');dw.append(d1,d2);stage.appendChild(dw);
+      [d1,d2].forEach(d=>{buildDie(d);setDie(d,1+Math.floor(Math.random()*6))});await sleep(40);setDie(d1,a,true);setDie(d2,b,true);await sleep(reduce?100:1200);
+      const real=sum>7?'hi':sum<7?'lo':'seven',win=real===v;const r=rr;
+      if(win){r.textContent=`🎲 ${a}+${b}=${sum} 적중! 🛡️ 면제권 ${v==='seven'?'2개':''} 획득`;grantPass(t);if(v==='seven')grantPass(t)}
+      else{r.textContent=`🎲 ${a}+${b}=${sum} 틀렸어요 · 걸린 사람 벌주 한 잔`;markRec(t)}})));
+  }};
+  if(k==='bomb')return{custom:box=>{
+    const em=mk('div','big-num','💣');em.style.fontSize='70px';const cap=mk('p','cap',`${t.name}부터 시작! 위스키 단어 하나 말하고 폰을 다음 팀으로 넘겨요`);
+    const bt=mbtn('▶ 시작',null,'btn fill');bt.style.cssText='width:100%;font-size:20px';box.append(em,cap,bt);
+    bt.onclick=()=>{bt.remove();cap.textContent='째깍째깍… 단어 말하고 다음 팀으로!';const fuse=8000+Math.random()*12000;let on=true;
+      const iv=setInterval(()=>{em.style.transform=on?'scale(1.12) rotate(-6deg)':'scale(1) rotate(4deg)';on=!on},250);
+      setTimeout(()=>{clearInterval(iv);em.style.transform='scale(1.4)';em.textContent='💥';cap.textContent='';sfx('boom');
+        const r=mk('div','res','펑! 폰을 들고 있던 팀은?');box.appendChild(r);const row=mk('div','row2');box.appendChild(row);
+        S.teams.filter(o=>!onIsland(o)).forEach(o=>{const b=mbtn(o.name,()=>{row.remove();r.textContent=`💥 ${o.name} 걸린 사람 벌주 한 잔 + ${BACK}칸 뒤로`;groupLose(o)});b.style.borderColor=o.color;row.appendChild(b)});try{navigator.vibrate&&navigator.vibrate([200,80,300])}catch(e){}},fuse)};
+  }};
+
+  if(k==='updown')return{custom:box=>{
+    const secret=1+Math.floor(Math.random()*20);let tries=4,lo=1,hi=20;const cap=mk('p','cap','남은 기회 4번');const hint=mk('div','big-num','?');hint.style.fontSize='40px';
+    const grid=mk('div','numgrid');const res=mk('div','res');box.append(hint,cap,grid,res);const bs=[];
+    const end=()=>bs.forEach(b=>b.disabled=true);
+    for(let n=1;n<=20;n++){const b=mk('button',null,String(n));bs.push(b);grid.appendChild(b);
+      b.onclick=()=>{tries--;if(n===secret){hint.textContent=`🎯 ${n}`;res.textContent=JURU()?'정답! 🍻 상으로 한 잔':'정답! 🛡️ 면제권 획득';grantPass(t);end();return}
+        if(n<secret){lo=n+1;hint.textContent=`${n} ⬆️ UP`}else{hi=n-1;hint.textContent=`${n} ⬇️ DOWN`}
+        bs.forEach((x,ix)=>x.disabled=ix+1<lo||ix+1>hi);cap.textContent=`남은 기회 ${tries}번`;
+        if(!tries){res.textContent=JURU()?`😵 정답은 ${secret}! 💧 물 한 잔`:`😵 정답은 ${secret}! 걸린 사람 ${amt('벌주 한 잔')}`;markRec(t);end()}}}
+  }};
+  if(k==='handbet')return{custom:box=>{
+    // ① 예상 = 파란색, ② 실제 손 든 사람 수 = 주황색
+    const cap=mk('p','cap',`① ${t.name} 예상: 몇 명이 손 들까요?`);cap.classList.add('capPred');const g1=mk('div','numgrid pred');g1.dataset.teams=S.teams.indexOf(t);box.append(cap,g1);
+    for(let n=0;n<=20;n++){const b=mk('button',null,String(n));g1.appendChild(b);b.onclick=()=>{const pred=n;g1.remove();
+      cap.innerHTML='';cap.append(mk('span','chip pred',`예상 ${pred}명`));
+      const cap2=mk('p','cap capReal','② 해당하는 사람 모두 손! 손 든 사람 수를 눌러 주세요');const g2=mk('div','numgrid real');g2.dataset.teams='host';box.append(cap2,g2);
+      for(let a=0;a<=20;a++){const b2=mk('button',null,String(a));g2.appendChild(b2);b2.onclick=()=>{g2.remove();cap2.innerHTML='';cap2.append(mk('span','chip real',`실제 ${a}명`));const dv=Math.abs(a-pred);
+        const res=mk('div','res');box.appendChild(res);
+        if(dv<=1){res.textContent=`✋ 예상 ${pred}명 · 실제 ${a}명 → 적중 🎯 면제권 획득`;grantPass(t)}
+        else{res.textContent=`✋ 예상 ${pred}명 · 실제 ${a}명 → ${dv}명 차이, 걸린 사람 벌주 한 잔`;markRec(t)}}}}}
+  }};
+  if(k==='mind')return{custom:box=>{
+    const [q,opts]=MINDQ[Math.floor(Math.random()*MINDQ.length)];
+    const qq=mk('div','oxq','💭 '+q);const cap=mk('p','cap','① 선수만 보고 하나 고르세요 (다른 사람은 눈 감기!)');const row=mk('div','row2');box.append(qq,cap,row);
+    opts.forEach((o,ix)=>row.appendChild(mbtn(o,()=>{row.remove();const secret=ix;
+      cap.textContent='🔒 잠금! ② 팀원들이 상의해서 선수의 답을 골라요 (15초)';const cd=mk('div','cd','15');const row2=mk('div','row2');box.append(cd,row2);
+      let left=15,done=false;const bs=opts.map((o2,j2)=>{const b=mbtn(o2,()=>end(j2));row2.appendChild(b);return b});
+      const iv=setInterval(()=>{left--;cd.textContent=left>0?String(left):'⏰';if(left<=0)end(null)},1000);
+      function end(g){if(done)return;done=true;clearInterval(iv);bs.forEach(b=>b.disabled=true);bs[secret].classList.add('isAns');
+        if(g!=null)bs[g].classList.add(g===secret?'okPick':'wrongPick');const r=mk('div','res');box.appendChild(r);
+        if(g===secret){r.textContent=`맞혔어요! 선수의 답: ${opts[secret]} · 🛡️ 면제권 획득`;grantPass(t)}
+        else{r.textContent=`${g==null?'시간 끝!':'틀렸어요!'} 선수의 답: ${opts[secret]} · 걸린 사람 벌주 한 잔`;markRec(t)}}
+    })));
+  }};
+  if(k==='chosung')return{custom:box=>{
+    const [c,w]=CHOSUNG[Math.floor(Math.random()*CHOSUNG.length)];
+    const go=mbtn('🧩 초성 공개',null,'btn fill');go.style.cssText='width:100%;font-size:20px';box.appendChild(go);
+    go.onclick=()=>{go.remove();const q=mk('div','big-num',c);q.style.letterSpacing='8px';box.appendChild(q);
+      timedTextGuess(box,15,v=>sameAns(v,w),'정답 입력 (예: 버번)',ok=>{const r=mk('div','res');box.appendChild(r);
+        if(ok){r.textContent=`정답! ${w} · 🛡️ 면제권 획득`;grantPass(t)}else{r.textContent=`시간 끝! 정답은 ${w} · 걸린 사람 벌주 한 잔`;markRec(t)}})};
+  }};
+  if(k==='group')return{custom:box=>{const cap=mk('p','cap','끝까지 진 팀은?');const row=mk('div','row2');row.dataset.teams='host';box.append(cap,row);
+    S.teams.filter(o=>o===t||!onIsland(o)).forEach(o=>{const b=mbtn(o.name,()=>{row.remove();cap.remove();box.appendChild(mk('div','res',`💥 ${o.name} 벌주 한 잔 + ${BACK}칸 뒤로`));groupLose(o)});b.style.borderColor=o.color;row.appendChild(b)})}};
+  if(k==='pd')return{custom:box=>{
+    const A=t,B=ctx.vs,pick={};const cap=mk('p','cap capPred',`🤫 ${A.name} 대표만 보세요! (다른 사람은 눈 감기)`);const row=mk('div','row2');box.append(cap,row);
+    const ask=(tm,next)=>{row.innerHTML='';row.dataset.teams=S.teams.indexOf(tm);cap.textContent=`🤫 ${tm.name} 대표만 보세요! (다른 사람은 눈 감기)`;
+      [['🤝 협력','c'],['🗡️ 배신','b']].forEach(([l,v])=>row.appendChild(mbtn(l,()=>{pick[tm.name]=v;next()})))};
+    const reveal=()=>{row.remove();cap.textContent='두 팀 선택 완료! 공개합니다';const a=pick[A.name],b=pick[B.name];const L={c:'🤝 협력',b:'🗡️ 배신'};
+      const r=mk('div','res');r.style.whiteSpace='pre-line';box.appendChild(r);let msg=`${A.name}: ${L[a]}\n${B.name}: ${L[b]}\n`;
+      if(a==='c'&&b==='c'){msg+='우정 성립! 🛡️ 두 팀 모두 면제권';grantPass(A);grantPass(B)}
+      else if(a==='b'&&b==='b'){msg+='서로 배신! 두 팀 각각 걸린 사람 벌주 한 잔 + 1칸 뒤로';markRec(A);markRec(B);backN(A,1);backN(B,1);renderBoard()}
+      else{const tr=a==='b'?A:B,vi=a==='b'?B:A;msg+=`${tr.name}의 배신! 🛡️ 면제권 2개 · ${vi.name} 걸린 사람 벌주 한 잔`;grantPass(tr);grantPass(tr);markRec(vi)}
+      r.textContent=msg};
+    const go=mbtn('▶ 시작',()=>{go.remove();row.dataset.teams=S.teams.indexOf(B);ask(A,()=>{cap.textContent='';row.innerHTML='';row.dataset.teams=S.teams.indexOf(B);const nx=mbtn(`👉 ${B.name} 대표에게 폰 넘기기`,()=>{nx.remove();ask(B,reveal)});row.appendChild(nx)})},'btn fill');
+    go.style.cssText='width:100%;font-size:20px';row.appendChild(go);cap.textContent='두 팀 대표를 정하고 시작! 고를 때는 다른 사람은 눈 감기';
+  }};
+  // 개인전: 사람을 직접 고르지 않게 앱이 랜덤으로 뽑아요 (지목 강요 없음)
+  if((k==='buddy'||k==='point1'||(k==='start'&&JURU()))&&SOLO())return{label:'🎲 앱이 랜덤으로 뽑기',run:b=>{b.disabled=true;let n=0;const pool=S.teams.filter(o=>o!==t&&!onIsland(o)&&!lostT(o)).length?S.teams.filter(o=>o!==t&&!onIsland(o)&&!lostT(o)):S.teams.filter(o=>o!==t);
+    const iv=setInterval(()=>{const o=pool[Math.floor(Math.random()*pool.length)];b.textContent=`🎲 ${o.name}`;if(++n<14)return;clearInterval(iv);
+      if(k==='buddy'){markLuck(t);markLuck(o);b.textContent=JURU()?`🍻 ${t.name} + ${o.name} 같이 한 잔!`:`🍻 ${t.name} + ${o.name} 같이 벌주 한 잔`}
+      else{markLuck(o);b.textContent=JURU()?`🎯 ${o.name} 🍻 한 잔!`:`🎯 ${o.name} 벌주 한 잔`}},90)}};
+  if(k==='buddy'||k==='point1')return{custom:box=>{const cap=mk('p','cap',k==='buddy'?'같이 마실 짝꿍은?':'누구를 지목할까요?');const row=mk('div','row2');row.dataset.teams=S.teams.indexOf(t);box.append(cap,row);
+    S.teams.filter(o=>o!==t&&!onIsland(o)).forEach(o=>{const b=mbtn(o.name,()=>{row.remove();cap.remove();
+      if(k==='buddy'){markLuck(t);markLuck(o);box.appendChild(mk('div','res',JURU()?`🍻 ${t.name} + ${o.name} 같이 한 잔!`:`🍻 ${t.name} + ${o.name} 같이 벌주 한 잔`))}
+      else{markLuck(o);box.appendChild(mk('div','res',JURU()?`🎯 ${o.name} 🍻 한 잔!`:`🎯 ${o.name} 벌주 한 잔`))}});b.style.borderColor=o.color;row.appendChild(b)})}};
+  if(k==='handoff')return{custom:box=>{
+    const tg=S.teams.filter(o=>o!==t&&!onIsland(o)&&!lostT(o));
+    if(!((t.drinks||0)>0)||!tg.length){grantPass(t);box.appendChild(mk('div','res',(t.drinks||0)>0?'넘길 팀이 없어서 대신 🛡️ 면제권 하나':'넘길 기록이 없어서 대신 🛡️ 면제권 하나'));return}
+    const cap=mk('p','cap','벌주를 넘길 팀은?');const row=mk('div','row2');row.dataset.teams=S.teams.indexOf(t);box.append(cap,row);
+    tg.forEach(o=>{const b=mbtn(o.name,()=>{row.remove();cap.remove();mDone();t.drinks=Math.max(0,(t.drinks||0)-1);const who=rotWho(o);addDrink(S.teams.indexOf(o));rotNext(o);save();renderBoard();
+      box.appendChild(mk('div','res',`🎁 ${o.name} ${SOLO()?'':who?who+' ':'걸린 사람 '}벌주 한 잔! · ${t.name} 기록 −1`))});b.style.borderColor=o.color;row.appendChild(b)})}};
+  if(k==='pass2')return{custom:box=>{grantPass(t);grantPass(t);box.appendChild(mk('div','res','🛡️🛡️ 면제권 2개 획득!'))}};
+  if(k==='fatej')return{custom:box=>oddevenUI(box,t,(win,n,res,r)=>{if(win){r.textContent=`🎲 ${n} → ${res}! 맞혔어요! 🍻 두 잔`;recSel&&(recSel.double=true);markLuck(t);return}
+    r.textContent=`🎲 ${n} → ${res}! 틀렸어요… 💧 물 한 잔`;toast(`💧 ${t.name} 물 한 잔`)})};
+  if(k==='fatej_old')return{custom:box=>oddevenUI(box,t,(win,n,res,r)=>{if(!win){r.textContent='';return}
+    r.textContent=`🎲 ${n} → ${res}! 맞혔어요! 지목할 팀은?`;const row=mk('div','row2');box.appendChild(row);
+    S.teams.filter(o=>o!==t&&!onIsland(o)).forEach(o=>{const b=mbtn(o.name,()=>{row.remove();r.textContent=`🎯 ${o.name} 한 잔!`;markLuck(o)});b.style.borderColor=o.color;row.appendChild(b)})})};
+  if(k==='pdj')return{custom:box=>{
+    const A=t,B=ctx.vs,pick={};const cap=mk('p','cap capPred','두 팀 대표를 정하고 시작! 고를 때는 다른 사람은 눈 감기');const row=mk('div','row2');box.append(cap,row);
+    const ask=(tm,next)=>{row.innerHTML='';row.dataset.teams=S.teams.indexOf(tm);cap.textContent=`🤫 ${tm.name} 대표만 보세요!`;[['🤝 협력','c'],['🗡️ 배신','b']].forEach(([l,v])=>row.appendChild(mbtn(l,()=>{pick[tm.name]=v;next()})))};
+    const reveal=()=>{row.remove();const a=pick[A.name],b2=pick[B.name];const L={c:'🤝 협력',b:'🗡️ 배신'};const r=mk('div','res');r.style.whiteSpace='pre-line';box.appendChild(r);
+      let msg=`${A.name}: ${L[a]}\n${B.name}: ${L[b2]}\n`;
+      if(a==='c'&&b2==='c'){msg+='우정 성립! 🍻 두 팀 다 한 잔';markLuck(A);markLuck(B)}
+      else if(a==='b'&&b2==='b'){msg+='서로 배신! 💧 둘 다 물 한 잔 + 1칸 뒤로';backN(A,1);backN(B,1);renderBoard()}
+      else{const tr=a==='b'?A:B,vi=a==='b'?B:A;msg+=`${tr.name}의 배신! 🍻 ${tr.name} 두 잔, 💧 ${JEUN(vi.name)} 물`;recSel&&(recSel.double=true);markLuck(tr)}
+      r.textContent=msg;cap.textContent='공개!'};
+    const go=mbtn('▶ 시작',()=>{go.remove();row.dataset.teams=S.teams.indexOf(B);ask(A,()=>{row.innerHTML='';row.dataset.teams=S.teams.indexOf(B);const nx=mbtn(`👉 ${B.name} 대표에게 폰 넘기기`,()=>{nx.remove();ask(B,reveal)});row.appendChild(nx)})},'btn fill');
+    go.style.cssText='width:100%;font-size:20px';row.appendChild(go)}};
+  if(k==='lasthand')return{custom:box=>{const cap=mk('p','cap','제일 늦게 손 든 팀은?');const row=mk('div','row2');row.dataset.teams='host';box.append(cap,row);
+    S.teams.filter(o=>o===t||!onIsland(o)).forEach(o=>{const b=mbtn(o.name,()=>{row.remove();cap.remove();box.appendChild(mk('div','res',JURU()?`✋ ${o.name} 꼴찌! 💧 물 한 잔, 나머지 모두 🍻 한 잔`:`✋ ${o.name} 한 잔!`));markRec(o)});b.style.borderColor=o.color;row.appendChild(b)})}};
+  if(k==='rps')return{custom:box=>{const cap=mk('p','cap','참참참! 진 쪽은?');const row=mk('div','row2');row.dataset.teams='host';box.append(cap,row);
+    [t,ctx.vs].forEach(o=>{const b=mbtn(`${o.name} 졌어요`,()=>{row.remove();cap.remove();const w=o===t?ctx.vs:t;box.appendChild(mk('div','res',JURU()?`🏆 ${w.name} 승리! 🍻 한 잔 + ${WSTEP()}칸 앞으로 · 💧 ${o.name} 물 한 잔 + 1칸 뒤로`:`🏆 ${w.name} 승리! ${WSTEP()}칸 앞으로 · ${o.name}${MULTI()?' 걸린 사람':'(진 사람)'} 벌주 한 잔 + 1칸 뒤로`));duelResult(w,o)});b.style.borderColor=o.color;row.appendChild(b)})}};
+  if(k==='react')return{custom:box=>{
+    // ⚡ 순발력 대결: 3판 2선승. 초록 전에 누르면 그 판은 상대 승
+    const A=t,B=ctx.vs,score={[A.name]:0,[B.name]:0};let round=0,done=false,phase='idle',t0=0,tm=0;
+    box.dataset.react=JSON.stringify([A.name,B.name,A.color,B.color]);
+    const sb=mk('div','react-score');const st=mk('div','react-st','3판 2선승! 준비되면 시작');const pads=mk('div','react-row');const res=mk('div','res');
+    const mkPad=x=>{const b=mk('button','react-pad',x.name);b.style.setProperty('--c',x.color);b.disabled=true;pads.appendChild(b);return b};const pa=mkPad(A),pb=mkPad(B);
+    const go=mbtn('▶ 1판 시작',null,'btn fill');go.style.cssText='width:100%;font-size:20px;margin-bottom:8px';box.append(sb,st,go,pads,res);
+    const draw=()=>{sb.innerHTML='';const a=mk('span',null,`${A.name} ${score[A.name]}`),b=mk('span',null,`${score[B.name]} ${B.name}`);a.style.color=A.color;b.style.color=B.color;sb.append(a,' : ',b)};draw();
+    const endRound=(w,msg)=>{clearTimeout(tm);phase='idle';pa.disabled=pb.disabled=true;score[w.name]++;draw();st.textContent=msg;
+      if(score[w.name]>=2){done=true;const l=w===A?B:A;res.textContent=JURU()?`🏆 ${w.name} 최종 승리! 🍻 한 잔 + ${WSTEP()}칸 앞으로 · 💧 ${l.name} 물 한 잔 + 1칸 뒤로`:`🏆 ${w.name} 최종 승리! ${WSTEP()}칸 앞으로 · ${l.name} 벌주 한 잔 + 1칸 뒤로`;duelResult(w,l);go.remove();return}
+      go.textContent=`▶ ${round+1}판 시작`;go.hidden=false};
+    const hit=(me,other)=>()=>{if(done||phase==='idle')return;
+      if(phase==='wait'){st.className='react-st bad';sfx('lose');return endRound(other,`🚫 ${me.name} 부정출발! ${other.name} 1점`)}
+      const ms=Math.round(performance.now()-t0);st.className='react-st go';endRound(me,`⚡ ${me.name} ${ms}ms! 1점`)};
+    pa.onclick=hit(A,B);pb.onclick=hit(B,A);
+    box.__react=(winIdx)=>{if(done)return;const w=winIdx===0?A:B,l=w===A?B:A;score[w.name]=2;draw();done=true;clearTimeout(tm);pa.disabled=pb.disabled=true;go.remove();
+      res.textContent=JURU()?`🏆 ${w.name} 최종 승리! 🍻 한 잔 + ${WSTEP()}칸 앞으로 · 💧 ${l.name} 물 한 잔 + 1칸 뒤로`:`🏆 ${w.name} 최종 승리! ${WSTEP()}칸 앞으로 · ${l.name} 벌주 한 잔 + 1칸 뒤로`;duelResult(w,l)};
+    go.onclick=()=>{if(done||phase!=='idle')return;round++;go.hidden=true;phase='wait';pa.disabled=pb.disabled=false;st.textContent=`${round}판 · 🔴 기다리세요…`;st.className='react-st wait';
+      tm=setTimeout(()=>{phase='go';t0=performance.now();st.textContent='🟢 지금!';st.className='react-st go';sfx('go')},1500+Math.random()*3000)};
+  }};
+  if(k==='joint')return{custom:box=>{
+    // 합동 미션: 4가지 중 하나가 랜덤으로 나와요
+    const A=t,B=ctx.vs,win=()=>{grantPass(A);grantPass(B)},lose=()=>{markRec(A);markRec(B)};
+    const res=(ok,msg)=>{const r=mk('div','res',`${msg} ${ok?'🛡️ 두 팀 모두 면제권':'두 팀 각각 걸린 사람 벌주 한 잔'}`);box.appendChild(r);ok?win():lose()};
+    const V=['common','updown','tele','dice'][Math.floor(Math.random()*4)];
+    const head=t2=>box.appendChild(mk('div','oxq',t2));
+    if(V==='common'){head('🔗 공통점 찾기: 15초 동안 두 팀 모두의 공통점을 찾아 입력! 나머지 팀이 인정하면 성공');
+      timedFound(box,15,'찾은 공통점 입력 (예: 둘 다 고양이파)','나머지 팀',(ok,rej)=>res(ok,ok?'인정!':rej?'불인정!':'시간 끝!'),S.teams.filter(o=>o!==A&&o!==B));return}
+    if(V==='updown'){head(`🔢 합동 업다운: 1~40 숨은 숫자를 ${A.name}·${JGA(B.name)} 번갈아 한 번씩, 총 5번 안에 맞히기`);
+      const secret=1+Math.floor(Math.random()*40);let tries=5,lo=1,hi=40,turn=0;const cap=mk('p','cap',`${A.name} 차례 · 남은 기회 5번`);const hint=mk('div','big-num','?');hint.style.fontSize='38px';
+      const grid=mk('div','numgrid');box.append(hint,cap,grid);const bs=[];
+      for(let n=1;n<=40;n++){const b=mk('button',null,String(n));bs.push(b);grid.appendChild(b);
+        b.onclick=()=>{tries--;turn++;if(n===secret){hint.textContent=`🎯 ${n}`;bs.forEach(x=>x.disabled=true);return res(true,'정답!')}
+          if(n<secret){lo=n+1;hint.textContent=`${n} ⬆️ UP`}else{hi=n-1;hint.textContent=`${n} ⬇️ DOWN`}
+          bs.forEach((x,ix)=>x.disabled=ix+1<lo||ix+1>hi);cap.textContent=`${(turn%2?B:A).name} 차례 · 남은 기회 ${tries}번`;
+          if(!tries){bs.forEach(x=>x.disabled=true);res(false,`정답은 ${secret}!`)}}}
+      return}
+    if(V==='tele'){head(`🤞 숫자 텔레파시: 셋 세고 ${A.name}·${B.name} 대표가 동시에 손가락 1~3개 펴기! 같은 숫자면 성공`);
+      const r=mk('div','row2');box.appendChild(r);r.append(mbtn('✅ 같은 숫자!',()=>{r.remove();res(true,'통했다!')}),mbtn('❌ 달랐어요',()=>{r.remove();res(false,'아쉽!')}));return}
+    head(`🎲 합동 주사위: ${A.name}·${B.name} 대표가 하나씩 굴려서 합이 8 이상이면 성공`);
+    const wrap=mk('div','duel');box.appendChild(wrap);const rolls={};
+    [A,B].forEach(tm=>{const col=mk('div');const die=mk('div','die3');buildDie(die);setDie(die,1);const lab=mk('div','cap',tm.name);
+      const bt=mbtn(`🎲 ${tm.name} 대표`,async()=>{bt.disabled=true;const n=1+Math.floor(Math.random()*6);setDie(die,n,true);await sleep(reduce?100:1150);rolls[tm.name]=n;lab.textContent=`${tm.name} · ${n}`;
+        if(Object.keys(rolls).length===2){const sum=rolls[A.name]+rolls[B.name];res(sum>=8,`합 ${sum}!`)}});col.append(die,lab,bt);wrap.appendChild(col)});
+  }};
+  if(k==='common')return{custom:box=>timedFound(box,30,'찾은 공통점 입력','다른 팀',(ok,rej)=>{const r=mk('div','res');box.appendChild(r);
+    if(ok){r.textContent='인정! 🛡️ 면제권 획득';markWin(t)}else{r.textContent=(rej?'불인정!':'시간 끝!')+' 걸린 사람 벌주 한 잔';markRec(t)}},S.teams.filter(o=>o!==t))};
+  if(k==='roulette')return{custom:box=>{
+    // 🎡 진짜 돌림판: 팀 색으로 나눈 원판이 돌다가 째깍째깍 느려지며 멈춰요
+    let pool=S.teams.filter(o=>!onIsland(o)&&!lostT(o));if(!pool.length)pool=S.teams.filter(o=>!onIsland(o));if(!pool.length)pool=S.teams.slice();
+    const n=pool.length,seg=360/n,R=100,NS='http://www.w3.org/2000/svg';
+    const wrap=mk('div','wheel');const disc=document.createElementNS(NS,'svg');disc.setAttribute('viewBox','-110 -110 220 220');disc.classList.add('wdisc');
+    const g=document.createElementNS(NS,'g');disc.appendChild(g);
+    const pt=a=>{const r=(a-90)*Math.PI/180;return [R*Math.cos(r),R*Math.sin(r)]};
+    const slices=pool.map((o,k)=>{const a0=k*seg,a1=(k+1)*seg,[x0,y0]=pt(a0),[x1,y1]=pt(a1);
+      const sl=document.createElementNS(NS,'g');sl.classList.add('wsl');
+      const path=document.createElementNS(NS,'path');path.setAttribute('d',n===1?`M0 -${R}A${R} ${R} 0 1 1 -0.01 -${R}Z`:`M0 0L${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${seg>180?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z`);
+      path.setAttribute('fill',o.color);path.setAttribute('stroke','#fff');path.setAttribute('stroke-width','2.5');sl.appendChild(path);
+      const tx=document.createElementNS(NS,'text');const am=a0+seg/2;tx.setAttribute('transform',`rotate(${am}) translate(0 -${R*(n>4?0.66:0.6)})`);
+      tx.setAttribute('text-anchor','middle');tx.setAttribute('dominant-baseline','middle');tx.setAttribute('fill',onColor(o.color));
+      const nm=[...o.name.trim()];tx.textContent=nm.length>6?nm.slice(0,5).join('')+'…':o.name.trim();tx.setAttribute('font-size',String(n>6?10:n>4?12:n>3?15:18));tx.setAttribute('font-weight','800');sl.appendChild(tx);
+      g.appendChild(sl);return sl});
+    // 바깥 테두리 전구
+    for(let k=0;k<16;k++){const c=document.createElementNS(NS,'circle');const [x,y]=[104*Math.cos(k*Math.PI/8),104*Math.sin(k*Math.PI/8)];c.setAttribute('cx',x.toFixed(1));c.setAttribute('cy',y.toFixed(1));c.setAttribute('r','3.2');c.classList.add('wbulb');c.style.animationDelay=(k%2?.35:0)+'s';disc.appendChild(c)}
+    const hub=document.createElementNS(NS,'circle');hub.setAttribute('r','16');hub.classList.add('whub');disc.appendChild(hub);
+    const hubT=document.createElementNS(NS,'text');hubT.textContent='🎰';hubT.setAttribute('text-anchor','middle');hubT.setAttribute('dominant-baseline','central');hubT.setAttribute('font-size','16');disc.appendChild(hubT);
+    const ptr=mk('div','wptr');wrap.append(ptr,disc);
+    const go=mbtn('🎰 룰렛 돌리기',null,'btn fill');go.style.cssText='width:100%;font-size:20px';const rr=mk('div','res');rr.style.minHeight='2.4em';
+    box.append(wrap,go,rr);
+    go.onclick=()=>{go.onclick=null;go.classList.add('busy');go.textContent='🎰 돌아가는 중…';try{wrap.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'})}catch(e){}
+      const w=Math.floor(Math.random()*n),tm=pool[w];
+      const jit=(Math.random()-.5)*seg*.6,turns=reduce?1:6+Math.floor(Math.random()*2);
+      const end=turns*360+(360-(w*seg+seg/2))+jit,dur=reduce?400:4600;
+      g.style.transition=`transform ${dur}ms cubic-bezier(.12,.62,.08,1)`;
+      const s0=MSEQ;let last=0;const t0=performance.now();
+      // 째깍 소리: 칸 경계를 지날 때마다 (원판 회전 각도를 읽어서)
+      const tick=()=>{if(MSEQ!==s0)return;const m=getComputedStyle(g).transform;let ang=0;if(m&&m!=='none'){const v=m.match(/matrix\(([^)]+)\)/);if(v){const [a,b]=v[1].split(',').map(Number);ang=Math.atan2(b,a)*180/Math.PI}}
+        const idx=Math.floor(((ang%360)+360)%360/seg);if(idx!==last){last=idx;sfx('tick');ptr.classList.remove('kick');void ptr.offsetWidth;ptr.classList.add('kick')}
+        if(performance.now()-t0<dur+100)requestAnimationFrame(tick)};
+      requestAnimationFrame(()=>{g.style.transform=`rotate(${end}deg)`;requestAnimationFrame(tick)});
+      setTimeout(()=>{slices[w].classList.add('win');wrap.classList.add('done');sfx('win');confetti(30);
+        go.textContent=JURU()?`🎰 ${tm.name} 당첨! 🍻 한 잔`:`🎰 ${tm.name} 당첨!`;
+        rr.textContent=JURU()?`🎉 ${tm.name} 당첨! 🍻 한 잔`:`🎯 ${tm.name} 당첨! ${amt('벌주 한 잔')}`;markLuck(tm)},dur+150)}}};
+  if(k==='nunchi')return twoWay(t,'✅ 끝까지 안 겹침 → 면제권','❌ 겹쳤어요 → 벌주');
+  if(k==='snack')return twoWay(t,'✅ 두 명 이상 같음 → 면제권','❌ 모두 달랐어요 → 벌주');
+  if(k==='bal')return twoWay(t,'✅ 전원 같은 쪽 → 면제권','❌ 한 명이라도 갈림 → 벌주');
+  if(k==='water')return twoWay(t,'✅ 다 마셨어요','❌ 안 마실래요');
+  if(k==='unan')return twoWay(t,'✅ 모두 같은 사람 → 면제권','❌ 갈렸어요 → 벌주');
+  if(k==='win')return{label:'✅ 성공! 면제권 받기',run:b=>{grantPass(t);b.disabled=true;b.textContent='🛡️ 면제권 획득'}};
+  if(k==='ox')return{custom:box=>{
+    // OX 서바이벌: 최대 3문제, 틀리면 탈락(벌주), 끝까지 살아남은 팀은 면제권
+    const OXSEC=10,ROUNDS=3;let alive=S.teams.filter(o=>o===t||!onIsland(o));let round=0;const used=new Set();
+    const board=mk('div','res');board.style.whiteSpace='pre-line';const log=[];
+    const go=mbtn('❓ 1번 문제 공개',null,'btn fill');go.dataset.teams='host';go.style.cssText='width:100%;font-size:20px';box.append(go,board);
+    const pickQ=()=>{let q;do{q=OX[Math.floor(Math.random()*OX.length)]}while(used.has(q)&&used.size<OX.length);used.add(q);return q};
+    const finish=()=>{const surv=alive;
+      if(surv.length){log.push(`🏆 생존: ${surv.map(x=>x.name).join(', ')} · 무사 통과! 🛡️ 면제권 획득`);surv.forEach(markWin)}else log.push('😵 전원 탈락! 생존 팀 없음');
+      board.textContent=log.join('\n');go.remove()};
+    let busyQ=false,overQ=false;
+    go.onclick=()=>{if(busyQ||overQ)return;busyQ=true;go.style.display='none';round++;const q=pickQ();$('mQ').textContent=`❓ [${round}/${ROUNDS}] ${q.q}`;$('mQ').hidden=false;
+      const pick={};const cd=mk('div','cd',String(OXSEC));const rows=mk('div');box.insertBefore(cd,board);box.insertBefore(rows,board);const btnsOf=new Map();
+      alive.forEach(tm=>{const r=mk('div','row2');r.dataset.teams=S.teams.indexOf(tm);r.style.cssText='justify-content:space-between;align-items:center;margin:4px 0';
+        const nm=mk('span',null,tm.name+(tm===t?' (걸린 팀)':''));nm.style.cssText=`font-weight:700;color:${tm.color}`;
+        const bo=mbtn('⭕',null,'ghost cbtn'),bx=mbtn('❌',null,'ghost cbtn');[bo,bx].forEach(b=>{b.style.minWidth='64px'});
+        const set=v=>{pick[tm.name]=v;r.classList.add('picked');bo.classList.toggle('selO',v==='O');bx.classList.toggle('selX',v==='X');if(alive.every(x=>pick[x.name]))setTimeout(()=>end(),400)};
+        bo.onclick=()=>set('O');bx.onclick=()=>set('X');const w=mk('div','row2');w.style.margin='0';w.append(bo,bx);r.append(nm,w);rows.appendChild(r);btnsOf.set(tm,[bo,bx])});
+      let left=OXSEC,ended=false;const iv=setInterval(()=>{left--;cd.textContent=left>0?String(left):'⏰';if(left<=0)end()},1000);
+      function end(){if(ended)return;ended=true;clearInterval(iv);rows.querySelectorAll('.picked').forEach(x=>x.classList.remove('picked'));
+        const ans=String(q.a)[0];btnsOf.forEach(([bo,bx],tm)=>{bo.disabled=bx.disabled=true;(ans==='O'?bo:bx).classList.add('isAns');const v=pick[tm.name];const pb=v==='O'?bo:v==='X'?bx:null;if(pb)pb.classList.add(v===ans?'okPick':'wrongPick')});
+        $('mQ').textContent=`❓ [${round}/${ROUNDS}] ${q.q}\n✅ 정답: ${q.a}`;
+        const out=alive.filter(tm=>pick[tm.name]!==ans);out.forEach(tm=>groupLose(tm));
+        log.push(`${round}번: `+(out.length?`${out.map(x=>x.name+(pick[x.name]?'':'(시간 초과)')).join(', ')} 탈락 → 벌주 + ${BACK}칸 뒤로`:'모두 정답!'));
+        alive=alive.filter(tm=>pick[tm.name]===ans);board.textContent=log.join('\n');
+        setTimeout(()=>{cd.remove();rows.remove();busyQ=false;
+          if(round>=ROUNDS||alive.length<=1){overQ=true;return finish()}
+          go.textContent=`❓ ${round+1}번 문제 공개 (남은 팀 ${alive.length})`;go.style.display=''},1600)}};
+  }};
+  return null;
+}
+
+/* setup */
+function seg(id,opts,val,set){
+  const g=$(id);g.innerHTML='';
+  opts.forEach(([v,label])=>{const b=document.createElement('button');b.textContent=label;
+    b.setAttribute('aria-pressed',String(val===v));
+    b.onclick=()=>{set(v);save();renderSetup()};g.appendChild(b)});
+}
+function setSub(){const e=$('subT');if(e)e.textContent=(SOLO()?'개인전 · ':'팀전 · ')+(JURU()?'🍻 주루마블 · 오늘의 술왕은 누구?':'적게 마신 '+(SOLO()?'사람이':'팀이')+' 이긴다')}
+// 상한에 닿은(탈락) 팀: 👻 유령으로 계속(장난 카드) 또는 ⏸️ 멈춤(차례 건너뜀)
+function drawDoseSeg(){const o=$('doseOpt');if(!o)return;o.hidden=SOLO()&&JURU();o.querySelector('span').textContent=JURU()?'마시는 양':'벌주 양';
+  seg('doseSeg',[[2,'인당 2잔'],[3,'인당 3잔'],[4.5,'인당 4~5잔 추천']],DOSE(),v=>{S.dose=v;save()})}
+function drawLostSeg(){const o=$('lostOpt');if(!o)return;o.hidden=JURU();if(JURU())return;o.querySelector('span').textContent=SOLO()?'상한에 닿은 사람은':'상한에 닿은 팀은';
+  seg('lostSeg',[['ghost','👻 유령으로 계속'],['stop','⏸️ 멈춤']],S.lostMode||'ghost',v=>{S.lostMode=v;save()})}
+const lostStop=t=>S.lostMode==='stop'&&lostT(t);
+function renderSetup(){_ST(drawLostSeg,0);_ST(drawDoseSeg,0);
+  setSub();
+  seg('modeSeg',[['team','팀전'],['solo','개인전']],S.mode||'team',v=>{S.mode=v;S.cap=JURU()?(v==='solo'?5:12):(v==='solo'?5:6);S.goal=v==='solo'?(JURU()?2:3):3;save();renderSetup()});
+  const solo=SOLO();$('setupH').textContent=solo?'참가자를 적어 주세요':'팀을 짜 주세요';
+  $('setupP').textContent=solo?'앉은 순서대로 (시계 방향) 이름을 적어 주세요. 2~10명. 왼쪽·오른쪽 사람 카드는 이 순서로 정해져요.':'앉은 순서대로 팀을 적어 주세요. 2~6팀. 멤버 이름을 적으면 미션마다 앱이 선수를 골라줘요. 많이 뽑힌 사람은 덜 뽑히게 돌아가요.';
+  const el=$('tlist');el.innerHTML='';
+  if(solo){S.solo=S.solo&&S.solo.length?S.solo:[{name:''},{name:''},{name:''},{name:''}];
+    S.solo.forEach((p,i)=>{const box=document.createElement('div');box.className='team';box.style.setProperty('--c',COLORS[i]);
+      box.innerHTML=`<div class="trow"><input class="nm" maxlength="8" placeholder="${i+1}번 사람 이름" aria-label="${i+1}번째 사람 이름"><button class="x" aria-label="삭제">×</button></div>`;
+      const nm=box.querySelector('.nm'),x=box.querySelector('.x');nm.value=p.name;nm.oninput=()=>{p.name=nm.value;save()};
+      x.style.visibility=S.solo.length<=2?'hidden':'visible';x.onclick=()=>{S.solo.splice(i,1);save();renderSetup()};el.appendChild(box)});
+    $('addT').textContent='+ 사람 추가';$('addT').hidden=S.solo.length>=10;
+    seg('winSeg',[['least','적게 마시기 (승부)'],['juru','🍻 주루마블 (많이 마시기)']],S.win==='most'?'juru':S.win||'least',v=>{S.win=v;S.cap=5;S.goal=v==='juru'?2:3;save();renderSetup()});
+    if(JURU())seg('capSeg',[[5,'5 추천'],[8,'8'],[0,'없음']],S.cap==null?5:S.cap,v=>S.cap=v);else seg('capSeg',[[4,'4'],[5,'5 추천'],[6,'6']],S.cap||5,v=>S.cap=v);
+    seg('goalSeg',JURU()?[[1,'1바퀴'],[2,'2바퀴 추천'],[3,'3바퀴']]:[[1,'1바퀴'],[2,'2바퀴'],[3,'3바퀴 추천']],S.goal||(JURU()?2:3),v=>S.goal=v);
+    $('capSeg').previousElementSibling.textContent=JURU()?'개인 술잔 상한 (안전)':'개인 벌주 상한';return}
+  $('addT').textContent='+ 팀 추가';$('capSeg').previousElementSibling.textContent=JURU()?'팀 술잔 상한 (안전)':'팀 벌주 상한';
+  S.setup.forEach((t,i)=>{
+    const box=document.createElement('div');box.className='team';box.style.setProperty('--c',COLORS[i]);
+    box.innerHTML=`<div class="trow"><input class="nm" maxlength="10" placeholder="${LETTERS[i]}팀" aria-label="${i+1}번째 팀 이름">
+      <button class="x" aria-label="팀 삭제">×</button></div>
+      <input class="mem" placeholder="멤버 이름, 띄어쓰기로 구분 (생략 가능)" aria-label="${i+1}번째 팀 멤버">`;
+    const nm=box.querySelector('.nm'),mem=box.querySelector('.mem'),x=box.querySelector('.x');
+    nm.value=t.name;mem.value=t.mem;
+    nm.oninput=()=>{t.name=nm.value;save()};
+    mem.oninput=()=>{t.mem=mem.value;save()};
+    x.style.visibility=S.setup.length<=2?'hidden':'visible';
+    x.onclick=()=>{S.setup.splice(i,1);save();renderSetup()};
+    el.appendChild(box);
+  });
+  $('addT').hidden=S.setup.length>=6;
+    seg('winSeg',[['least','적게 마시기 (승부)'],['juru','🍻 주루마블 (많이 마시기)']],S.win==='most'?'juru':S.win||'least',v=>{S.win=v;S.cap=v==='juru'?12:6;save();renderSetup()});
+  if(JURU())seg('capSeg',[[12,'12 추천'],[16,'16'],[0,'없음']],S.cap==null?12:S.cap,v=>S.cap=v);else seg('capSeg',[[5,'5'],[6,'6 추천'],[7,'7']],S.cap||6,v=>S.cap=v);
+  seg('goalSeg',[[1,'1바퀴'],[2,'2바퀴'],[3,'3바퀴 추천']],S.goal||3,v=>S.goal=v);
+}
+$('addT').onclick=()=>{if(SOLO()){if(S.solo.length<10){S.solo.push({name:''});save();renderSetup();const ins=$('tlist').querySelectorAll('.nm');ins[ins.length-1].focus()}return}
+  if(S.setup.length<6){S.setup.push({name:'',mem:''});save();renderSetup();
+  const ins=$('tlist').querySelectorAll('.nm');ins[ins.length-1].focus()}};
+function startGame(){
+  S.teams.forEach(t=>{t.pos=0;t.laps=0;t.skip=0;t.mi=0;t.drinks=0;t.pass=0;t.fin=false;t.streak=0;t.dw=0;t.best=0;t.back=0;t.rot=0;t.gl=0;t.isle=false;t.qz=0;t.cnt=t.members.map(()=>0)});
+  S.gid=Date.now().toString(36);S.moves=[];S.dash=[];S.endRound=false;S.roundOver=false;S.pend=null;
+  S.final=false;S.turnNo=0;S.rnd=0;S.toastDue=false;S.toasts=0;S.deckG=null;S.deckJ=null;document.body.classList.remove('final');
+  S.cur=0;S.winner=-1;S.goal=S.goal||3;S.cap=S.cap==null?6:S.cap;S.level=S.level||1;S.rule='split';S.phase='play';
+  S.boost=false;S.dash=[];
+  S.log=JURU()?`🍻 주루마블! ${S.goal}바퀴를 누군가 돌면 끝, 가장 많이 마신 ${SOLO()?'사람':'팀'}이 술왕`:`${S.goal}바퀴 레이스! 적게 마신 ${SOLO()?'사람':'팀'}이 승리. 첫 주사위를 굴려 주세요`;
+  buildBoard();setDie($('d1'),1);setDie($('d2'),1);save();show();
+}
+// 같은 이름이 있으면 판정이 섞여서 '지수 (2)'처럼 번호를 붙여요
+function dedupeNames(){const seen=new Set();S.teams.forEach(t=>{let n=t.name,k=2;while(seen.has(n))n=`${t.name} (${k++})`;seen.add(n);if(n!==t.name){t.name=n;if(SOLO())t.members=[n]}})}
+$('startBtn').onclick=()=>{
+  if(SOLO()){S.teams=S.solo.map((p,i)=>{const n=p.name.trim()||`${i+1}번`;return {name:n,color:COLORS[i%COLORS.length],members:[n],pos:0,laps:0,skip:0,mi:0}});S.cap=S.cap==null?5:S.cap;S.goal=S.goal||(JURU()?2:3);dedupeNames();startGame();return}
+  S.teams=S.setup.map((t,i)=>({name:t.name.trim()||`${LETTERS[i]}팀`,color:COLORS[i],
+    members:t.mem.split(/[\s,]+/).filter(Boolean),pos:0,laps:0,skip:0,mi:0}));
+  dedupeNames();startGame();
+};
+// 브라우저 confirm 창은 아티팩트 안에서 막혀 있어서, 앱 안의 확인 창을 써요
+$('resetBtn').onclick=async()=>{
+  if(busy||$('modal').classList.contains('on'))return;
+  let yes=false;const okb=$('mOk'),old=okb.textContent;okb.textContent='취소';okb.classList.add('cancelStyle');
+  await modal({who:'새 게임',e:'🔄',t:'새 게임을 시작할까요?',d:'지금 게임 기록(위치·벌주·면제권)은 사라지고 팀 설정 화면으로 돌아가요.',
+    act:{custom:box=>{const b=mbtn('✅ 네, 새로 시작',()=>{yes=true;okb.click()},'btn fill');b.style.cssText='width:100%;font-size:20px';box.appendChild(b)}}});
+  okb.textContent=old;okb.classList.remove('cancelStyle');
+  if(!yes)return;
+  S.phase='setup';S.log='';save();show();
+};
+$('againBtn').onclick=startGame;
+$('newBtn').onclick=()=>{S.phase='setup';save();show()};
+
+/* board */
+function buildBoard(){
+  const b=$('board');b.querySelectorAll('.cell').forEach(c=>c.remove());
+  CELLS.forEach((c0,i)=>{const c=cellAt(i);
+    const [r,col]=coord(i);
+    const el=document.createElement('button');
+    el.className='cell '+catOf(c)+([0,6,12,18].includes(i)?' corner':i<6?' side-b':i<12?' side-l':i<18?' side-t':' side-r');
+    el.style.gridRow=r;el.style.gridColumn=col;el.id='c'+i;
+    el.setAttribute('aria-label',`${c.t} 칸`);
+    el.innerHTML=`<span class="sign"><span class="t disp" data-len="${c.t.replace(/ /g,'').length}">${c.t}</span><span class="e">${c.e}</span></span><span class="toks"></span>`;
+    el.onclick=()=>{if(taxiResolve){const r=taxiResolve;taxiResolve=null;r(i);return}if(!busy)peek(i)};
+    b.appendChild(el);
+  });
+}
+function fitStage(){
+  const st=document.querySelector('.stage3d'),bd=$('board');if(!st||!bd||!st.clientWidth)return;
+  const pt=parseFloat(getComputedStyle(st).paddingTop)||0;
+  st.style.perspective='none';
+  st.style.perspectiveOrigin=`50% ${pt-0.25*bd.offsetWidth}px`;
+}
+addEventListener('resize',fitStage);
+function renderBoard(){
+  fitStage();{const c=$('cast');if(c)c.textContent=castLine()}
+  document.querySelectorAll('.cell').forEach(c=>{c.classList.remove('lit');c.querySelector('.toks').innerHTML=''});
+  S.teams.forEach((t,i)=>{
+    const c=$('c'+t.pos);if(!c)return;
+    const k=document.createElement('span');const lost=lostT(t);const fl=fireLv(t);k.className='tok'+(fl?' fire f'+fl:'')+(lost?' spirit':'')+(lost&&S.lostMode==='stop'?' stopped':'')+(walking===t?' walk':i===S.cur&&!lost?' me':'');k.innerHTML=(fl?'<i class="fl"></i>'+(fl>=3?'<i class="fl fl2"></i>':''):'')+(lost?ghostSVG(t.color):pawnSVG(t.color));k.title=t.name;
+    {const lt=document.createElement('i');lt.className='tl';lt.textContent=[...t.name.trim()][0]||String(i+1);lt.style.background=t.color;lt.style.color=onColor(t.color);k.appendChild(lt)}
+    c.querySelector('.toks').appendChild(k);
+    if(i===S.cur)c.classList.add('lit');
+  });
+  const t=S.teams[S.cur];
+  $('turn').innerHTML=`🎲 <b class="disp"></b> 차례`;
+  $('turn').querySelector('b').textContent=t.name;
+  $('turn').style.background=t.color;$('turn').style.color=onColor(t.color);
+  $('rep').textContent=!SOLO()&&t.members.length?'미션 선수는 앱이 골라요':'';
+  {const bb=$('boostBtn');bb.hidden=true;const capd=(t.drinks||0)>=CAP();bb.disabled=capd||!!S.boost;bb.classList.toggle('on',!!S.boost);bb.textContent=S.boost?`🍺 부스트 준비 완료! (+${BOOST}칸)`:capd?'🍻 술잔 다 채움 (부스트 불가)':`🍺 원샷 부스트 (한 잔 마시고 +${BOOST}칸)`}
+  $('log').textContent=soloText(S.log||'');
+  const ch=$('chips');ch.innerHTML='';
+  S.teams.forEach((q,i)=>{
+    const d=document.createElement('div');const qf=fireLv(q);d.className='tcard'+(i===S.cur?' cur':'')+(lostT(q)?' lost':'')+(qf?' fire f'+qf:'');d.style.setProperty('--c',q.color);
+    const pass=q.pass||0;
+    d.innerHTML=`<div class="tn"></div><div class="ts"><span>🏁 ${q.laps}/${S.goal}바퀴</span><span>${JURU()?'🍻 '+(q.drinks||0)+'잔'+(S.cap?'/'+S.cap:'')+(qf?' <b class="flames">'+'🔥'.repeat(qf)+'</b>':''):(q.drinks||0)>=CAP()?'💧 패배':'🥃 벌주 '+(q.drinks||0)+(S.cap?'/'+S.cap:'')}</span>${JURU()?'':`<span class="pass${pass?' has':''}">🛡️ 면제권 ${pass}</span>`}${(q.streak||0)>=2?`<span class="streak">${JURU()?'⚡':'🔥'}${q.streak}연승</span>`:''}</div>${onIsland(q)?'<div class="tskip">🏝️ 무인도 · 미션 면제'+(q.skip?' · 한 번 쉬기':'')+'</div>':''}<button class="minus" aria-label="벌주 기록 하나 빼기">−</button>`;
+    d.querySelector('.tn').textContent=q.name;
+    d.querySelector('.minus').onclick=()=>{if(busy)return;q.drinks=Math.max(0,(q.drinks||0)-1);save();renderBoard()};ch.appendChild(d);
+  });
+  $('note').innerHTML=`<b>벌주를 받은 팀은 카드 아래에서 ‘마심’을 골라 기록해요. 🎯 걸린 사람은 팀 안에서 순번으로 돌아가요. 팀 벌주가 상한에 닿으면 그 팀은 이후 물로 마시고 패배예요. 누군가 골인하면 그 라운드 끝까지 진행하고, 적게 마신 팀이 승리 (그 라운드 골인 팀은 보너스 −1). 면제권(🛡️)은 기록할 때 ‘🛡️ 면제권’으로 벌주를 막거나, 2개로 반사(🔁)하거나, 주사위를 굴린 뒤 ±1칸 조정에 써요. 남은 면제권은 끝날 때 2개마다 벌주 −1. 몇 라운드마다 🥂 라운드 건배(모두 한 잔, 순위와 무관).</b> ‘팀 벌주 한 잔’은 걸린 사람이 (팀원 이름을 적었으면 ‘벌주 양’에 맞춰 한 번에 1~여러 명, 각자 자기 잔으로), ‘다 같이’는 팀원 모두 자기 잔으로. 해당자가 없으면 지금 마시고 싶은 사람이, 여러 명이면 가위바위보로 한 명. 기록을 잘못 눌렀으면 팀 옆 − 버튼으로 고쳐요. 더블이 나오면 한 번 더. 칸을 누르면 미션을 미리 볼 수 있어요. 벌주 한 잔의 양은 각자 알아서 조절, 체이서(물)는 항상 옆에. 못 마시는 사람은 음료로 참여해도 OK.`;
+}
+
+/* modal & toast */
+let okResolve=null;
+let recSel=null;
+function drawRec(){
+  // 팀마다 [안 마심 | 🥃 마심 | 🛡️ 면제권 | 🔁 반사] 중 하나를 고르는 방식 (누를 때마다 바뀌는 방식은 헷갈려서 바꿈)
+  const bb=$('mRecB');bb.innerHTML='';
+  S.teams.forEach((tm,i)=>{
+    const row=document.createElement('div');row.className='recrow';row.style.setProperty('--c',tm.color);
+    const nm=document.createElement('span');nm.className='rn';
+    nm.textContent=tm.name+(!JURU()&&(tm.drinks||0)>=CAP()?' 💧':'')+(!JURU()&&tm.pass?` · 🛡️${tm.pass}`:'');row.appendChild(nm);
+    if(recSel.only&&!recSel.only.includes(i)){row.classList.add('off');const z=document.createElement('span');z.className='rz';z.textContent='이번 미션과 관련 없음';row.appendChild(z);bb.appendChild(row);return}
+    const st=recSel.st[i]||0;
+    const opts=[[0,'안 마심'],[1,JURU()?'🍻 마심':'🥃 마심']];
+    if(!JURU()&&(tm.pass||0)>=1)opts.push([2,'🛡️ 면제권']);
+    if(!JURU()&&(tm.pass||0)>=2&&S.teams.some((o,j)=>j!==i&&!onIsland(o)&&!lostT(o)))opts.push([3,'🔁 반사']);
+    opts.forEach(([v,l])=>{const b=document.createElement('button');b.textContent=l;b.dataset.v=v;b.setAttribute('aria-pressed',String(st===v));
+      b.onclick=()=>{if(!recSel)return;recSel.st[i]=v;
+        if(v===3&&recSel.tg[i]==null){const c=S.teams.findIndex((o,j)=>j!==i&&!onIsland(o)&&!lostT(o));recSel.tg[i]=c>=0?c:null}
+        mDone();drawRec()};row.appendChild(b)});
+    const who=!JURU()&&st===1?rotWho(tm):null;if(who){const w=document.createElement('span');w.className='rw';w.textContent=`→ ${who}${rotK(tm)>1?' 각자 한 잔':''}`;row.appendChild(w)}
+    bb.appendChild(row);
+  });
+  const tr=$('mRecT');tr.innerHTML='';
+  Object.keys(recSel.st).map(Number).filter(i=>recSel.st[i]===3).forEach(i=>{
+    const row=document.createElement('div');row.className='tgt';
+    const lab=document.createElement('span');lab.textContent=`${S.teams[i].name} 벌주를 넘길 팀:`;row.appendChild(lab);
+    S.teams.forEach((tm,j)=>{if(j===i||onIsland(tm)||lostT(tm))return;const b=document.createElement('button');b.style.setProperty('--c',tm.color);
+      b.textContent=tm.name;b.setAttribute('aria-pressed',String(recSel.tg[i]===j));
+      b.onclick=()=>{recSel.tg[i]=j;drawRec()};row.appendChild(b)});
+    tr.appendChild(row);
+  });
+}
+function commitRec(){
+  for(const k in recSel.st){const i=+k,st=recSel.st[k],tm=S.teams[i];
+    if(st===1){const who=!JURU()&&!SOLO()?rotWho(tm):null;if(who&&(tm.drinks||0)<CAP())toast(`🥃 ${tm.name} ${who}${rotK(tm)>1?' 각자':''} 한 잔`);addDrink(i);if(recSel.double)addDrink(i);rotNext(tm)}
+    else if(st===2&&tm.pass>0){tm.pass--;toast(`🛡️ ${tm.name} 면제권 사용! 이번 벌주는 패스`)}
+    else if(st===3&&tm.pass>=2&&recSel.tg[i]!=null){tm.pass-=2;const j=recSel.tg[i];addDrink(j);rotNext(S.teams[j]);
+      toast(`🔁 ${tm.name} → ${S.teams[j].name} 반사! 대신 마셔요`)}}
+  save();
+}
+// 많이 마시기 모드에서는 보상과 벌칙이 뒤집혀요: 이긴 쪽이 한 잔(= 점수)
+const CAP=()=>S.cap||Infinity; // 0 = 상한 없음
+const MOST=()=>false; // (이전 '부스터 레이스'는 주루마블 모드로 대체)
+const JURU=()=>S.win==='juru'||S.win==='most';
+function grantPass(tm){mDone();
+  if(JURU()){const i=S.teams.indexOf(tm);
+    if(recSel&&(!recSel.only||recSel.only.includes(i))){recSel.st[i]=1;drawRec();toast(`🍻 ${tm.name} 성공! 상으로 한 잔`);return}
+    addDrink(i);toast(`🍻 ${tm.name} 상으로 한 잔! (기록 +1)`);save();renderBoard();return}
+  if(MOST()){const i=S.teams.indexOf(tm);
+    if(recSel&&(!recSel.only||recSel.only.includes(i))){recSel.st[i]=1;drawRec();toast(`🍻 ${tm.name} 이겼으니 한 잔!`);return}
+    addDrink(i);toast(`🍻 ${tm.name} 보상 한 잔! (기록 +1)`);save();renderBoard();return}
+  tm.pass=(tm.pass||0)+1;toast(`🛡️ ${tm.name} 면제권 획득!`);save()}
+// 성공했지만 적게 마시기 모드에선 보상이 없는 경우 (많이 마시기 모드에선 한 잔)
+// 성공 보상: 적게 마시기 = 면제권, 주루마블 = 한 잔 (모든 미션은 결과가 있어야 해요)
+function markWin(tm){mDone();grantPass(tm)}
+const DASH=3,BOOST=2;
+// 🔥 주루마블: 많이 마실수록 말과 팀 카드가 불타올라요 (0~4단계, 상한 대비)
+function fireLv(t){if(!JURU()||!t)return 0;const d=t.drinks||0;if(!d)return 0;const c=S.cap>0?S.cap:(SOLO()?5:12);return Math.min(4,Math.max(1,Math.ceil(4*d/c)))}
+const FIRE_MSG=['','🔥 불씨가 붙었어요!','🔥🔥 활활 타오른다!','🔥🔥🔥 불길이 거세져요!','🌋 완전히 불타오름!'];
+function addDrink(i,noDash){const tm=S.teams[i];tm.drinks=tm.drinks||0;if(tm.drinks>=CAP())return;const fl0=fireLv(tm);tm.drinks++;tm.gl=(tm.gl||0)+rotK(tm);
+  {const fl=fireLv(tm);if(fl>fl0&&tm.drinks<CAP()){toast(`${tm.name} ${FIRE_MSG[fl]}`);try{sfx&&sfx('win')}catch(e){}}}
+  if(MOST()&&!noDash){S.dash=S.dash||[];S.dash.push(i)}
+  if(tm.drinks>=CAP())toast(JURU()?`🌋 ${tm.name} 술잔 다 채움! 최고로 불타오름 — 이제부터는 물만`:S.win==='most'?`🍻 ${tm.name} 술잔 다 채움! 이제부터는 물만, 대시·부스트 끝`:`${tm.name} 벌주 상한! 이제부터 물로 마시고, 이 팀은 패배 💧`)}
+// 부스터 레이스: 쌓인 대시를 실제로 달리기 (도착 칸 미션은 없음)
+// ===== 효과음 (기기 소리) · 꽃가루 · 대결 결과 =====
+let AC=null;
+function sfx(kind){if(S.mute)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const now=AC.currentTime;
+  const tone=(f,t0,d,type='sine',g=.18)=>{const o=AC.createOscillator(),v=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,now+t0);v.gain.setValueAtTime(g,now+t0);v.gain.exponentialRampToValueAtTime(.001,now+t0+d);o.connect(v).connect(AC.destination);o.start(now+t0);o.stop(now+t0+d+.02)};
+  if(kind==='tick')tone(880,0,.08,'square',.08);
+  if(kind==='go')tone(1320,0,.25,'square',.15);
+  if(kind==='roll'){for(let k=0;k<6;k++)tone(300+Math.random()*500,k*.06,.05,'triangle',.08)}
+  if(kind==='win'){[523,659,784,1047].forEach((f,k)=>tone(f,k*.09,.18,'triangle',.16))}
+  if(kind==='lose'){tone(330,0,.22,'sawtooth',.1);tone(220,.18,.35,'sawtooth',.1)}
+  if(kind==='boom'){const b=AC.createBuffer(1,AC.sampleRate*.5,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const src=AC.createBufferSource(),v=AC.createGain();v.gain.value=.5;src.buffer=b;src.connect(v).connect(AC.destination);src.start()}
+}catch(e){}}
+// 📣 익명 응원: 폰에서 누른 이모지가 TV 화면에 떠올라요 (누가 눌렀는지는 안 보여요)
+const CHEERS=['👏','🔥','😂','🍻','😱','🥃'];
+function cheer(e){if(!CHEERS.includes(e))return;const d=document.createElement('div');d.className='cheer';d.textContent=e;d.style.left=(8+Math.random()*84)+'%';document.body.appendChild(d);_ST(()=>d.remove(),2600)}
+function confetti(n=40){if(reduce)return;const box=document.createElement('div');box.className='confetti';document.body.appendChild(box);
+  const cols=['#E2571E','#2B6CE0','#F2B705','#8E44C9','#13A36B','#E83F8A'];
+  for(let i=0;i<n;i++){const p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=cols[i%cols.length];p.style.animationDelay=(Math.random()*.3)+'s';p.style.transform=`rotate(${Math.random()*360}deg)`;box.appendChild(p)}
+  _ST(()=>box.remove(),2200)}
+// 1:1 대결 결과: 진 쪽 벌주, 이긴 쪽 2칸 앞으로 (3연승이면 +1칸 보너스)
+const LOSE_STEP=1;let WIN_STEP=2;
+// 결과 글씨에 쓰는 이긴 쪽 칸 수 (파이널 랩이면 +1, 3연승 보너스는 따로 알림)
+const WSTEP=()=>WIN_STEP+(S.final?1:0);
+function duelResult(winner,loser){mDone();markRec(loser);sfx('win');confetti(30);
+  loser.streak=0;winner.streak=(winner.streak||0)+1;winner.dw=(winner.dw||0)+1;winner.best=Math.max(winner.best||0,winner.streak);let n=WIN_STEP+(S.final?1:0);
+  if(winner.streak>=3){n++;toast(`🔥 ${winner.name} ${winner.streak}연승! 보너스 +1칸`)}
+  S.moves=S.moves||[];S.moves.push({i:S.teams.indexOf(winner),n,msg:`🏃 ${winner.name} 승리! ${n}칸 앞으로`});
+  if(!onIsland(loser))S.moves.push({i:S.teams.indexOf(loser),n:-LOSE_STEP,msg:`🔙 ${loser.name} 패배… ${LOSE_STEP}칸 뒤로`})}
+async function runMoves(){
+  while(S.moves&&S.moves.length){const m=S.moves.shift(),tm=S.teams[m.i];toast(m.msg);await sleep(reduce?50:450);
+    const ps=await step(tm,m.n);if(ps&&m.n>0)toast(`${tm.name} 한 바퀴! 👏`);if(m.n>0&&isFin(tm)){S.moves=[];return tm}}
+  return null}
+async function runDashes(){
+  while(S.dash&&S.dash.length){const i=S.dash.shift(),tm=S.teams[i];
+    toast(`🍻 ${tm.name} 한 잔 → 🚀 ${DASH}칸 대시!`);await sleep(reduce?50:500);
+    const ps=await step(tm,DASH);if(ps)toast(`${tm.name} 한 바퀴! 👏`);
+    if(isFin(tm)){S.dash=[];return tm}}
+  return null;
+}
+// 벌주 단위는 '벌주 한 잔' 하나로 통일 (양은 각자 알아서 조절)
+function amt(s){if(!s)return s;
+  return s.split('물 한 모금').join('\u0000').split('한 모금').join('벌주 한 잔').split('\u0000').join('물 한 모금')}
+// 미션 결과가 났는지: 결과가 나기 전에 '확인'을 누르면 한 번 더 물어봐요 (실수로 미션을 건너뛰지 않게)
+let MDONE=true,MFREE=false,okArm=0;
+function mDone(){if(MDONE)return;MDONE=true;updOk()}
+function mPending(){if(MDONE||MFREE)return false;const live=[...$('mBox').querySelectorAll('button,input'),$('mAct')].some(b=>b&&!b.hidden&&!b.disabled&&b.offsetParent!==null);return live}
+function updOk(){const b=$('mOk');if(!b||b.classList.contains('cancelStyle'))return;const p=mPending();b.classList.toggle('pendingOk',p);b.textContent=p?(okArm?'⏭️ 정말 건너뛸까요? 한 번 더 누르면 넘어가요':'⏭️ 미션 건너뛰기'):(b.dataset.lbl||'확인')}
+function modal({who,e,t,d,x,gold,act,rec,free}){
+  MSEQ++;MOPEN=true;MDONE=!act;MFREE=!!free;okArm=0;$('mOk').dataset.lbl='확인';
+  d=soloText(d);
+  $('mBox').hidden=true;$('mBox').innerHTML='';{const mb=$('mBox');delete mb.dataset.sw;delete mb.dataset.react;mb.__sw=null;mb.__react=null}
+  $('mQ').hidden=true;$('mQ').textContent='';
+  $('mDice').hidden=true;$('mDice').innerHTML='';
+  d=amt(d);x=amt(x);if(d&&MULTI())d=d.split('진 사람은 벌주 한 잔').join('진 팀은 걸린 사람이 벌주 한 잔');
+  let rotUsed=false;if(x&&x.includes('{ROT}')){const rt=rotText(rec&&rec.only);rotUsed=!!rt;x=x.replace('{ROT}',rt||PICK[Math.floor(Math.random()*PICK.length)])}
+  $('card').className='card'+(gold?' goldc':'');
+  $('mWho').textContent=who||'';$('mEm').textContent=e;$('mT').textContent=t;
+  $('mD').textContent=d||'';if(MOST()&&rec)x=[x,`🍻 부스터 레이스: 이 미션에서 이긴 쪽이 한 잔 마시고 🚀 ${DASH}칸 대시! 진 쪽은 패스`].filter(Boolean).join('\n');
+  $('mX').textContent=x||'';$('mX').hidden=!x;
+  const rr=$('mReroll');rr.hidden=rotUsed||!(x&&x.includes('🎯 걸린 사람'));rr.onclick=()=>{const cur=$('mX').textContent;let p2;do{p2=PICK[Math.floor(Math.random()*PICK.length)]}while(cur.includes(p2));$('mX').textContent=cur.replace(/🎯 걸린 사람: [^\n]*/,'🎯 걸린 사람: '+p2)};
+  setTimerBtn(d,act);
+  recSel=rec?{st:{},tg:{},only:rec.only||null,double:!!rec.double}:null;$('mRec').hidden=!rec;$('mRec').querySelector('span').textContent=JURU()?(SOLO()?'🍻 기록: 마실 사람(이긴 쪽)은 ‘마심’ · 진 쪽은 물':'🍻 기록: 마실 팀(이긴 쪽)은 ‘마심’ · 진 쪽은 물'):SOLO()?'🥃 기록: 마신 사람은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 사람에게':'🥃 기록: 마신 팀은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 팀에게';
+  if(rec){(rec.pre||[]).forEach(i=>recSel.st[i]=1);drawRec()}
+  $('modal').classList.add('on');updOk();setTimeout(()=>$('mOk').focus(),50);
+  return new Promise(r=>okResolve=r);
+}
+let tmr;
+function setTimerBtn(d,act){
+  clearInterval(tmr);const m=(d||'').match(/(\d+)초 안에/);const b=$('mTimer');
+  const ab=$('mAct');ab.hidden=!act||!!act.custom;if(act&&act.custom){const bx=$('mBox');bx.hidden=false;act.custom(bx)}else if(act){ab.disabled=false;ab.textContent=act.label;ab.onclick=()=>act.run(ab)}
+  if(!m){b.hidden=true;return}
+  const n=+m[1];b.hidden=false;b.disabled=false;b.textContent=`⏱ ${n}초 타이머 시작`;
+  b.onclick=()=>{b.disabled=true;let left=n;b.textContent=`⏱ ${left}`;
+    tmr=setInterval(()=>{left--;b.textContent=left>0?`⏱ ${left}`:'⏰ 시간 끝!';
+      if(left<=0){clearInterval(tmr);try{navigator.vibrate&&navigator.vibrate(400)}catch(e){}}},1000)};
+}
+$('mOk').onclick=()=>{
+  if(!$('modal').classList.contains('on'))return;
+  if(mPending()&&!$('mOk').classList.contains('cancelStyle')&&!(recSel&&Object.values(recSel.st).some(v=>v>0))){
+    if(!okArm){okArm=1;updOk();_ST(()=>{okArm=0;updOk()},4000);return}}
+  clearInterval(tmr);if(recSel){commitRec();recSel=null}
+  MSEQ++;MOPEN=false;okArm=0;$('mOk').classList.remove('pendingOk');$('mOk').textContent=$('mOk').dataset.lbl||'확인';
+  {const mb=$('mBox');if(mb.__cleanup){try{mb.__cleanup()}catch(e){}mb.__cleanup=null}}
+  $('modal').classList.remove('on');if(okResolve){const r=okResolve;okResolve=null;r()}};
+// 미션 상자 안에 결과 글씨가 나오면 '결과 남' 으로 봐요
+new MutationObserver(()=>{if(!MOPEN)return;const r=[...$('mBox').querySelectorAll('.res')].some(x=>x.textContent.trim());if(r)mDone();else updOk()}).observe($('mBox'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['disabled','hidden']});
+function peek(i){const c=cellAt(i);
+  modal({who:'미리 보기',e:c.e,t:c.t,d:c.k==='gold'?'황금카드를 한 장 뽑아요. 무엇이 나올지는 몰라요.':generic(c.d),gold:c.k==='gold'});}
+let tt;
+function toast(msg){msg=soloText(msg);const t=$('toast');t.textContent=msg;t.classList.add('on');_CT(tt);tt=_ST(()=>t.classList.remove('on'),2400)}
+async function spinPick(target,self){
+  const pool=S.teams.filter(o=>o!==self&&!onIsland(o));
+  if(!target||pool.length<2)return;
+  const el=$('spin'),nm=$('spinName'),lb=$('spinLbl');
+  el.classList.remove('done');el.classList.add('on');lb.textContent=SOLO()?'🎰 상대 고르는 중…':'🎰 상대 팀 고르는 중…';
+  const n=pool.length,ti=pool.indexOf(target);let i=Math.floor(Math.random()*n);
+  const steps=n*(reduce?1:3)+((ti-i+n)%n);
+  for(let k=1;k<=steps;k++){
+    i=(i+1)%n;nm.textContent=pool[i].name;nm.style.background=pool[i].color;
+    await sleep(reduce?30:50+Math.pow(k/steps,3)*320);
+  }
+  lb.textContent=`상대는 ${target.name}!`;el.classList.add('done');
+  await sleep(reduce?300:900);
+  el.classList.remove('on');
+}
+function helpHTML(){
+  const J=JURU(),cap=S.cap;
+  const win=J?`<li><b>🍻 주루마블: 마시는 게 목적인 클래식 술자리 보드</b></li><li>정한 바퀴(${S.goal||3}바퀴)를 누군가 먼저 돌면 끝, <b>가장 많이 마신 쪽이 오늘의 술왕</b></li><li><b>상과 벌이 반대예요: 게임에서 이기면 🍻 한 잔(상), 지면 💧 물 한 잔(벌)</b></li><li>원샷·왼쪽·오른쪽·나 빼고 전원·지목·더블·다 같이 한 잔 등 마시는 칸이 가득! 면제권은 없어요</li>${cap?`<li>술잔 상한 ${cap}을 채우면 그 뒤로는 물만</li>`:'<li>술잔 상한 없음 — 각자 페이스는 알아서!</li>'}`
+    :`<li>정한 바퀴(${S.goal||3}바퀴)를 누군가 돌면, <b>그 라운드 끝까지</b> 진행하고 게임 끝 (먼저 시작한 팀이 유리하지 않게)</li><li><b>벌주를 적게 마신 팀이 승리</b>, 그 라운드 안에 골인한 팀은 모두 벌주 기록 −1 보너스</li><li>팀 벌주가 상한 ${cap||6}에 닿으면 그 팀은 이후 물로 마시고 패배 (👻 유령)</li>`;
+  const ghost=J?'':S.lostMode==='stop'?`<h3>⏸️ 탈락 팀</h3><ul><li>상한에 닿은 팀은 그 자리에서 멈추고, 이후 차례를 건너뛰어요 (설정에서 ‘👻 유령으로 계속’도 고를 수 있어요)</li></ul>`:`<h3>👻 유령 팀</h3><ul><li>(설정에서 ‘⏸️ 멈춤’을 고르면 탈락 팀은 차례를 건너뛰어요)</li><li>상한에 닿아 진 팀은 유령이 돼요. 이후 어느 칸에 서든 미션 대신 <b>유령 장난 카드</b>!</li><li>살아있는 팀 하나를 골라 2칸 뒤로, 한 턴 쉬기, 벌주, 면제권 뺏기·선물, 자리 바꾸기</li><li>누구 편을 들지는 유령 마음 — 잘 보이세요 😉</li></ul>`;
+  const drink=SOLO()?`<h3>🥃 ${J?'한 잔':'벌주'}</h3><ul><li>카드에 나온 사람이 자기 잔으로 한 잔 (양은 각자 알아서)</li><li>1:1 대결은 대결한 본인이 직접 ${J?'(이기면 한 잔, 지면 물)':'(진 사람이 벌주)'}</li></ul>`:`<h3>🥃 ${J?'한 잔':'벌주'}</h3><ul><li>🥂 <b>라운드 건배</b>: ‘인당 4~5잔’이면 몇 라운드마다 모두 같이 자기 잔으로 한 잔 (순위에는 안 들어가요)</li><li><b>걸린 사람</b>만 자기 잔으로 한 잔 (양은 각자 알아서). 잔은 절대 돌려 마시지 않아요</li>${J?'':'<li>팀원 이름을 적었으면 ‘벌주 양’(인당 2·3·4~5잔)에 맞춰 팀 인원에 따라 한 번에 걸리는 사람 수가 정해져요. 예: 인당 2잔, 4명 팀 → 한 번에 3명 · 인당 4~5잔이면 팀 전원</li>'}<li>걸린 사람은 ‘제일 ~한 사람’처럼 팀에서 꼭 한 명이 나오는 조건이에요. 애매하면 🎲 다른 조건, 동점이면 그 사람들끼리 가위바위보</li><li>1:1 대결은 대결한 본인이 직접 ${J?'(이기면 한 잔, 지면 물)':'(진 사람이 벌주)'}</li></ul>`;
+  const pass=J?'':`<h3>🛡️ 면제권</h3><ul><li>미션에 성공하면 받아요</li><li>벌주를 기록할 때 ‘🛡️ 면제권’을 고르면 이번 벌주는 패스</li><li>2개를 한 번에 쓰면 벌주를 다른 팀에 반사 🔁</li><li>🎲 주사위를 굴린 뒤 1개를 써서 <b>±1칸 조정</b> (도착할 칸을 보고 고를 수 있어요)</li><li>게임이 끝날 때 남은 면제권 <b>2개마다 벌주 기록 −1</b></li></ul>`;
+  const corner=J?'🏁 출발(딱 멈추면 지목해서 한 잔) · 🏝️ 무인도(한 턴 쉬기, 상도 벌도 없음) · 🍾 다 같이 한 잔 · 🚕 택시(앞쪽 8칸 안에서 이동)'
+    :'🏁 출발(딱 멈추면 면제권) · 🏝️ 무인도(한 턴 쉬기, 머무는 동안 모든 미션·벌주 면제) · 🎁 보물창고(보물상자 3개 중 하나 열기) · 🚕 택시(앞쪽 8칸 안에서 이동)';
+  const duel=J?'이긴 쪽 🍻 한 잔 + 2칸 앞으로, 진 쪽 💧 물 + 1칸 뒤로':'이긴 쪽 2칸 앞으로, 진 쪽 벌주 + 1칸 뒤로';
+  const colors=J?'빨강 마시기 · 파랑 게임 · 보라 지목·선택 · 하늘 쉬어가기 · 금 황금카드':'빨강 상대 팀과 · 초록 우리 팀 · 파랑 모든 팀 · 하늘 쉬어가기 · 금 황금카드';
+  const html=`<h3>🏆 ${J?'게임 목적':'승리 조건'}</h3><ul>${win}</ul>${ghost}${drink}
+<h3>📝 기록</h3><ul><li>미션 카드 아래에서 팀마다 ‘안 마심 / 마심${J?'':' / 🛡️ 면제권 / 🔁 반사'}’ 중 하나를 골라 기록</li><li>🎯 ‘걸린 사람’은 팀 안에서 <b>순번</b>으로 돌아가요 (같은 사람만 계속 걸리지 않게). 멤버 이름을 안 적은 팀은 조건으로 정해요</li><li>결과가 나오기 전에 ‘확인’을 누르면 한 번 더 물어봐요</li><li>잘못 눌렀으면 팀 카드의 − 버튼으로 수정</li></ul>${pass}
+<h3>🎲 진행</h3><ul><li>모서리 칸: ${corner}</li><li>더블이 나오면 한 번 더</li><li>🔥 누군가 마지막 바퀴에 들어서면 파이널 랩: 대결 승리 +1칸, 황금카드는 2장 중 골라요</li><li>⚔️ 1:1 대결(참참참·순발력 대결${J?'':'·주사위전·진짜 가짜'})에서 ${duel}. 🔥3연승부터는 +1칸 보너스</li><li>🤜🤛 <b>다른 팀 말과 같은 칸에서 만나면 즉석 참참참 결투!</b> (출발·무인도 제외)</li><li>뒤로 가다가 출발을 거꾸로 지나면 바퀴 수도 하나 줄어요</li><li>칸을 누르면 미션을 미리 볼 수 있어요 · 🔊 버튼으로 효과음 끄고 켜기</li><li>칸 윗부분 색: ${colors}</li></ul>
+<h3>💧 매너</h3><ul><li>한 잔의 양은 각자 알아서 조절, 체이서(물)는 항상 옆에</li><li>못 마시는 사람은 음료로 참여해도 OK</li></ul>`;
+  return SOLO()?soloText(html):html;
+}
+
+$('helpBtn').onclick=()=>{$('helpBody').innerHTML=helpHTML();$('help').classList.add('on');setTimeout(()=>$('helpClose').focus(),50)};
+$('helpClose').onclick=()=>$('help').classList.remove('on');
+$('help').onclick=e=>{if(e.target.id==='help')$('help').classList.remove('on')};
+function catOf(c){if(c.k==='gold')return 'gold';
+  if(JURU()){if(c.k==='start')return 'start';if(['무인도','체이서','물 타임'].includes(c.t))return 'rest';
+    if(['point1','buddy','taxi','lasthand'].includes(c.k))return 'choose';if(c.r||c.k==='roulette')return 'drink';return 'game'}if(c.k==='start')return 'start';if(['무인도','체이서','한 번 더'].includes(c.t))return 'rest';return SC_ALL.includes(c.t)||c.t==='다 같이'?'all':SC_VS.includes(c.t)?'vs':'team'}
+function onColor(hex){const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;return (0.299*r+0.587*g+0.114*b)>170?'#1d1600':'#fff'}
+function ghostSVG(c){return `<svg viewBox="0 0 24 36" aria-hidden="true"><ellipse cx="12" cy="34.2" rx="6.5" ry="1.4" fill="#000" opacity=".12"/><g><ellipse cx="3.6" cy="19" rx="1.7" ry="3.1" transform="rotate(-28 3.6 19)" fill="#fff" stroke="${c}" stroke-width="1.2"/><ellipse cx="20.4" cy="19" rx="1.7" ry="3.1" transform="rotate(28 20.4 19)" fill="#fff" stroke="${c}" stroke-width="1.2"/><path d="M4.4 30V15.2C4.4 8.8 7.8 4.4 12 4.4S19.6 8.8 19.6 15.2V30Q18.4 32.4 17.1 30Q15.8 27.7 14.6 30Q13.3 32.4 12 30Q10.7 27.7 9.4 30Q8.1 32.4 6.9 30Q5.6 27.7 4.4 30Z" fill="#fff" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/><path d="M4.4 30V15.2C4.4 8.8 7.8 4.4 12 4.4S19.6 8.8 19.6 15.2V30Q18.4 32.4 17.1 30Q15.8 27.7 14.6 30Q13.3 32.4 12 30Q10.7 27.7 9.4 30Q8.1 32.4 6.9 30Q5.6 27.7 4.4 30Z" fill="${c}" opacity=".13"/><path d="M7 9.5Q8.6 6.6 11.2 6.2" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".9"/><ellipse cx="9.4" cy="14" rx="1.35" ry="1.8" fill="#2b2b2b"/><ellipse cx="14.6" cy="14" rx="1.35" ry="1.8" fill="#2b2b2b"/><circle cx="9.8" cy="13.3" r=".45" fill="#fff"/><circle cx="15" cy="13.3" r=".45" fill="#fff"/><ellipse cx="7.6" cy="16.6" rx="1.2" ry=".7" fill="#ff9fb0" opacity=".8"/><ellipse cx="16.4" cy="16.6" rx="1.2" ry=".7" fill="#ff9fb0" opacity=".8"/><ellipse cx="12" cy="18.2" rx=".95" ry="1.2" fill="#3a3a3a"/></g><path d="M20.4 1.6c1.4 2 2.1 3 2.1 3.9a2.1 2.1 0 0 1-4.2 0c0-.9.7-1.9 2.1-3.9Z" fill="#6fc3ff" stroke="#fff" stroke-width=".7"/></svg>`}
+function pawnSVG(c){return `<svg viewBox="0 0 24 36" aria-hidden="true"><rect class="lgl" x="8.2" y="25" width="3.4" height="9.5" rx="1.7" fill="#2d3340" stroke="#fff" stroke-width=".7"/><rect class="lgr" x="12.4" y="25" width="3.4" height="9.5" rx="1.7" fill="#2d3340" stroke="#fff" stroke-width=".7"/><rect class="arl" x="3.8" y="17.2" width="3.2" height="8.4" rx="1.6" fill="${c}" stroke="#fff" stroke-width=".8"/><path d="M6.4 27.5Q6 17 12 16.2Q18 17 17.6 27.5Z" fill="${c}" stroke="#fff" stroke-width="1"/><path d="M12 16.2Q18 17 17.6 27.5H13.5Q15 21 12 16.2Z" fill="#000" opacity=".16"/><g class="arr"><rect x="17" y="17.2" width="3.2" height="8.4" rx="1.6" fill="${c}" stroke="#fff" stroke-width=".8"/><path d="M17.6 23.2h4.2l-.5 4.4h-3.2Z" fill="#E9A63B" stroke="#fff" stroke-width=".7"/><path d="M18 24.2h3.4" stroke="#fff" stroke-width=".6" opacity=".8"/></g><circle cx="12" cy="9.6" r="6.4" fill="#FFD9B8" stroke="#fff" stroke-width="1"/><path d="M5.7 9.2Q6.3 3 12 3Q17.7 3 18.3 9.2Q15.2 6.4 12 6.8Q8.8 6.4 5.7 9.2Z" fill="#3a2a1f"/><path d="M5.9 7.6Q12 1.2 18.1 7.6" stroke="${c}" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="9.8" cy="10.4" r=".95" fill="#222"/><circle cx="14.2" cy="10.4" r=".95" fill="#222"/><ellipse cx="8.2" cy="12.4" rx="1.1" ry=".6" fill="#ff9c8a" opacity=".65"/><ellipse cx="15.8" cy="12.4" rx="1.1" ry=".6" fill="#ff9c8a" opacity=".65"/><path d="M10.4 13.1Q12 14.3 13.6 13.1" stroke="#b5503f" stroke-width=".8" fill="none" stroke-linecap="round"/></svg>`}
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const FACE={1:[0,0],2:[0,-90],3:[-90,0],4:[90,0],5:[0,90],6:[0,180]};
+function buildDie(el){
+  if(el.querySelector('.cube'))return;
+  const c=document.createElement('div');c.className='cube';
+  for(let n=1;n<=6;n++){const f=document.createElement('div');f.className='f f'+n;
+    for(let k=0;k<9;k++){const p=document.createElement('i');if(PIPS[n].includes(k))p.className='on';f.appendChild(p)}
+    c.appendChild(f)}
+  el.appendChild(c);el._t=0;
+}
+function setDie(el,n,spin){
+  buildDie(el);const c=el.querySelector('.cube');
+  if(spin&&!reduce)el._t=(el._t||0)+2+Math.floor(Math.random()*2);
+  c.style.transition=spin&&!reduce?'':'none';
+  const [x,y]=FACE[n]||FACE[1];
+  c.style.transform=`rotateX(${x+360*el._t}deg) rotateY(${y+360*el._t}deg)`;
+  el.setAttribute('aria-label',`주사위 ${n}`);
+}
+function whoLine(t){return t.name+' 차례'}
+const SC_ALL=['룰렛','손 들기','OX 퀴즈','단체 승부','다 같이','다 같이 물','우리 빼고'];
+const SC_VS=['진짜 가짜','참참참','핑퐁','합동','손가락 합','주사위전','동맹','순발력 대결','동맹 혹은 배신','결투!'];
+const SC_NONE=['물 원샷','보너스 주사위','꽝 카드','보물창고','택시','휴식','저격','행운','거북이','4칸 앞으로','공평','출발','무인도','한 번 더','3칸 뒤로','출발로','2칸 앞으로','무인도행','역전 찬스','면제권','떠넘기기'];
+function scope(n){if(SOLO())return SC_NONE.includes(n)?'':SC_ALL.includes(n)||['나 빼고 전원','짝꿍 건배','지목','랜덤 지목'].includes(n)?' · 👥 모두':SC_VS.includes(n)?' · ⚔️ 1:1':'';return SC_NONE.includes(n)?'':SC_ALL.includes(n)?' · 👥 모든 팀 참여':SC_VS.includes(n)?' · ⚔️ 상대 팀과':' · 🏠 우리 팀 안에서'}
+
+/* play */
+let walking=null;
+async function step(t,n){
+  const dir=n>0?1:-1;let passed=false;walking=t;if(n){t.isle=false;t.lastDir=dir}
+  for(let k=0;k<Math.abs(n);k++){
+    if(dir<0&&t.pos===0){if(t.laps>0){t.laps--;t.pos=23}else break}else t.pos=(t.pos+dir+24)%24;
+    if(dir>0&&t.pos===0){t.laps++;passed=true;if((t.drinks||0)>=CAP()&&t.laps>=S.goal)toast(`👻 ${JEUN(t.name)} 패배 팀이라 골인해도 게임이 끝나지 않아요`)}
+    renderBoard();await sleep(reduce?40:380);
+    if(dir>0&&t.pos===0&&isFin(t))break;
+  }
+  walking=null;renderBoard();await sleep(reduce?0:250);
+  return passed;
+}
+function advance(){
+  S.teams[S.cur].mi++;
+  const n=S.teams.length;
+  // 누군가 골인한 라운드: 이번 라운드에 남은 차례만 진행하고 끝
+  if(S.endRound){for(let j=S.cur+1;j<n;j++){const t=S.teams[j];if(t.fin||lostStop(t))continue;if(t.skip>0){t.skip--;toast(`${JEUN(t.name)} 무인도에서 쉬는 중 🏝️`);continue}S.cur=j;return}S.roundOver=true;return}
+  for(let guard=0;guard<n*2;guard++){
+    const prev=S.cur;S.cur=(S.cur+1)%n;if(S.cur<=prev){S.rnd=(S.rnd||0)+1;const e=TOAST_EVERY();if(e&&S.rnd%e===0)S.toastDue=true}const t=S.teams[S.cur];
+    if(t.fin||lostStop(t))continue;
+    if(t.skip>0){t.skip--;toast(`${JEUN(t.name)} 무인도에서 쉬는 중 🏝️`);continue}
+    break;
+  }
+}
+// 상한에 닿은(패배) 팀은 바퀴를 다 돌아도 게임을 끝낼 수 없어요
+const lostT=t=>!JURU()&&(t.drinks||0)>=CAP();
+function isFin(t){return t.laps>=S.goal&&!lostT(t)&&!t.fin}
+async function endByElimination(){
+  const alive=S.teams.filter(o=>(o.drinks||0)<CAP());
+  const st=settle();
+  await modal({who:'게임 끝',e:'🏆',t:alive.length?(SOLO()?'생존자가 한 명만 남았어요!':'생존 팀이 하나만 남았어요!'):(SOLO()?'모두 탈락!':'모든 팀 탈락!'),d:`${alive.length?alive[0].name+'만 상한에 닿지 않았어요. 적게 마신 순서로 순위를 매겨요.':'모두 상한에 닿았어요. 판에서 가장 멀리 간 순서로 순위를 매겨요.'}${st}`});
+  S.phase='over';S.endRound=false;S.pend=null;save();busy=false;$('rollBtn').disabled=false;show();
+}
+// 🛡️ 남은 면제권 정산: 게임이 끝날 때 2개마다 벌주 기록 −1 (적게 마시기 모드)
+function settle(){if(JURU())return '';const out=[];
+  S.teams.forEach(o=>{if(lostT(o))return;const r=Math.min(Math.floor((o.pass||0)/2),o.drinks||0);if(r>0){o.drinks-=r;o.pass-=r*2;out.push(`${o.name} −${r}`)}});
+  return out.length?` 🛡️ 남은 면제권 정산(2개마다 −1): ${out.join(', ')}.`:''}
+// 골인: 공평하게 그 라운드는 끝까지 진행하고, 같은 라운드에 골인한 팀은 모두 보너스 −1
+async function finish(t){
+  if(!t.fin){t.fin=true;sfx('win');confetti(40)}
+  const left=S.teams.map((_,i)=>i).filter(i=>i>S.cur&&!S.teams[i].fin);
+  if(left.length){const first=!S.endRound;S.endRound=true;save();
+    await modal({who:'🏁 골인!',e:'🏁',t:`${t.name} 골인!`,d:`${S.goal}바퀴를 ${first?'가장 먼저 ':''}돌았어요! 공평하게 이번 라운드는 끝까지 진행해요. 남은 차례: ${left.map(i=>S.teams[i].name).join(', ')}. 이번 라운드 안에 골인하면 똑같이 보너스를 받아요.`});
+    return false}
+  await gameOver();return true}
+async function gameOver(){
+  S.log='';const fins=S.teams.filter(o=>o.fin);const bon=[];
+  if(!JURU())fins.forEach(o=>{if((o.drinks||0)<CAP()){o.drinks=Math.max(0,(o.drinks||0)-1);bon.push(o.name)}});
+  const st=settle();
+  await modal({who:'게임 끝',e:'🏁',t:fins.length?`${fins.map(o=>o.name).join(', ')} 골인!`:'게임 끝!',d:JURU()?'🍻 게임 끝! 이제 가장 많이 마신 순서로 술왕을 뽑아요.':`${bon.length?`골인 보너스로 벌주 기록 −1: ${bon.join(', ')}.`:'상한에 닿은 팀이라 골인 보너스는 없어요.'}${st} 이제 적게 마신 순서로 순위를 매겨요.`});
+  S.phase='over';S.endRound=false;S.roundOver=false;S.pend=null;save();busy=false;$('rollBtn').disabled=false;show();
+}
+function renderOver(){
+  setTimeout(()=>{confetti(70);sfx('win')},200);
+  const cp=t=>lostT(t);const most=JURU();
+  const order=S.teams.map((t,i)=>({t,i})).sort((a,b)=>
+    most?((b.t.drinks||0)-(a.t.drinks||0)||(b.t.laps*24+b.t.pos)-(a.t.laps*24+a.t.pos))
+    :cp(a.t)-cp(b.t)||(a.t.drinks||0)-(b.t.drinks||0)||(b.t.laps*24+b.t.pos)-(a.t.laps*24+a.t.pos));
+  const w=order[0].t;S.winner=order[0].i;
+  {const top=(f,min=1)=>{const v=Math.max(...S.teams.map(f));if(S.teams.length>2&&S.teams.every(t=>f(t)===v))return null;return v>=min?S.teams.filter(t=>f(t)===v).map(t=>t.name).join(', ')+` (${v})`:null};
+   const aw=[['🎯 결투왕',top(t=>t.dw||0)],['🔥 최다 연승',top(t=>t.best||0,2)],['🔙 뒷걸음 왕',top(t=>t.back||0,2)],['🧠 위스키 박사',top(t=>t.qz||0)],JURU()?['💧 물 많이 마신 팀',null]:['🛡️ 면제권 부자',top(t=>t.pass||0)]].filter(x=>x[1]);
+   let ab=$('awards');if(!ab){ab=document.createElement('div');ab.id='awards';ab.className='awards';$('rank').after(ab)}
+   ab.innerHTML='';aw.forEach(([k,v])=>{const d=document.createElement('div');d.textContent=`${k} · ${v}`;ab.appendChild(d)});
+   {const ppl=S.teams.reduce((n,t)=>n+(t.members&&t.members.length||0),0),gl=S.teams.reduce((n,t)=>n+(t.members&&t.members.length?(t.gl||0):0),0);
+    if(ppl&&gl){const d=document.createElement('div');d.textContent=`🥃 오늘 마신 잔 · 모두 ${gl}잔 (인당 평균 ${(gl/ppl).toFixed(1)}잔)`;ab.appendChild(d)}}}
+  $('ovMsg').textContent=JURU()?'술왕이 마지막 건배 한 마디(한 단어도 OK) 하고, 다 같이 마무리 건배! 물 한 잔도 잊지 마세요 💧':SOLO()?'이긴 사람이 마지막 건배 한 마디(한 단어도 OK) 하고, 다 같이 마무리 건배.':'이긴 팀이 마지막 건배 한 마디(한 단어도 OK) 하고, 다 같이 마무리 건배.';
+  $('againBtn').textContent=SOLO()?'같은 사람들로 한 판 더':'같은 팀으로 한 판 더';$('newBtn').textContent=SOLO()?'사람 바꿔서 새 게임':'팀 바꿔서 새 게임';
+  $('ovT').textContent=JURU()?`🍻 오늘의 술왕: ${w.name}!`:`${w.name} 승리!`;
+  const r=$('rank');r.innerHTML='';
+  // 완전 동점(패배 여부·벌주·진행이 모두 같음)이면 같은 순위로 표시
+  const key=t=>[cp(t)?1:0,t.drinks||0,t.laps*24+t.pos].join('/');let rk=0;
+  order.forEach(({t},i)=>{if(i===0||key(t)!==key(order[i-1].t))rk=i+1;t._rk=rk});
+  const tie=r=>order.filter(o=>o.t._rk===r).length>1;
+  order.forEach(({t})=>{const li=document.createElement('li');li.dataset.rank=(tie(t._rk)?'공동 ':'')+t._rk+'위';
+    li.innerHTML=`<b class="rk"></b><span class="dot" style="background:${t.color}"></span><span></span><small>🥃 ${t.drinks||0}${cp(t)?' 💧패배':''} · ${t.laps}바퀴+${t.pos}칸${t.fin?' 🏁':''}</small>`;
+    li.children[2].textContent=t.name;li.children[0].textContent=t._rk===1&&!tie(1)?'🏆':li.dataset.rank;r.appendChild(li)});
+  if(tie(1))$('ovT').textContent=`${order.filter(o=>o.t._rk===1).map(o=>o.t.name).join(', ')} 공동 ${JURU()?'술왕':'승리'}!`;
+}
+// 벌주 기록 대상: 마실 팀이 정해져 있으면 미리 체크(pre), 관련 있는 팀만 누를 수 있게(only)
+const REC_NONE=['건배 타임','보너스 주사위','다 같이','출발','무인도','체이서','3칸 뒤로','2칸 뒤로','출발로','2칸 앞으로','4칸 앞으로','무인도행','거북이','행운','면제권','떠넘기기','동맹'];
+const REC_ALL=['단체 승부','룰렛','OX 퀴즈'];
+const REC_NOTE='';
+const REC_VS=['순발력 대결','참참참','주사위전','진짜 가짜','합동','동맹 혹은 배신'];
+// ===== 개인전 =====
+const SOLO=()=>S.mode==='solo';
+const SOLO_CELL={8:{e:'🥂',t:'건배 타임',d:'모두 건배! 술이든 물이든 자유, 벌주 기록 없음. 잠깐 숨 돌려요.'},
+  13:{e:'⬅️',t:'왼쪽 사람',d:'내 왼쪽 사람({left}) 벌주 한 잔!',k:'left'},
+  15:{e:'🍻',t:'짝꿍 건배',d:'앱이 짝꿍 한 명을 랜덤으로 뽑아요! 나와 짝꿍 둘이 같이 벌주 한 잔. (둘 다 기록)',k:'buddy'}};
+// 개인전 지목·짝꿍은 앱이 랜덤으로 (카드 설명)
+const SOLO_RAND={start:()=>JURU()?'다 같이 건배! 출발 칸에 딱 멈췄으니 앱이 한 명을 랜덤으로 뽑아요. 뽑힌 사람 한 잔.':null,buddy:()=>JURU()?'앱이 짝꿍 한 명을 랜덤으로 뽑아요! 나와 짝꿍 둘이 같이 한 잔!':'앱이 짝꿍 한 명을 랜덤으로 뽑아요! 나와 짝꿍 둘이 같이 벌주 한 잔. (둘 다 기록)',point1:()=>JURU()?'앱이 한 명을 랜덤으로 뽑아요! 뽑힌 사람 한 잔.':'앱이 한 명을 랜덤으로 뽑아요! 뽑힌 사람 벌주 한 잔.'};
+const SOLO_GOLD={'팀 눈치게임':{e:'➡️',t:'오른쪽 사람',d:'내 오른쪽 사람({right}) 벌주 한 잔!',k:'right'},
+  '안주 텔레파시':{e:'🎯',t:'랜덤 지목',d:'앱이 한 명을 랜덤으로 뽑아요! 뽑힌 사람 벌주 한 잔.',k:'point1'},
+  '손가락 텔레파시':{e:'🤞',t:'손가락 텔레파시',d:'나와 오른쪽 사람({right})이 셋 세고 동시에 손가락 1~5개! 같은 숫자면 내 면제권, 다르면 내가 벌주 한 잔. (오른쪽 사람은 벌주 없음)',k:'finger'}};
+// ===== 🍻 주루마블 모드: 많이 마시는 게 목적인 클래식 술자리 보드 =====
+const JURU_CELLS=[
+ {e:'🏁',t:'출발',d:'다 같이 건배! 출발 칸에 딱 멈췄다면 원하는 팀을 지목해서 한 잔.',k:'start',r:'pick'},
+ {e:'🥃',t:'원샷',d:'우리 팀 걸린 사람 한 잔!',r:'self'},
+ {e:'⬅️',t:'왼쪽',d:'왼쪽 팀({left}) 걸린 사람 한 잔!',r:'left'},
+ {e:'🃏',t:'황금카드',k:'gold'},
+ {e:'🎰',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 뽑아요. 당첨된 팀 한 잔!',k:'roulette'},
+ {e:'🙋',t:'나 빼고 전원',d:'우리 팀 빼고 다른 팀 전부 걸린 사람 한 잔!',r:'others'},
+ {e:'🏝️',t:'무인도',d:'다음 차례 한 번 쉬어요. 무인도에 있는 동안은 마실 수도, 대결할 수도 없어요 (상도 벌도 없음).',k:'island'},
+ {e:'✊',t:'참참참',d:'{me} vs {them} 참참참 한 판! 이긴 팀이 한 잔 + 2칸 앞으로, 진 사람은 물 한 잔 + 1칸 뒤로.',k:'rps'},
+ {e:'➡️',t:'오른쪽',d:'오른쪽 팀({right}) 걸린 사람 한 잔!',r:'right'},
+ {e:'🍻',t:'짝꿍 건배',d:'원하는 팀 하나를 골라 두 팀 걸린 사람이 같이 한 잔!',k:'buddy'},
+ {e:'🎲',t:'홀짝',d:'우리 팀이 홀이나 짝을 누르면 4·3·2·1 카운트 후 주사위가 굴러가요! 맞히면 우리 팀 걸린 사람 한 잔, 틀리면 물 한 잔.',k:'oddeven'},
+ {e:'🃏',t:'황금카드',k:'gold'},
+ {e:'🍾',t:'다 같이 한 잔',d:'모든 팀 걸린 사람 한 잔! 건배!',r:'all'},
+ {e:'🎯',t:'지목',d:'원하는 팀 하나를 지목! 그 팀 걸린 사람 한 잔.',k:'point1'},
+ {e:'✌️',t:'더블',d:'우리 팀 걸린 사람 두 잔! (한 잔씩 두 번 기록)',r:'self2'},
+ {e:'⚡',t:'순발력 대결',d:'{me} vs {them}! 3판 2선승, 화면이 🟢초록으로 바뀌는 순간 먼저 누르는 쪽이 이겨요! 초록 전에 누르면 부정출발. 이긴 팀이 한 잔 + 2칸 앞으로, 진 사람은 물 한 잔 + 1칸 뒤로.',k:'react'},
+ {e:'🔢',t:'업다운',d:'앱이 1~20 중 숫자 하나를 숨겼어요. 4번 안에 맞히면 우리 팀 걸린 사람 한 잔! 못 맞히면 물 한 잔.',k:'updown'},
+ {e:'🃏',t:'황금카드',k:'gold'},
+ {e:'🚕',t:'택시',d:'앞쪽 8칸 안에서 가고 싶은 칸을 골라 이동! 도착한 칸도 진행해요.',k:'taxi'},
+ {e:'🤝',t:'동맹 혹은 배신',d:'상대: {vsTeam}. 두 팀 대표가 몰래 🤝협력 또는 🗡️배신! 둘 다 협력 → 두 팀 다 한 잔 / 한쪽만 배신 → 배신한 팀 두 잔, 당한 팀은 물 / 둘 다 배신 → 둘 다 물 + 1칸 뒤로.',k:'pdj'},
+ {e:'✋',t:'마지막 손',d:'셋 세고 모든 팀 대표가 동시에 손 번쩍! 제일 늦게 든 팀 빼고 모두 한 잔, 늦은 팀은 물 한 잔. 누가 제일 늦었는지 애매하면 그 팀들끼리만 한 번 더.',k:'lasthand'},
+ {e:'🧊',t:'체이서',d:'물 한 잔 마시고 숨 고르기. 페이스 조절도 실력!'},
+ {e:'⭕',t:'OX 퀴즈',d:'OX 서바이벌! 최대 3문제, 문제마다 10초 동안 O/X. 틀린 팀은 탈락하고 물 한 잔, 끝까지 살아남은 팀이 한 잔!',k:'ox'},
+ {e:'🃏',t:'황금카드',k:'gold'}];
+const JURU_GOLD=[
+ {e:'🥃',t:'원샷',d:'우리 팀 걸린 사람 한 잔!',r:'self'},
+ {e:'✌️',t:'더블 원샷',d:'우리 팀 걸린 사람 두 잔!',r:'self2'},
+ {e:'↔️',t:'양옆',d:'왼쪽 팀({left})과 오른쪽 팀({right}) 걸린 사람 한 잔씩!',r:'both'},
+ {e:'🙋',t:'나 빼고 전원',d:'우리 팀 빼고 모두 한 잔!',r:'others'},
+ {e:'🍾',t:'전원 건배',d:'모든 팀 걸린 사람 한 잔!',r:'all'},
+ {e:'🎯',t:'지목',d:'원하는 팀 하나를 지목! 그 팀 걸린 사람 한 잔.',k:'point1'},
+ {e:'👑',t:'1등 견제',d:'지금 가장 많이 마신 팀({first}, 술왕 후보) 빼고 모두 한 잔! 1등을 따라잡아라!',r:'notfirst'},
+ {e:'🐢',t:'꼴찌 응원',d:'지금 가장 적게 마신 팀({last}) 한 잔! 힘내라!',r:'last'},
+ {e:'⏭️',t:'다음 차례',d:'다음 차례 팀({next}) 걸린 사람 한 잔!',r:'next'},
+ {e:'💧',t:'물 타임',d:'모두 물 한 잔씩. 페이스 조절!'},
+ {e:'⏩',t:'2칸 앞으로',d:'2칸 앞으로! 도착한 칸도 진행해요.',mv:2},
+ {e:'🔙',t:'3칸 뒤로',d:'3칸 뒤로! 도착한 칸도 진행해요.',mv:-3},
+ {e:'🎰',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 뽑아요. 당첨된 팀 한 잔!',k:'roulette'},
+ {e:'🍻',t:'짝꿍 건배',d:'원하는 팀 하나를 골라 두 팀 걸린 사람이 같이 한 잔!',k:'buddy'},
+ {e:'🔮',t:'운명의 홀짝',d:'우리 팀이 홀이나 짝을 누르면 주사위가 굴러가요! 맞히면 우리 팀 걸린 사람 두 잔, 틀리면 물 한 잔.',k:'fatej'},
+ {e:'🧩',t:'위스키 초성',d:'‘초성 공개’를 누르면 15초! 위스키 단어를 글씨로 맞히면 우리 팀 걸린 사람 한 잔, 못 맞히면 물 한 잔.',k:'chosung'}];
+// 주루마블 1등/꼴찌 = 마신 잔 수 기준 (동점이면 판에서 앞선 쪽이 1등)
+const juruProg=o=>o.laps*24+o.pos;
+function juruFirst(){return S.teams.filter(o=>!onIsland(o)).sort((a,b)=>(b.drinks||0)-(a.drinks||0)||juruProg(b)-juruProg(a))[0]}
+function juruLast(){return S.teams.filter(o=>!onIsland(o)).sort((a,b)=>(a.drinks||0)-(b.drinks||0)||juruProg(a)-juruProg(b))[0]}
+function juruRec(def,t){
+  const all=S.teams.map((_,i)=>i).filter(i=>S.teams[i]===t||!onIsland(S.teams[i])),ci=S.teams.indexOf(t),idx=o=>S.teams.indexOf(o);
+  const prog=o=>o.laps*24+o.pos;const others=all.filter(i=>i!==ci);
+  switch(def.r){
+    case 'self':return {pre:[ci],only:[ci]};
+    case 'self2':return {pre:[ci],only:[ci],double:true};
+    case 'left':return {pre:[idx(nb(t,-1))],only:[idx(nb(t,-1))]};
+    case 'right':return {pre:[idx(nb(t,1))],only:[idx(nb(t,1))]};
+    case 'both':{const a=[...new Set([idx(nb(t,-1)),idx(nb(t,1))])];return {pre:a,only:a}}
+    case 'others':return {pre:others,only:others};
+    case 'all':return {pre:all,only:all};
+    case 'notfirst':{const l=juruFirst();const a=all.filter(i=>i!==idx(l));return {pre:a,only:a}}
+    case 'last':{const z=juruLast();return {pre:[idx(z)],only:[idx(z)]}}
+    case 'notlast':{const z=S.teams.filter(o=>!onIsland(o)).sort((a,b)=>prog(a)-prog(b))[0];const a=all.filter(i=>i!==idx(z));return {pre:a,only:a}}
+    case 'next':{const x=idx(nb(t,1));return {pre:[x],only:[x]}}
+    case 'pick':return {pre:[],only:all};
+  }
+  return undefined;
+}
+function cellAt(i){return JURU()?JURU_CELLS[i]:SOLO()&&SOLO_CELL[i]||CELLS[i]}
+// 황금카드는 섞은 덱에서 차례로 뽑아요 (한 바퀴 다 돌기 전엔 같은 카드가 안 나옴)
+function goldPick(){const src=JURU()?JURU_GOLD:GOLD,key=JURU()?'deckJ':'deckG';
+  if(!S[key]||!S[key].length){S[key]=shuffle(src.map((_,i)=>i))}
+  let ix=S[key].pop();if(!(ix>=0&&ix<src.length)){S[key]=shuffle(src.map((_,i)=>i));ix=S[key].pop()}const g=src[ix];save();return !JURU()&&SOLO()&&SOLO_GOLD[g.t]||g}
+const SOLO_TXT=[[' ({vsTeam})',''],['{vsTeam} 걸린 사람','{vsTeam}'],['두 팀 모두 걸린 사람','두 사람 모두'],['모든 팀 대표가','모두'],['우리 팀 면제권','면제권'],['우리 팀 혜택','내 혜택'],['우리 팀 벌주 기록','내 벌주 기록'],['우리 팀에 걸린','나에게 걸린'],['원하는 팀에','원하는 사람에게'],['우리 팀 전원이','내가'],['우리 팀 모두 물','물'],['한 바퀴 돈 팀에','한 바퀴 돈 사람에게'],['1등 팀과','1등과'],['다음 차례 팀을','다음 차례 사람을'],['우리 팀 걸린 사람','내가'],['두 팀 각각 걸린 사람','두 사람 모두'],['다른 팀마다 걸린 사람','다른 사람 모두'],['다른 팀 전부 걸린 사람','다른 사람 전부'],['모든 팀 걸린 사람','모두'],['두 팀 대표가','두 사람이'],['두 팀 걸린 사람이','둘이'],['팀 하나를','사람 한 명을'],['그 팀 걸린 사람','그 사람'],['우리 팀이','내가'],[') 걸린 사람',')'],['팀 걸린 사람','사람'],['우리 팀원 모두','모두'],['우리 팀원끼리','다 같이'],['걸린 팀(우리 팀)','나'],['우리 팀 + ','나 + '],['우리 팀 걸린 사람','내가'],['두 팀 각각 걸린 사람','두 사람 모두'],['두 팀 모두','두 사람 모두'],['두 팀 대표','두 사람'],['다른 팀마다 걸린 사람','다른 사람 모두'],['우리 팀 빼고','나 빼고'],['진 팀 걸린 사람','진 사람'],['진 팀은 걸린 사람','진 사람은'],['낮은 팀 걸린 사람','낮은 사람'],['틀린 팀 걸린 사람','틀린 사람'],['당첨된 팀','당첨된 사람'],['탈락 팀은 걸린 사람','탈락한 사람은'],['폰을 들고 있던 팀은 걸린 사람','폰을 들고 있던 사람은'],['팀마다 한 명씩','모두'],['팀마다 대표를 정하고','모두 참여'],['팀별로','각자'],['팀 대표들이','모두'],['팀 대표가','본인이'],['다음 팀으로','다음 사람에게'],['의 걸린 사람',''],['상대 선수','상대'],['선수 ',''],['우리 팀','나'],['팀','사람']];
+// 개인전일 때 카드 안에서 새로 생기는 글자도 개인용 문구로 바꿔요 (팀 이름이 '사람'으로 바뀌지 않게 이름은 건드리지 않음)
+// 주루마블(상벌 반대)에서는 미션 결과 문구도 바꿔요: 성공 = 🍻 한 잔, 실패 = 💧 물
+const JURU_TXT=[['🛡️ 면제권 2개 획득','🍻 상으로 두 잔'],['면제권 2개','두 잔'],['🛡️ 면제권 보너스','🍻 상으로 한 잔'],['🛡️ 면제권 획득','🍻 상으로 한 잔'],['🛡️ 두 팀 모두 면제권','🍻 두 팀 모두 한 잔'],['🛡️ 두 사람 모두 면제권','🍻 두 사람 모두 한 잔'],['면제권 획득','상으로 한 잔'],
+  ['걸린 사람 벌주 한 잔','💧 물 한 잔'],['→ 벌주','→ 💧 물'],['벌주 + ','물 + '],['벌주 없이 넘어가요','통과!']];
+function juruText(d){if(!JURU()||!d)return d;for(const [a,b] of JURU_TXT)d=d.split(a).join(b);return d}
+let soloObs=null;
+function watchSolo(){const card=$('card');if(!card||soloObs)return;
+  soloObs=new MutationObserver(()=>{if(!SOLO()&&!JURU())return;const w=document.createTreeWalker(card,NodeFilter.SHOW_TEXT);let n;
+    while(n=w.nextNode()){if(n.parentElement&&n.parentElement.closest('#mRec'))continue;const v=n.nodeValue;if(!/팀|면제권|벌주/.test(v))continue;const nv=juruText(soloText(v));if(nv!==v)n.nodeValue=nv}});
+  soloObs.observe(card,{subtree:true,childList:true,characterData:true})}
+function soloText(d){if(!SOLO()||!d)return d;for(const [a,b] of SOLO_TXT)d=d.split(a).join(b);return d.replace(/(\S) 걸린 사람 (벌주|한 잔)/g,'$1 $2')}
+const nb=(t,dir)=>S.teams[(S.teams.indexOf(t)+dir+S.teams.length)%S.teams.length];
+function recFor(name,t,o={}){
+  if(JURU()){const def=[...JURU_CELLS,...JURU_GOLD].find(d=>d.t===name);if(def){const r=juruRec(def,t);if(r!==undefined)return r;if(!def.k&&!def.mv)return null}}
+  const all=S.teams.map((_,i)=>i).filter(i=>S.teams[i]===t||!onIsland(S.teams[i])),ci=S.teams.indexOf(t),others=all.filter(i=>i!==ci);
+  if(name==='역전 찬스')return null;
+  if(REC_NONE.includes(name))return null;
+  if(name==='다 같이')return {pre:all,only:all};
+  if(name==='나 빼고 전원')return {pre:others,only:others};
+  if(name==='왼쪽 사람'){const x=S.teams.indexOf(nb(t,-1));return {pre:[x],only:[x]}}
+  if(name==='오른쪽 사람'){const x=S.teams.indexOf(nb(t,1));return {pre:[x],only:[x]}}
+  if(name==='짝꿍 건배'||name==='지목'||name==='랜덤 지목'||name==='마지막 손')return {pre:[],only:all};
+  if(name==='꽝 카드')return {pre:[ci],only:[ci]};
+  if(name==='우리 빼고')return {pre:others,only:others};
+  if(name==='폭탄 돌리기')return {pre:[],only:all};
+  if(name==='저격'){if(!o.lead)return null;const li=S.teams.indexOf(o.lead);return {pre:[li],only:[li]}}
+  if(REC_ALL.includes(name))return {pre:[],only:all};
+  if(REC_VS.includes(name)&&o.vs)return {pre:[],only:[ci,S.teams.indexOf(o.vs)]};
+  return {pre:[],only:[ci]};
+}
+// 🔥 파이널 랩: 황금카드를 2장 보고 하나를 골라요 (역전 기회)
+function goldChoose(t){const a=goldPick();let b=goldPick(),k=0;while(b.t===a.t&&k++<5)b=goldPick();
+  return new Promise(res=>{const box=$('pickOpts');box.innerHTML='';box.className='opts';
+    [a,b].forEach(g=>{const o=document.createElement('button');o.className='opt';
+      o.innerHTML='<div class="oe"></div><div class="ot"></div><div class="od"></div>';o.querySelector('.oe').textContent=g.e;o.querySelector('.ot').textContent=g.t;
+      o.querySelector('.od').textContent=juruText(soloText(amt(generic(g.d||'').replace(/\{[a-z]+\}/g,'○○'))));
+      o.onclick=()=>{$('pick').classList.remove('on');res(g)};box.appendChild(o)});
+    $('pickT').textContent=`🔥 파이널 랩! ${t.name}, 황금카드 2장 중 하나를 고르세요`;$('pick').classList.add('on')})}
+function chooseCard(){
+  return new Promise(res=>{
+    const a=Math.floor(Math.random()*GOLD.length);let b;do{b=Math.floor(Math.random()*GOLD.length)}while(b===a);
+    const box=$('pickOpts');box.innerHTML='';box.className='opts';
+    [a,b].forEach(i=>{const g=GOLD[i];const o=document.createElement('button');o.className='opt';
+      o.innerHTML=`<div class="oe">${g.e}</div><div class="ot"></div><div class="od"></div>`;
+      o.querySelector('.ot').textContent=g.t;o.querySelector('.od').textContent=amt(g.d.replace(/\{[a-z]+\}/g,'○○'));
+      o.onclick=()=>{$('pick').classList.remove('on');res(g)};box.appendChild(o)});
+    $('pickT').textContent='🎁 보물창고 · 카드 하나를 고르세요';$('pick').classList.add('on');
+  });
+}
+const TREASURE=[
+ {e:'🛡️',t:'면제권 2개',f:'pass2'},{e:'🍀',t:'벌주 기록 −1',f:'erase'},{e:'🎲',t:'한 번 더 굴리기',f:'again'},
+ {e:'🚕',t:'택시 탑승권',f:'taxi'},{e:'🎯',t:'저격권',f:'snipe'},{e:'🐢',t:'1등 팀 3칸 뒤로',f:'turtle'},{e:'💧',t:'꽝! 물 한 잔',f:'water'}];
+function pickChest(){
+  return new Promise(res=>{
+    const pool=shuffle([...TREASURE]).slice(0,3);
+    const box=$('pickOpts');box.innerHTML='';box.className='chests';
+    const els=pool.map((tr,i)=>{const o=mk('button','chest');o.innerHTML=`<div class="ce">🎁</div><div class="ct">상자 ${i+1}</div>`;box.appendChild(o);return o});
+    els.forEach((o,i)=>o.onclick=async()=>{els.forEach(x=>x.disabled=true);
+      els.forEach((x,j)=>{x.querySelector('.ce').textContent=pool[j].e;x.querySelector('.ct').textContent=pool[j].t;x.classList.add('open');if(j!==i)x.classList.add('dim');else x.classList.add('picked')});
+      $('pickT').textContent=`🎁 ${pool[i].e} ${pool[i].t}!`;await sleep(reduce?300:1700);$('pick').classList.remove('on');box.className='opts';res(pool[i])});
+    $('pickT').textContent='🎁 보물창고 · 상자 하나를 여세요';$('pick').classList.add('on');
+  });
+}
+async function openChest(t,dbl,depth){
+  const tr=await pickChest();let again=dbl;
+  const who=whoLine(t)+' · 보물창고';
+  if(tr.f==='pass2'){grantPass(t);grantPass(t);await modal({who,e:tr.e,t:tr.t,d:'우리 팀 면제권 2개 획득! 반사도 바로 쓸 수 있어요.'})}
+  else if(tr.f==='erase'){const ok=(t.drinks||0)>0&&t.drinks<CAP();if(ok)t.drinks--;await modal({who,e:tr.e,t:tr.t,d:ok?'우리 팀 벌주 기록 −1!':'지울 기록이 없어서 대신 면제권 하나!'});if(!ok)grantPass(t)}
+  else if(tr.f==='again'){again=true;await modal({who,e:tr.e,t:tr.t,d:'주사위를 한 번 더 굴려요!'})}
+  else if(tr.f==='taxi'){return taxiRide(t,dbl,depth)}
+  else if(tr.f==='snipe'){const lead=S.teams.filter(o=>o!==t&&!onIsland(o)&&(o.drinks||0)<CAP()).sort((a,b)=>(a.drinks||0)-(b.drinks||0))[0];
+    await modal({who,e:tr.e,t:tr.t,d:lead?`${lead.name}(벌주 기록이 가장 적은 팀)의 걸린 사람 ${amt('벌주 한 잔')}!`:'저격할 팀이 없어요.',rec:lead?{pre:[S.teams.indexOf(lead)],only:[S.teams.indexOf(lead)]}:null,x:lead?'🎯 걸린 사람: {ROT}':''})}
+  else if(tr.f==='turtle'){const others=S.teams.filter(o=>o!==t&&!onIsland(o));const ld=others.sort((a,b)=>(b.laps*24+b.pos)-(a.laps*24+a.pos))[0];
+    if(ld){backN(ld,3);renderBoard()}await modal({who,e:tr.e,t:tr.t,d:ld?`1등 ${ld.name} 3칸 뒤로!`:'뒤로 보낼 팀이 없어요.'})}
+  else {await modal({who,e:tr.e,t:tr.t,d:'꽝! 우리 팀 물 한 잔씩 마시고 쉬어가요. 벌주 기록은 없어요.'})}
+  S.log=`${t.name}: 보물창고 - ${tr.t}`;
+  return {again,done:false};
+}
+let taxiResolve=null;
+async function taxiRide(t,dbl,depth){
+  // 택시는 앞쪽 8칸 안에서만 (뒤쪽 칸을 고르면 거의 한 바퀴를 공짜로 가는 문제 방지)
+  const TAXI_MAX=8;
+  await modal({who:whoLine(t),e:'🚕',t:'택시',d:`앞쪽 ${TAXI_MAX}칸 안에서 가고 싶은 칸을 누르세요. 그 칸까지 이동하고, 도착한 칸 미션을 진행해요.`});
+  const ok=[...Array(TAXI_MAX)].map((_,k)=>(t.pos+k+1)%24);
+  ok.forEach(c=>$('c'+c).classList.add('taxiok'));$('board').classList.add('picking');$('taxibar').classList.add('on');
+  let i;while(true){i=await new Promise(r=>taxiResolve=r);if(ok.includes(i))break;toast(`🚕 앞쪽 ${TAXI_MAX}칸 안에서만 고를 수 있어요`)}
+  ok.forEach(c=>$('c'+c).classList.remove('taxiok'));$('board').classList.remove('picking');$('taxibar').classList.remove('on');
+  const steps=(i-t.pos+24)%24;
+  if(!steps){toast('제자리! 그대로 쉬어가요');return {again:dbl,done:false}}
+  const ps=await step(t,steps);
+  if(isFin(t))return {again:false,done:true};
+  if(ps)toast(`${t.name} 한 바퀴! 👏`);
+  if(depth>=2)return {again:dbl,done:false};
+  const r=await landHere(t,false,depth+1);
+  if(r.done)return r;
+  return {again:(dbl||r.again)&&!t.skip,done:false};
+}
+const GHOSTC=[
+ {e:'👻',t:'깜짝 놀래키기',d:'고른 팀을 2칸 뒤로!',f:'back'},
+ {e:'🕸️',t:'유령의 저주',d:'고른 팀은 다음 차례 한 번 쉬어요.',f:'skip'},
+ {e:'💀',t:'유령 벌주',d:'고른 팀의 걸린 사람 벌주 한 잔!',f:'drink'},
+ {e:'👐',t:'훔치기',d:'고른 팀의 면제권 1개를 빼앗아 없애요. (없으면 2칸 뒤로)',f:'steal'},
+ {e:'😇',t:'수호천사',d:'고른 팀에 면제권 1개를 선물해요. 누구 편을 들까?',f:'gift'},
+ {e:'🔀',t:'자리 바꾸기',d:'고른 두 팀의 자리(칸과 바퀴 수)를 통째로 바꿔요!',f:'swap'}];
+// 패배 팀(유령)은 미션 대신 유령 장난 카드: 살아있는 팀을 골라 판을 흔들어요
+async function ghostTurn(t,dbl){
+  const g=GHOSTC[Math.floor(Math.random()*GHOSTC.length)];
+  const alive=S.teams.filter(o=>o!==t&&!lostT(o)&&!onIsland(o));
+  await modal({who:`👻 ${t.name} (유령 팀) 차례 · 유령 장난 카드`,e:g.e,t:g.t,d:g.d+' 유령 팀이 상의해서 대상을 골라요.',gold:true,
+    act:{custom:box=>{const cap=mk('p','cap',g.f==='swap'?'바꿀 두 팀을 차례로 고르세요':'대상 팀을 고르세요');const row=mk('div','row2');box.append(cap,row);const picked=[];
+      const res=mk('div','res');
+      if(!alive.length){cap.textContent='고를 수 있는 팀이 없어요';return}
+      alive.forEach(o=>{const b=mbtn(o.name,()=>{picked.push(o);b.disabled=true;
+        if(g.f==='swap'&&picked.length<2){cap.textContent=`${JWA(o.name)} 바꿀 팀은?`;return}
+        row.remove();cap.remove();box.appendChild(res);const [x,y]=picked;
+        if(g.f==='back'){backN(x,2);res.textContent=`👻 ${x.name} 2칸 뒤로!`}
+        if(g.f==='skip'){x.skip=(x.skip||0)+1;res.textContent=`🕸️ ${x.name} 다음 차례 쉬기`}
+        if(g.f==='drink'){markLuck(x);res.textContent=`💀 ${x.name} 걸린 사람 벌주 한 잔`}
+        if(g.f==='steal'){if(x.pass>0){x.pass--;res.textContent=`👐 ${x.name} 면제권 −1`}else{backN(x,2);res.textContent=`👐 훔칠 게 없어서 ${x.name} 2칸 뒤로`}}
+        if(g.f==='gift'){grantPass(x);res.textContent=`😇 ${x.name}에 면제권 선물`}
+        if(g.f==='swap'){swapSpots(x,y);res.textContent=`🔀 ${x.name} ↔ ${y.name} 자리 바꿈`}
+        renderBoard()});b.style.borderColor=o.color;row.appendChild(b)});
+    }},rec:g.f==='drink'?{pre:[],only:alive.map(o=>S.teams.indexOf(o))}:null});
+  S.log=`👻 ${t.name}: ${g.t}`;
+  return {again:dbl,done:false};
+}
+async function landHere(t,dbl,depth){
+  const cell=cellAt(t.pos);
+  if(lostT(t)&&depth===0)return ghostTurn(t,dbl);
+  if(cell.k==='start'&&!JURU()&&t.lastDir!==-1)grantPass(t); // 뒤로 가다 출발 칸에 멈춘 건 '딱 멈춤' 보상 없음
+  if(cell.k==='taxi')return taxiRide(t,dbl,depth);
+  let again=dbl,chain=false;
+  if(cell.k==='treasure')return openChest(t,dbl,depth);
+  const forced=null;
+  if(cell.k==='gold'||forced){
+    const g=forced||(S.final&&!lostT(t)?await goldChoose(t):goldPick());
+    const gctx={};let d=fill(g.d,t,gctx);
+    if(SOLO()&&SOLO_RAND[g.k]){const x=SOLO_RAND[g.k]();if(x)d=x}
+    let leader=null;
+    if(g.swap){
+      const others=S.teams.filter(o=>o!==t);
+      leader=others.reduce((m,o)=>(o.laps*24+o.pos)>(m.laps*24+m.pos)?o:m,others[0]);
+      if(t.laps*24+t.pos>=leader.laps*24+leader.pos){d='이미 우리 팀이 1등! 대신 면제권 하나 획득.';leader=null}
+      else d=`지금 1등인 ${JWA(leader.name)} 자리(칸과 바퀴 수)를 통째로 바꿔요.`;
+    }
+    let lead=null;
+    if(g.k==='leader'){lead=S.teams.filter(o=>o!==t&&!onIsland(o)&&(o.drinks||0)<CAP()).sort((a,b)=>(a.drinks||0)-(b.drinks||0))[0]||null;
+      d=lead?`${lead.name}의 걸린 사람 벌주 한 잔! (벌주 기록이 가장 적은 팀)`:'저격할 팀이 없어요.'}
+    if(g.k==='soloox'){gctx.ox=OX[Math.floor(Math.random()*OX.length)]}
+    if(gctx.noVs){await modal({who:whoLine(t)+' · 황금카드',e:'🏝️',t:'상대가 없어요',d:`${g.t}: 대결할 상대가 모두 무인도에 있어요! 이번 카드는 쉬어가요.`});S.log=`${t.name}: ${g.t} (상대 없음)`;return {again,done:false}}
+    if(gctx.vs)await spinPick(gctx.vs,t);
+    await modal({who:whoLine(t)+' · 황금카드'+scope(g.t),e:g.e,t:g.t,d,gold:true,act:makeAct(g.k,t,gctx),rec:recFor(g.t,t,{vs:gctx.vs,lead,swapFail:!!g.swap&&!leader}),x:[pickLine(d),dbl&&!g.island?'🎲 주사위 더블(같은 숫자)! 이 미션이 끝나면 한 번 더 굴려요':''].filter(Boolean).join('\n')});
+    if(g.mv){const ps=await step(t,g.mv);if(ps)toast(`${t.name} 한 바퀴! 👏`);if(isFin(t))return {again:false,done:true};chain=true}
+    if(g.to!=null){t.pos=g.to;t.isle=false;t.lastDir=-1;renderBoard()}
+    if(leader){swapSpots(t,leader);renderBoard()}
+    if(g.island){t.skip=1;t.isle=true;again=false}
+    if(g.pass)grantPass(t);
+    if(g.k==='again2')again=true;
+    if(g.swap&&!leader)grantPass(t);
+    if(g.k==='luck'){if((t.drinks||0)>0&&t.drinks<CAP()){t.drinks--;toast(`🍀 ${t.name} 벌주 기록 −1`)}else toast('지울 기록이 없어요')}
+    if(g.k==='mercy'){const l=S.teams.filter(o=>(o.drinks||0)>0&&o.drinks<CAP()).sort((a,b)=>b.drinks-a.drinks)[0];if(l){l.drinks--;toast(`⚖️ ${l.name} 벌주 기록 −1`)}}
+    if(g.k==='turtle'){let k2=1,nx=S.teams[(S.cur+1)%S.teams.length];while((onIsland(nx)||lostT(nx))&&k2<S.teams.length){k2++;nx=S.teams[(S.cur+k2)%S.teams.length]}
+      if(nx===t){grantPass(t);toast('🐢 보낼 팀이 없어서 대신 면제권 하나')}else{backN(nx,2);renderBoard();toast(`🐢 ${nx.name} 2칸 뒤로`)}}
+    S.log=`${t.name}: 황금카드 - ${g.t}`;
+    if(chain&&depth<2){toast(`${cellAt(t.pos).e} ${cellAt(t.pos).t} 칸 도착! 미션 진행`);await sleep(reduce?0:500);
+      const r=await landHere(t,false,depth+1);if(r.done)return r;again=again||r.again;if(t.skip)again=false}
+  }else{
+    if(cell.k==='island'){t.skip=1;t.isle=true;again=false}
+    if(cell.k==='chaser')grantPass(t);
+    if(cell.k==='again')again=true;
+    const x=(dbl&&cell.k!=='island'&&cell.k!=='again')?'🎲 주사위 더블(같은 숫자)! 이 미션이 끝나면 한 번 더 굴려요':'';
+    const ctx={};if(cell.k==='ox')ctx.ox=OX[Math.floor(Math.random()*OX.length)];
+    let d=cell.k==='ox'?cell.d:cell.k==='bal'?BAL[Math.floor(Math.random()*BAL.length)]+'? 셋 세고 우리 팀원 전원이 동시에 손가락으로 A(왼쪽) 또는 B(오른쪽)를 가리켜요. 전원이 같은 쪽이면 면제권, 한 명이라도 갈리면 걸린 사람 벌주 한 잔.':fill(cell.d,t,ctx);
+    if(SOLO()&&SOLO_RAND[cell.k]){const x=SOLO_RAND[cell.k]();if(x)d=x}
+    if(ctx.noVs){await modal({who:whoLine(t),e:'🏝️',t:'상대가 없어요',d:`${cell.t}: 대결할 상대가 모두 무인도에 있어요! 이번 대결은 쉬어가요.`});S.log=`${t.name}: ${cell.t} (상대 없음)`;return {again,done:false}}
+    if(ctx.vs)await spinPick(ctx.vs,t);
+    await modal({who:whoLine(t)+scope(cell.t),e:cell.e,t:cell.t,d,rec:recFor(cell.t,t,{vs:ctx.vs}),act:makeAct(cell.k,t,ctx),x:[pickLine(d),x].filter(Boolean).join('\n')});
+    S.log=`${t.name}: ${cell.t}`;
+  }
+  return {again,done:false};
+}
+// 🌙 어두운 술자리용 테마 (기기 설정과 별개로 고를 수 있어요)
+function applyTheme(){const th=S.theme||'';if(th)document.documentElement.dataset.theme=th;else delete document.documentElement.dataset.theme;$('themeBtn').textContent=document.documentElement.dataset.theme==='dark'||(!th&&matchMedia('(prefers-color-scheme: dark)').matches)?'☀️':'🌙'}
+$('themeBtn').onclick=()=>{const dark=document.documentElement.dataset.theme==='dark'||(!S.theme&&matchMedia('(prefers-color-scheme: dark)').matches);S.theme=dark?'light':'dark';save();applyTheme()};
+$('muteBtn').onclick=()=>{S.mute=!S.mute;$('muteBtn').textContent=S.mute?'🔇':'🔊';save();if(!S.mute)sfx('tick')};
+$('boostBtn').onclick=()=>{return;if(busy||S.boost)return;const i=S.cur,t=S.teams[i];if((t.drinks||0)>=CAP())return;
+  addDrink(i,true);S.boost=true;S.log=`🍺 ${t.name} 원샷 부스트! 벌주 기록 +1 (지금 ${t.drinks}잔) · 이번 주사위 +${BOOST}칸`;
+  toast(`🥃 ${t.name} 벌주 +1 기록! 이번 주사위 +${BOOST}칸`);save();renderBoard();
+  const card=document.querySelectorAll('#chips .tcard')[i];if(card){card.classList.remove('bump');void card.offsetWidth;card.classList.add('bump')}};
+$('rollBtn').onclick=async()=>{
+  if(busy)return;busy=true;$('rollBtn').disabled=true;
+  const t=S.teams[S.cur];
+  const a=1+Math.floor(Math.random()*6),b=1+Math.floor(Math.random()*6);const boost=S.boost?BOOST:0;S.boost=false;
+  const d1=$('d1'),d2=$('d2');
+  setDie(d1,a,true);setDie(d2,b,true);sfx('roll');
+  if(!reduce)await sleep(900);
+  const dbl=a===b;
+  S.log=`${t.name}: ${a} + ${b}${boost?' + 🍺'+boost:''} = ${a+b+boost}${dbl?' 더블!':''}`;renderBoard();
+  await sleep(250);
+  if(boost)toast(`🍺 원샷 부스트! +${boost}칸`);
+  S.turnNo=(S.turnNo||0)+1;
+  let mv=a+b+boost;
+  if(!JURU()&&!lostT(t)&&(t.pass||0)>0)mv=await passAdjust(t,mv);
+  const passed=await step(t,mv);
+  S.pend={i:S.cur,dbl};save(); // 새로고침해도 다시 굴리지 못하게, 도착 상태를 바로 저장
+  await afterMove(t,dbl,passed);
+};
+async function afterMove(t,dbl,passed){
+  if(isFin(t)){await goalIn(t);return}
+  if(passed&&t.pos!==0)toast(`${t.name} 한 바퀴! 👏`);
+  if(!S.final&&S.goal>1&&t.laps===S.goal-1&&!lostT(t)){S.final=true;document.body.classList.add('final');sfx('go');confetti(40);
+    await modal({who:'🔥 파이널 랩',e:'🏁',t:'마지막 바퀴 시작!',d:`${JGA(t.name)} 마지막 바퀴에 들어섰어요! 지금부터 1:1 대결에서 이기면 ${WIN_STEP+1}칸 앞으로 (평소보다 +1), 황금카드는 2장 중 골라요. 역전의 시간이에요!`});}
+  // 🤜🤛 다른 팀 말과 같은 칸에서 만나면 즉석 결투 (출발 칸·무인도·유령 제외)
+  {const here=cellAt(t.pos),duelCell=['rps','react','dicebattle','realfake'].includes(here.k);
+   const met=(S.turnNo<=S.teams.length||duelCell)?[]:S.teams.filter(o=>o!==t&&o.pos===t.pos&&t.pos!==0&&!onIsland(o)&&!lostT(o)&&!lostT(t));
+    if(met.length){const o=met[Math.floor(Math.random()*met.length)];sfx('go');
+      await modal({who:'🤜🤛 마주침!',e:'💥',t:'결투!',d:`${JWA(t.name)} ${JGA(o.name)} 같은 칸에서 딱 만났어요! 즉석 참참참 한 판. 이긴 팀은 ${WIN_STEP+(S.final?1:0)}칸 앞으로, 진 쪽은 ${JURU()?'물 한 잔':'벌주 한 잔'} + 1칸 뒤로. 결투가 끝나면 원래 칸 미션을 진행해요.`,
+        act:makeAct('rps',t,{vs:o}),rec:{pre:[],only:[S.teams.indexOf(t),S.teams.indexOf(o)]}});}}
+  const r=await landHere(t,dbl,0);
+  if(r.done){await goalIn(t);return}
+  {const w=await runMoves();if(w){await goalIn(w);return}}
+  if(isFin(t)){await goalIn(t);return}
+  if(!JURU()&&S.teams.filter(o=>(o.drinks||0)<CAP()).length<=1){await endByElimination();return}
+  await endTurn(r.again);
+}
+// 차례 중간에 새로고침했을 때: 굴림은 이미 끝났으니 도착한 칸 미션부터 이어서
+async function resumeTurn(){const p=S.pend;if(!p||S.phase!=='play')return;const t=S.teams[p.i];if(!t){S.pend=null;return}
+  busy=true;$('rollBtn').disabled=true;S.cur=p.i;
+  await modal({who:'🔄 이어서 진행',e:'🔄',t:'화면을 새로 열었어요',d:`${t.name} 차례 중간이었어요. 주사위는 이미 굴렸으니, 도착한 칸(${cellAt(t.pos).e} ${cellAt(t.pos).t}) 미션부터 이어서 진행해요.`});
+  await afterMove(t,!!p.dbl,false)}
+async function goalIn(x){if(await finish(x))return;
+  if(!JURU()&&S.teams.filter(o=>(o.drinks||0)<CAP()).length<=1){await endByElimination();return}
+  await endTurn(false)}
+async function endTurn(again){
+  if(!again||S.teams[S.cur].fin)advance();
+  else S.log+=' · 한 번 더';
+  S.pend=null;
+  if(S.roundOver){S.roundOver=false;await gameOver();return}
+  if(S.toastDue&&S.phase==='play'){S.toastDue=false;save();renderBoard();await toastTime()}
+  save();renderBoard();
+  busy=false;$('rollBtn').disabled=false}
+async function toastTime(){const on=S.teams.filter(o=>!lostT(o)),off=S.teams.filter(lostT);
+  on.forEach(o=>{o.gl=(o.gl||0)+(o.members&&o.members.length||1)});S.toasts=(S.toasts||0)+1;save();sfx&&sfx('win');
+  await modal({who:`${S.rnd}라운드 끝`,e:'🥂',t:'라운드 건배!',d:`모두 자기 잔으로 한 잔! 셋 세고 다 같이 건배. 순위(벌주 기록)에는 안 들어가요.${off.length?` ${JEUN(off.map(o=>o.name).join(', '))} 물로 건배 💧`:''}`})}
+// 🛡️ 면제권으로 주사위 ±1칸: 굴린 뒤 도착 칸을 보고 고를 수 있어요 (면제권 1개 사용)
+function passAdjust(t,mv){return new Promise(res=>{
+  const box=$('pickOpts');box.innerHTML='';box.className='opts adj';
+  const opt=(d,label)=>{const n=mv+d,c=cellAt((t.pos+n)%24),o=document.createElement('button');o.className='opt'+(d?'':' keep');
+    o.innerHTML='<div class="oe"></div><div class="ot"></div><div class="od"></div>';o.querySelector('.oe').textContent=c.e;o.querySelector('.ot').textContent=`${label} → ${c.t}`;o.querySelector('.od').textContent=d?`🛡️ 면제권 1개 사용 · ${n}칸 이동`:`${n}칸 이동 (면제권 그대로)`;
+    o.onclick=()=>{$('pick').classList.remove('on');if(d){t.pass--;toast(`🛡️ ${t.name} 면제권으로 ${d>0?'+1':'−1'}칸!`);S.log+=` · 🛡️${d>0?'+1':'−1'}칸`;save();renderBoard()}res(n)};return o};
+  box.append(opt(-1,'−1칸'),opt(0,'그대로'),opt(1,'+1칸'));
+  $('pickT').textContent=`🎲 ${mv}칸! ${t.name}, 🛡️ 면제권(${t.pass}개)으로 1칸 조정할까요?`;$('pick').classList.add('on');
+})}
+
+// 📣 중계: 지금 판 상황을 한 줄로 (TV 화면에서 분위기 띄우기)
+function castLine(){const T=S.teams;if(!T||!T.length||S.phase!=='play')return '';const prog=t=>t.laps*24+t.pos;const lines=[];
+  const lead=[...T].sort((a,b)=>prog(b)-prog(a))[0];lines.push(`🏃 선두 ${lead.name} (${lead.laps}/${S.goal}바퀴)`);
+  const hot=T.filter(t=>(t.streak||0)>=2).sort((a,b)=>b.streak-a.streak)[0];if(hot)lines.push(`${JURU()?"⚡":"🔥"} ${hot.name} ${hot.streak}연승 질주!`);
+  if(JURU()){const k=[...T].sort((a,b)=>(b.drinks||0)-(a.drinks||0))[0];if(k.drinks)lines.push(`🍻 술왕 후보 ${k.name} ${k.drinks}잔`)}
+  else{const near=T.filter(t=>!lostT(t)&&CAP()-(t.drinks||0)===1);if(near.length)lines.push(`⚠️ ${near.map(t=>t.name).join(', ')} 상한까지 1잔!`)}
+  if(S.final)lines.push('🏁 파이널 랩 진행 중');return lines.join('  ·  ')}
+function show(){
+  setSub();watchSolo();
+  document.body.classList.toggle('juru',JURU());document.body.classList.toggle('final',!!S.final&&S.phase==='play');$('muteBtn').textContent=S.mute?'🔇':'🔊';
+  {const lg=document.querySelector('.legend');lg.innerHTML=JURU()?'<span><i style="background:#E8436A"></i>🍺 마시기</span><span><i style="background:#3E7BFA"></i>🎮 게임</span><span><i style="background:#9B51E0"></i>🎯 지목·선택</span><span><i style="background:#22B8D8"></i>쉬어가기</span><span><i style="background:#F6B90B"></i>황금카드</span>'
+    :`<span><i style="background:#F0524F"></i>⚔️ ${SOLO()?'1:1 대결':'상대 팀과'}</span><span><i style="background:#2FB36B"></i>🏠 ${SOLO()?'나 혼자':'우리 팀'}</span><span><i style="background:#3E7BFA"></i>👥 ${SOLO()?'모두':'모든 팀'}</span><span><i style="background:#22B8D8"></i>쉬어가기</span><span><i style="background:#F6B90B"></i>황금카드</span>`}
+  const ok=S.teams&&S.teams.length>=2;
+  const over=S.phase==='over'&&ok, play=S.phase==='play'&&ok;
+  $('setup').hidden=play||over;$('game').hidden=!play;$('over').hidden=!over;$('resetBtn').hidden=!play;
+  if(over)renderOver();else if(play){buildBoard();renderBoard()}else renderSetup();
+}
+load();applyTheme();show();setDie($('d1'),1);setDie($('d2'),1);if(S.pend&&S.phase==='play')_ST(resumeTurn,300);
+</script>
+</body>
+</html>
