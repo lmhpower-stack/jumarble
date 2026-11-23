@@ -186,6 +186,7 @@ function snapshot() {
   return {
     t: 'state', seq: 0, room, host: tag(hostPid), hostOn: hostAlive(), subTm: subTeam(), judge: judgeTeam(), judgeAll: judgeTeam() === -1 ? judgeAll() : [], jv: jSeq === (typeof MSEQ !== 'undefined' ? MSEQ : 0) ? Object.keys(jVotes).map(Number) : [], boot: BOOT, dup: Object.entries(phones).filter(([, o]) => o.dup != null && Date.now() - (o.dupAt || 0) < 60000).map(([q]) => tag(q)), teamsOn: (S.teams || []).map((_, i) => i).filter(teamAlive), phones: phoneList(), forced: Object.keys(forced).map(Number), auto: autoTxt, now: window.__nowTxt || '', claims: S.phase === 'setup' ? claims : {}, turnNo: S.turnNo || 0, paused: !!window.__paused, fx: window.__fx || null, intro: $('introFx') ? [...$('introFx').querySelectorAll('.in-l')].map((d) => d.textContent) : null, undo: $('undoBtn') && !$('undoBtn').hidden ? ($('undoBtn').title || '방금 기록') : '',
     drink: $('drinkFx') && !$('drinkFx').classList.contains('out') ? { ti: window.__drinkTi || [], h: $('drinkFx').querySelector('.dfx-h').textContent, l: [...$('drinkFx').querySelectorAll('.dfx-l div')].map((d) => d.textContent), cd: $('drinkFx').querySelector('.dfx-cd').textContent } : null, toast: window.__toast || null, mseq: typeof MSEQ !== 'undefined' ? MSEQ : 0,
+    warn: autoWarn, wn: watchN(), chatOn: S.chatOn !== false, phrases: typeof SAY_PRESET !== 'undefined' ? SAY_PRESET : [],
     phase: S.phase, juru: JURU(), solo: SOLO(), cur: S.cur, goal: S.goal || 3, cap: S.cap || 0,
     sub: $('subT') ? $('subT').textContent : '', log: $('log').textContent, cast: $('cast') ? $('cast').textContent : '', final: !!S.final,
     // 게임 시작 전에도 설정 중인 팀 목록을 보내서 미리 팀을 고를 수 있게
@@ -207,7 +208,7 @@ function snapshot() {
           ti: (() => { const b = r.querySelector('button[data-team]'); return b ? +b.dataset.team : null; })(),
           btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true', v: b.dataset.v != null ? +b.dataset.v : null })) })),
         tgt: [...$('mRecT').querySelectorAll('.tgt')].map((r) => ({ label: (r.querySelector('span') || r).textContent, ti: (() => { const b = r.querySelector('button[data-team]'); return b ? +b.dataset.team : null; })(), btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true', v: 3 })) })) } : null,
-      ok: { rid: srid('ok'), label: $('mOk').textContent, pending: $('mOk').classList.contains('pendingOk') }
+      ok: { rid: srid('ok'), label: $('mOk').textContent, pending: $('mOk').classList.contains('pendingOk') || (typeof mPending === 'function' && mPending()) || passWaiting() }
     } : null,
     pick: pickOn ? { title: $('pickT').textContent, opts: [...$('pickOpts').querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.innerText.replace(/\n+/g, ' '), dis: b.disabled })) } : null,
     taxi: taxiOn ? { cells: [...document.querySelectorAll('.cell.taxiok')].map((c) => ({ i: +c.id.slice(1), label: (c.querySelector('.t') || c).textContent.trim() })) } : null,
@@ -232,9 +233,28 @@ function schedule() {
   timer = NT.setTimeout(() => { firstWait = 0; publish(false); }, 120);
 }
 
+// 👀 관전자: 팀 없이 들어와서 응원·한마디만 보내요 (게임 버튼은 하나도 못 눌러요)
+const watchers = {};
+function noteWatch(m) {
+  if (!m || m.from !== 'watch' || !m.pid) return;
+  const was = watchN(); const w = watchers[m.pid] || (watchers[m.pid] = {});
+  w.nick = cleanNick(m.nick); w.fan = fanOf(m.fan); w.seen = Date.now();
+  if (m.op === 'bye') delete watchers[m.pid];
+  if (watchN() !== was) { schedule(); updWatch(); }
+}
+function updWatch() { const c = $('watchChip'); if (c) { const n = watchN(); c.textContent = n ? `👀 관전 ${n}` : ''; } }
+function who(c, team) { // 보낸 사람 표시: 관전자는 닉네임·응원 팀, 팀 폰은 그 팀
+  if (c.from === 'watch') { const w = watchers[c.pid] || {}; let nk = w.nick || cleanNick(c.nick) || '관전자'; const sq = (x) => String(x || '').replace(/\s/g, '').toLowerCase(); if ((S.teams || []).some((t) => sq(t.name) === sq(nk))) nk = nk.slice(0, 6) + '(관전)'; return { fan: w.fan != null ? w.fan : fanOf(c.fan), nick: nk, watch: true }; } // 👀 팀 이름과 같은 닉네임은 (관전)을 붙여 헷갈리지 않게
+  if (team != null && S.teams[+team]) return { fan: +team, nick: S.teams[+team].name, watch: false };
+  return { fan: null, nick: '', watch: false };
+}
+function watchN() { const now = Date.now(); return Object.values(watchers).filter((w) => now - w.seen < 70000).length; }
+function fanOf(f) { return f != null && f !== '' && S.teams && S.teams[+f] ? +f : null; }
+function cleanNick(n) { return String(n || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 8); }
 // 폰에서 온 명령: 보낸 폰이 그 버튼을 누를 자격이 있는지 확인하고 대신 눌러 줘요
 function run(c) {
-  if (c && c.sq != null && +c.sq > 0 && seq - +c.sq > 60 && !['hello', 'team', 'newteam', 'rest', 'cheer', 'quiz', 'bye'].includes(c.op)) return; // 📶 끊겼다 다시 붙은 폰이 한참 전에 누른 버튼은 무시
+  if (c && c.from === 'watch' && !['cheer', 'say', 'bye'].includes(c.op)) return; // 관전자는 응원·한마디만
+  if (c && c.sq != null && +c.sq > 0 && seq - +c.sq > 60 && !['hello', 'team', 'newteam', 'rest', 'cheer', 'say', 'quiz', 'bye'].includes(c.op)) return; // 📶 끊겼다 다시 붙은 폰이 한참 전에 누른 버튼은 무시
   const isHost = c.from === 'host' && c.pid && c.pid === hostPid;
   const pp = c.pid && phones[c.pid];
   const team = c.from === 'player' && c.team != null && !(pp && pp.dup === String(c.team)) && (!pp || pp.team == null || pp.team === String(c.team)) ? String(c.team) : null; // 다른 폰이 잡은 팀·폰이 속이는 팀 번호는 무시
@@ -258,7 +278,7 @@ function run(c) {
     }
     if (team == null) return false;
     if (team != null && !hostAlive() && el.closest('#mBox') && teamsOf(el, defTeams()) === 'host' && !isProgress(el)) { const jt = judgeTeam(); return jt === -1 ? judgeAll().includes(+team) : String(jt) === team; } // ⚖️ 판정은 안 걸린 팀 폰 (없으면 걸린 팀들 합의)
-    if (sub && !el.closest('#pickOpts')) { if (el.id === 'mOk' && el.classList.contains('pendingOk')) return false; /* 자기 미션 건너뛰기는 안 돼요 */ if (!el.closest('#mBox')) return true; if (teamsOf(el, defTeams()) === 'host') return true; }
+    if (sub && !el.closest('#pickOpts')) { if (el.id === 'mOk' && (el.classList.contains('pendingOk') || (typeof mPending === 'function' && mPending()) || passWaiting())) return false; /* 자기 미션 건너뛰기는 안 돼요 · 다른 팀이 면제권 고르는 중에도 기다려요 */ if (!el.closest('#mBox')) return true; if (teamsOf(el, defTeams()) === 'host') return true; }
     if (el.closest('#pickOpts')) return turn();
     if (!el.closest('#mBox')) return false; // 기록·확인·타이머 같은 진행 버튼은 진행폰만 (진행폰이 없으면 게임판에서)
     const o = teamsOf(el, defTeams());
@@ -271,6 +291,7 @@ function run(c) {
   };
   switch (c.op) {
     case 'click': case 'pick': { const el = byRid(c.rid); if (!(el && !el.disabled && shown(el) && owns(el))) break; // 닫힌 카드·남의 버튼은 무시
+      if (team != null && el.closest('#mRec')) { const ms = typeof MSEQ !== 'undefined' ? MSEQ : 0; if (passSeq !== ms) { passAns = {}; passSeq = ms; } passAns[team] = 1; } // 🛡️ 면제권 고르기 답함
       if (!isHost && /-reroll-/.test(c.rid || '')) { const ms = typeof MSEQ !== 'undefined' ? MSEQ : 0; if (rerollSeq === ms) break; rerollSeq = ms; }
       if (!isHost && team != null && !hostAlive() && el.closest('#mBox') && teamsOf(el, defTeams()) === 'host' && !isProgress(el) && judgeTeam() === -1) {
         const ms = typeof MSEQ !== 'undefined' ? MSEQ : 0; if (jSeq !== ms) { jVotes = {}; jSeq = ms; }
@@ -308,10 +329,10 @@ function run(c) {
     case 'again': { if (S.phase === 'over' && (isHost || (team != null && !hostAlive()))) { const b = $('againBtn'); if (b && !b.disabled) b.click(); } break; }
     case 'bye': { if (isHost) { hostSeen = 0; updLock(); } else if (team != null) { teamSeen[team] = 0; if (pp) pp.seen = 0; } schedule(); break; } // 나가기·창 닫기
     case 'introgo': if ((isHost || team != null) && typeof window.__introEnd === 'function') window.__introEnd(); break;
-    case 'pause': if ((isHost || sub) && typeof setPause === 'function') setPause(!!c.on); break;
+    case 'pause': if ((isHost || sub || (team != null && !hostAlive())) && typeof setPause === 'function') setPause(!!c.on); break; // 진행폰이 없으면 아무 팀이나 멈춤·계속
     case 'undo': if (isHost && typeof undoRec === 'function') undoRec(); break;
     case 'drinkdone': { const df = $('drinkFx'); if (!df || typeof window.__drinkEnd !== 'function') break;
-      if (isHost || sub || (team != null && (window.__drinkTi || []).includes(+team))) window.__drinkEnd(); break; } // 🥃 '다 마셨어요'는 마시는 팀(번호로 비교)·진행 폰만
+      if (isHost || (team != null && (window.__drinkTi || []).includes(+team))) window.__drinkEnd(); break; } // 🥃 '다 마셨어요'는 마시는 팀(번호로 비교)·진행 폰만
     // 😴 팀원 쉬기: 팀 폰(자기 팀)이나 진행폰에서 팀원 한 명을 벌주 뽑기에서 빼거나 다시 넣어요
     case 'rest': {
       if (S.phase !== 'play' || SOLO()) break; const ti = isHost && c.ti != null ? +c.ti : (team != null ? +team : -1); const t = S.teams && S.teams[ti];
@@ -321,7 +342,13 @@ function run(c) {
     }
     case 'takeover': if (isHost && S.teams && S.teams[+c.ti]) takeover(+c.ti, !!c.on); break;
     // 📣 익명 응원 (폰마다 0.7초에 한 번까지)
-    case 'cheer': { const k = 'c' + (c.pid || ''); const now = Date.now(); if (now - (throttle[k] || 0) < 700) break; throttle[k] = now; if (typeof cheer === 'function') cheer(String(c.e || '')); return; }
+    case 'cheer': { const k = 'c' + (c.pid || ''); const now = Date.now(); if (now - (throttle[k] || 0) < 600) break; throttle[k] = now; if (typeof cheer === 'function') cheer(String(c.e || ''), who(c, team)); return; }
+    // 💬 한마디 (정해진 말) · ✍️ 직접 쓴 글 (관전자 글씨가 켜져 있을 때만, 20자까지)
+    case 'say': { const k = 's' + (c.pid || ''); const now = Date.now(); const free = c.txt != null;
+      if (now - (throttle[k] || 0) < (free ? 4000 : 2500)) break; throttle[k] = now;
+      let tx = free ? String(c.txt) : String(c.p || '');
+      if (free) { if (S.chatOn === false) break; tx = typeof cleanSay === 'function' ? cleanSay(tx) : ''; } else if (typeof SAY_PRESET === 'undefined' || !SAY_PRESET.includes(tx)) break;
+      if (!tx) break; if (typeof say === 'function') say(tx, who(c, team)); return; }
     // 🧠 혼자 푸는 위스키 상식: 맞힌 개수만 팀에 쌓여요 (게임 승패와는 상관없음, 폰마다 8초에 한 번까지)
     case 'quiz': { if (team == null || S.phase !== 'play' || !c.ok) break; const k = 'q' + (c.pid || ''); const now = Date.now(); if (now - (throttle[k] || 0) < 8000) break; throttle[k] = now;
       const t = S.teams[+team]; if (t) { t.qz = (t.qz || 0) + 1; save(); } return; }
@@ -366,14 +393,14 @@ function run(c) {
 const AUTO_GO = 12000, AUTO_OK = 12000; // 결과 확인도 12초 (아무도 안 누를 때 한 차례가 너무 길어서)
 let autoEl = null, autoAt = 0, autoMs = 0, autoTxt = '', autoMax = 0;
 // 🤖 멈춤 방지: 팀이 눌러야 하는 것(주사위·고르기·미션 버튼)도 오래 아무도 안 누르면 앱이 대신 (팀 폰이 끊겼으면 20초, 연결돼 있으면 45초)
-const AUTO_TEAM = 20000, AUTO_TEAM_LIVE = 45000;
+const AUTO_TEAM = 20000, AUTO_TEAM_LIVE = 30000; // 폰이 있는 팀은 30초 (10초 지나면 경고, 마지막 10초는 카운트다운)
 const tName = (i) => (S.teams && S.teams[+i] ? S.teams[+i].name : '');
 function autoCand() {
   if (S.phase !== 'play') return null;
   if (!$('modal').classList.contains('on')) {
-    if ($('pick').classList.contains('on')) { const os = [...$('pickOpts').querySelectorAll('button')].filter((b) => !b.disabled && shown(b)); if (os.length) return [os[0], teamAlive(S.cur) ? AUTO_TEAM_LIVE : AUTO_TEAM, os, `${tName(S.cur)} 대신 자동으로 골라요`]; return null; }
-    if ($('taxibar').classList.contains('on')) { const cs = [...document.querySelectorAll('.cell.taxiok')]; if (cs.length) return [cs[0], teamAlive(S.cur) ? AUTO_TEAM_LIVE : AUTO_TEAM, cs, `${tName(S.cur)} 대신 자동으로 택시 칸을 골라요`]; return null; }
-    const rb = $('rollBtn'); if (rb && !rb.disabled && !busy && shown(rb) && !$('drinkFx') && !$('introFx')) return [rb, teamAlive(S.cur) ? AUTO_TEAM_LIVE : AUTO_TEAM, null, `${tName(S.cur)} 대신 자동으로 굴려요`];
+    if ($('pick').classList.contains('on')) { const os = [...$('pickOpts').querySelectorAll('button')].filter((b) => !b.disabled && shown(b)); if (os.length) return [os[0], teamAlive(S.cur) ? AUTO_TEAM_LIVE : AUTO_TEAM, os, `${tName(S.cur)} 대신 자동으로 골라요`, S.cur]; return null; }
+    if ($('taxibar').classList.contains('on')) { const cs = [...document.querySelectorAll('.cell.taxiok')]; if (cs.length) return [cs[0], teamAlive(S.cur) ? AUTO_TEAM_LIVE : AUTO_TEAM, cs, `${tName(S.cur)} 대신 자동으로 택시 칸을 골라요`, S.cur]; return null; }
+    const rb = $('rollBtn'); if (rb && !rb.disabled && !busy && shown(rb) && !$('drinkFx') && !$('introFx')) return [rb, teamAlive(S.cur) ? AUTO_TEAM_LIVE : AUTO_TEAM, null, `${tName(S.cur)} 대신 자동으로 굴려요`, S.cur];
     return null;
   }
   const act = $('mAct'); if (shown(act) && !act.disabled) return [act, AUTO_GO];
@@ -381,32 +408,47 @@ function autoCand() {
   if (shown(box)) for (const b of box.querySelectorAll('button')) {
     if (!shown(b) || b.disabled) continue; const t = (b.textContent || '').trim();
     if (/^🔁/.test(t)) continue;
-    if (b.classList.contains('swbtn')) return [b, teamAlive(S.cur) ? AUTO_TEAM_LIVE : AUTO_TEAM, null, `${tName(S.cur)} 대신 자동으로 스톱워치를 눌러요`]; // ⏱️ 팀 폰이 있으면 45초 기다려요 (게임판이 12초 만에 혼자 시작하지 않게)
+    if (b.classList.contains('swbtn')) return [b, teamAlive(S.cur) ? AUTO_TEAM_LIVE : AUTO_TEAM, null, `${tName(S.cur)} 대신 자동으로 스톱워치를 눌러요`, S.cur]; // ⏱️ 팀 폰이 있으면 45초 기다려요 (게임판이 12초 만에 혼자 시작하지 않게)
     if (teamsOf(b, '') === 'host' && isProgress(b)) return [b, AUTO_GO];
   }
-  // ⚖️ 사람이 판정하는 버튼은 순서대로 누르지 않고, 오래(45초) 아무도 안 고르면 앱이 무작위로 골라요
+  // ⚖️ 사람이 판정하는 버튼은 순서대로 누르지 않고, 오래(30초) 아무도 안 고르면 앱이 무작위로 골라요
   if (shown(box) && jSplit !== (typeof MSEQ !== 'undefined' ? MSEQ : 0)) { const jb = [...box.querySelectorAll('button')].filter((b) => shown(b) && !b.disabled && teamsOf(b, '') === 'host' && !isProgress(b) && !/^🔁/.test((b.textContent || '').trim())); if (jb.length) return [jb[0], AUTO_TEAM_LIVE, jb, '판정이 없어서 앱이 무작위로 골라요']; }
-  const ok = $('mOk'); if (shown(ok) && !ok.disabled && typeof mPending === 'function' && !mPending()) return [ok, AUTO_OK];
+  const ok = $('mOk'); if (shown(ok) && !ok.disabled && typeof mPending === 'function' && !mPending()) { if (passWaiting()) return null; return [ok, AUTO_OK]; }
   // 팀 버튼(게임판 패드·글자 입력 제외)을 오래 안 누르면 그 팀 대신 하나 골라요
   if (shown(box)) {
     const tb = [...box.querySelectorAll('button')].filter((b) => shown(b) && !b.disabled && !b.classList.contains('react-pad') && !b.classList.contains('tappad') && !b.closest('[data-teams=board]'));
     const by = {}; tb.forEach((b) => { const o = teamsOf(b, defTeams()); if (o === 'host' || o === 'board' || !o) return; const k = o.split(',')[0]; (by[k] = by[k] || []).push(b); });
     const k = Object.keys(by)[0];
-    if (k != null) return [by[k][0], teamAlive(k) ? AUTO_TEAM_LIVE : AUTO_TEAM, by[k], `${tName(k)} 대신 자동으로 골라요`];
+    if (k != null) return [by[k][0], teamAlive(k) ? AUTO_TEAM_LIVE : AUTO_TEAM, by[k], `${tName(k)} 대신 자동으로 골라요`, +k];
   }
   return null;
 }
+// 🛡️ 마시게 된 팀이 면제권을 가지고 있고 폰이 있으면, 고를 때까지(최대 15초) 확인을 기다려요
+let passAns = {}, passSeq = -1, doneAt = 0, lastRk = '';
+function passWaiting() {
+  try { if (typeof recSel === 'undefined' || !recSel || !recSel.st || typeof MDONE === 'undefined' || !MDONE) return false;
+    if (!doneAt || Date.now() - doneAt > 15000) return false; const ms = typeof MSEQ !== 'undefined' ? MSEQ : 0; if (passSeq !== ms) { passAns = {}; passSeq = ms; }
+    return Object.keys(recSel.st).some((i) => recSel.st[i] >= 1 && (!recSel.only || recSel.only.includes(+i)) && S.teams[i] && (S.teams[i].pass || 0) > 0 && teamAlive(i) && !passAns[i]); } catch (e) { return false; }
+}
 function autoTick() {
   if (!room) return;
-  if (window.__paused) { if (autoEl) autoAt = Math.max(autoAt, Date.now() + 10000); autoMax = Math.max(autoMax, autoAt); setAuto(''); return; }
+  { const mb = $('mBox'); const rk = (typeof MDONE !== 'undefined' ? MDONE : '') + '|' + (typeof MSEQ !== 'undefined' ? MSEQ : '') + '|' + (mb ? [...mb.querySelectorAll('.res')].map((r) => r.textContent).join('').length : 0);
+    if (rk !== lastRk) { lastRk = rk; if (typeof MDONE !== 'undefined' && MDONE) { autoEl = null; doneAt = Date.now(); } } } // 결과가 새로 나오면 자동 확인 시계를 처음부터 (결과를 12초는 보게)
+  if (window.__paused) { if (autoEl) autoAt = Math.max(autoAt, Date.now() + 10000); autoMax = Math.max(autoMax, autoAt); setAuto(''); setWarn(null); return; }
   const c = autoCand(); const now = Date.now();
-  if (!c) { autoEl = null; setAuto(''); return; }
+  if (!c) { autoEl = null; setAuto(''); setWarn(null); return; }
   if (c[0] !== autoEl || c[1] !== autoMs) { autoEl = c[0]; autoMs = c[1]; autoAt = now + c[1]; autoMax = now + c[1] * (c[2] !== undefined ? 1.5 : 3); }
   if (autoAt > autoMax) autoAt = autoMax; // 누가 계속 눌러도 최대 3배 시간 뒤엔 넘어가요
   const left = Math.ceil((autoAt - now) / 1000);
-  if (left <= 0) { const el = c[2] && c[2].length ? c[2][Math.floor(Math.random() * c[2].length)] : autoEl; autoEl = null; setAuto(''); el.click(); return; }
-  setAuto(left <= 10 ? (c[3] ? `🤖 ${left}초 뒤 ${c[3]}` : `⏩ ${left}초 뒤 자동으로 ‘${(c[0].textContent || '').trim().slice(0, 18)}’`) : '');
+  if (left <= 0) { const el = c[2] && c[2].length ? c[2][Math.floor(Math.random() * c[2].length)] : autoEl; autoEl = null; setAuto(''); setWarn(null); el.click(); return; }
+  // 📣 폰이 있는 팀이 한참 안 누르면: 10초 지나면 그 팀 폰에 경고(진동), 마지막 10초는 카운트다운 경고
+  const live = c[4] != null && c[1] === AUTO_TEAM_LIVE && teamAlive(String(c[4]));
+  const wst = live ? (left <= 10 ? 2 : left <= 20 ? 1 : 0) : 0;
+  setWarn(wst ? { id: autoMax, ti: +c[4], st: wst, left, what: /굴려요/.test(c[3] || '') ? 'roll' : 'pick' } : null);
+  setAuto(left <= 10 ? (c[3] ? `🤖 ${left}초 뒤 ${c[3]}` : `⏩ ${left}초 뒤 자동으로 ‘${(c[0].textContent || '').trim().slice(0, 18)}’`) : wst === 1 ? `👋 ${tName(c[4])} 차례예요! 팀 폰에서 눌러 주세요` : '');
 }
+let autoWarn = null, warnKey = '';
+function setWarn(w) { const k = w ? `${w.ti}|${w.st}|${w.st === 2 ? w.left : ''}` : ''; if (k === warnKey) { if (w) autoWarn.left = w.left; return; } warnKey = k; autoWarn = w; schedule(); }
 function setAuto(t) {
   if (t === autoTxt) return; autoTxt = t;
   let n = $('autoNote'); if (!n) { n = document.createElement('div'); n.id = 'autoNote'; document.body.appendChild(n); }
@@ -426,8 +468,8 @@ async function connect(code) {
   try { hostPid = localStorage.getItem(hostKey()); } catch (e) { hostPid = null; }
   const kind = transportKind() === 'none' ? 'local' : transportKind();
   tp = await createTransport({ kind, room, role: 'host', url: WS_URL, firebase: FIREBASE });
-  tp.on((m) => { if (!m) return; notePhone(m); if (m.t === 'cmd' && m.from === 'player' && m.team != null && forced[String(m.team)] && !['cheer', 'quiz'].includes(m.op)) takeover(m.team, false); if (m.from === 'player' && m.team != null && !(phones[m.pid] && phones[m.pid].dup)) { const k = String(m.team), was = teamAlive(k); teamSeen[k] = Date.now(); if (!was) { updLock(); schedule(); } } if (m.t === 'hello') hello(m); else if (m.t === 'cmd') { if (m.from === 'host' && m.pid && !hostPid) hello(m); if (m.from === 'host' && m.pid && m.pid === hostPid) { hostSeen = Date.now(); updLock(); } run(m); } });
-  NT.setInterval(updLock, 3000); NT.setInterval(autoTick, 1000); NT.setInterval(schedule, 3000); // 폰이 말없이 끊겨 판정·진행 폰이 바뀌면 3초 안에 알려요 (내용이 같으면 안 보내요)
+  tp.on((m) => { if (!m) return; notePhone(m); noteWatch(m); if (m.t === 'cmd' && m.from === 'player' && m.team != null && forced[String(m.team)] && !['cheer', 'quiz'].includes(m.op)) takeover(m.team, false); if (m.from === 'player' && m.team != null && !(phones[m.pid] && phones[m.pid].dup)) { const k = String(m.team), was = teamAlive(k); teamSeen[k] = Date.now(); if (!was) { updLock(); schedule(); } } if (m.t === 'hello') hello(m); else if (m.t === 'cmd') { if (m.from === 'host' && m.pid && !hostPid) hello(m); if (m.from === 'host' && m.pid && m.pid === hostPid) { hostSeen = Date.now(); updLock(); } run(m); } });
+  NT.setInterval(updLock, 3000); NT.setInterval(updWatch, 5000); NT.setInterval(autoTick, 1000); NT.setInterval(schedule, 3000); // 폰이 말없이 끊겨 판정·진행 폰이 바뀌면 3초 안에 알려요 (내용이 같으면 안 보내요)
   tp.onStatus((st) => { const d = $('netDot'); if (d) d.dataset.st = st; if (st === 'online') publish(true);
     if (st === 'replaced' && typeof toast === 'function') toast('📡 다른 게임판이 이 방을 가져갔어요. 이 화면은 연결을 끊었어요'); });
   document.body.classList.add('netOn');
@@ -457,7 +499,7 @@ function showQR() {
     o = document.createElement('div');
     o.id = 'netPanel';
     o.innerHTML = `<div class="np-box"><button class="np-x" aria-label="닫기">×</button>
-      <h2>📱 폰으로 참가하기</h2><p>카메라로 QR을 찍고 우리 팀을 고르면 끝!</p>
+      <h2>📱 폰으로 참가하기</h2><p>카메라로 QR을 찍고 우리 팀을 고르면 끝! · 팀장이 아니면 <b>👀 관전자</b>로 들어와서 응원해요</p>
       <div id="netQR"></div><div class="np-code"></div><a class="np-url" target="_blank" rel="noopener"></a>
       <p class="np-help" style="font-weight:700;margin-top:10px">지금 접속한 폰</p><div id="npPhones" class="np-help" style="margin:0"></div><p class="np-help">팀 폰이 반응이 없어서 게임이 멈추면 ‘⏭️ 대신 하기’를 눌러요. 그 팀 몫을 진행폰(없으면 게임판)에서 누를 수 있게 되고, 그 팀 폰에서 다시 누르면 저절로 돌아가요.</p>
       <details class="np-host"><summary>🎮 진행자 폰 연결 (선택 · 없어도 돼요)</summary><div id="netQRh"></div><p class="np-help">진행폰은 한 대만 들어올 수 있어요. 처음 들어온 폰이 진행폰이 돼요.</p>
@@ -483,7 +525,7 @@ function showQR() {
 function miniQR() {
   let m = $('netMini');
   if (!m) { m = document.createElement('button'); m.id = 'netMini'; m.title = '폰 연결 QR 크게 보기'; m.onclick = showQR; document.body.appendChild(m); }
-  m.innerHTML = (qrSVG(remoteURL('player'), 120) || '') + `<b>${room}</b>`;
+  m.innerHTML = (qrSVG(remoteURL('player'), 120) || '') + `<b>${room}</b><i id="watchChip"></i>`; updWatch();
 }
 
 function newCode() { let c = ''; for (let i = 0; i < 4; i++) c += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]; return c; }
@@ -512,6 +554,7 @@ body.hostLock #modal #mBox .react-pad,body.hostLock #modal #mBox .reactgo,body.h
 body.hostLock #lockNote{display:block}
 @media (min-width:1241px) and (max-width:1440px){#lockNote{left:calc(50% - 130px)!important}#autoNote{left:calc(50% - 130px)!important}}
 @media (min-width:901px) and (max-width:1240px){#lockNote{top:156px!important}#autoNote{top:auto!important;bottom:100px!important}}
+@media (min-width:901px) and (max-width:1099px){body:has(#modal.on) #autoNote{top:8px!important;bottom:auto!important}}
 @media (max-width:900px){#lockNote{top:auto!important;bottom:58px!important;font-size:13px}#autoNote{top:auto!important;bottom:96px!important;font-size:14px!important}}`;
 document.head.appendChild(lockCss);
 { const ln = document.createElement('div'); ln.id = 'lockNote'; ln.textContent = '🎮 진행폰으로 진행 중 · 게임판 버튼은 잠겨 있어요'; document.body.appendChild(ln); }
@@ -527,6 +570,7 @@ st.textContent = `#setup .npPh{font-size:15px}
 #netQR,#netQRh{display:flex;justify-content:center;margin:8px 0}
 .np-host{margin-top:10px;font-size:14px;color:#556;text-align:center}.np-host summary{cursor:pointer;font-weight:700}
 #netMini{position:fixed;right:12px;bottom:12px;z-index:30;background:#fff;border:0;border-radius:14px;padding:6px 6px 4px;box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit}
+#netMini i{font-style:normal;font-size:12px;font-weight:800;color:#555}#netMini i:empty{display:none}
 #netMini b{font-family:"Black Han Sans",sans-serif;font-size:18px;letter-spacing:3px;color:#e2571e}
 #netPanel.on~#netMini{display:none}
 #modal.on~#netMini,#pick.on~#netMini,#help.on~#netMini{display:none} /* 카드가 열려 있으면 구석 QR이 버튼을 가리지 않게 숨김 */

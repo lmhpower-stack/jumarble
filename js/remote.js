@@ -17,50 +17,91 @@ let saved = {}; try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {
 const qs = new URLSearchParams(location.search);
 const qRoom = (qs.get('room') || '').toUpperCase();
 let me = { room: qRoom || (saved.room || '').toUpperCase(), role: saved.role || '', team: saved.team ?? null,
-  pid: saved.pid || (Math.random().toString(36).slice(2) + Date.now().toString(36)), nick: saved.nick || '' };
+  pid: saved.pid || (Math.random().toString(36).slice(2) + Date.now().toString(36)), nick: saved.nick || '', wnick: saved.wnick || '', wnickSet: !!saved.wnickSet, fan: saved.fan ?? null };
 // 다른 방 QR을 찍고 들어왔으면 예전 역할·팀은 잊어요
 if (qRoom && saved.room && qRoom !== saved.room) { me.role = ''; me.team = null; }
 const tagOf = (pid) => { let h = 7; for (const c of String(pid || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0; return pid ? h.toString(36) : ''; };
 let lastCur = null, wake = null;
-// 🧠 혼자 푸는 위스키 상식 (게임 OX 퀴즈와 겹치지 않는 별도 문제, 게임 승패 영향 없음)
+// 🧠 혼자 푸는 술 상식 (맥주·와인·칵테일 — 게임 OX(위스키)와 안 겹치게, 게임 승패 영향 없음)
 const QUIZ = [
-  ['스카치위스키는 스코틀랜드에서 최소 3년 이상 숙성해야 한다', 'O'], ['버번은 옥수수를 51% 이상 써서 만든다', 'O'],
-  ['버번은 속을 태운 새 오크통에서 숙성한다', 'O'], ['‘싱글 몰트’는 한 개의 통에서만 숙성했다는 뜻이다', 'X'],
-  ['싱글 몰트 스카치는 한 증류소에서 맥아 보리로 만든다', 'O'], ['숙성 연수 표기는 병 속 가장 어린 원액 기준이다', 'O'],
-  ['위스키는 병에 담긴 뒤에도 계속 숙성된다', 'X'], ['‘엔젤스 셰어’는 숙성 중 증발로 사라지는 위스키를 말한다', 'O'],
-  ['아일라 섬 위스키는 피트(스모키) 향으로 유명하다', 'O'], ['테네시 위스키는 숯으로 거르는 과정을 거친다', 'O'],
-  ['아이리시 위스키는 전통적으로 세 번 증류하는 경우가 많다', 'O'], ['‘캐스크 스트렝스’는 물을 타지 않고 통 도수 그대로 병입한 것이다', 'O'],
-  ['스카치위스키의 최소 도수는 40%다', 'O'], ['버번은 켄터키주에서만 만들 수 있다', 'X'],
-  ['미국 라이 위스키는 호밀을 51% 이상 쓴다', 'O'], ['피트는 석탄의 한 종류다', 'X'],
-  ['셰리 캐스크는 스페인 셰리 와인을 담았던 통이다', 'O'], ['블렌디드 스카치는 몰트와 그레인 위스키를 섞어 만든다', 'O'],
-  ['‘드램’은 위스키 한 잔을 부르는 말이다', 'O'], ['스페이사이드는 스코틀랜드에서 증류소가 가장 많이 모인 지역이다', 'O'],
-  ['구리로 만든 단식 증류기를 ‘팟 스틸’이라고 한다', 'O'], ['스카치에는 캐러멜 색소를 넣는 것이 허용된다', 'O'],
-  ['버번에는 캐러멜 색소를 넣을 수 있다', 'X'], ['몰팅은 보리를 싹틔웠다가 말리는 과정이다', 'O'],
-  ['더운 곳일수록 숙성이 빨리 진행되는 편이다', 'O'], ['잉글랜드에서 숙성해도 ‘스카치’라고 부를 수 있다', 'X'],
-  ['그레인 위스키는 보리만으로 만든다', 'X'], ['위스키 통은 주로 소나무로 만든다', 'X'],
-  ['버번의 최소 숙성 기간은 10년이다', 'X'], ['나이 표기가 없는(NAS) 위스키는 숙성을 전혀 안 한 술이다', 'X'],
-  ['위스키 향을 맡는 단계를 ‘노즈’라고 한다', 'O'], ['하이볼은 위스키에 탄산수를 섞은 음료다', 'O']];
+  ['라거는 하면 발효, 에일은 상면 발효 맥주다', 'O'], ['IPA는 ‘인디아 페일 에일’의 줄임말이다', 'O'],
+  ['흑맥주 기네스는 독일 맥주다', 'X'], ['샴페인은 프랑스 샹파뉴 지방 스파클링 와인에만 붙이는 이름이다', 'O'],
+  ['레드 와인의 붉은색은 포도 껍질에서 나온다', 'O'], ['화이트 와인은 청포도로만 만들 수 있다', 'X'],
+  ['사케는 쌀로 만든 술이다', 'O'], ['막걸리는 증류주다', 'X'],
+  ['소주(燒酒)라는 이름은 ‘불로 끓여 내린 술’이라는 뜻이다', 'O'], ['데킬라는 블루 아가베로 만든다', 'O'],
+  ['럼의 주원료는 감자다', 'X'], ['진의 대표적인 향은 주니퍼베리(노간주나무 열매)에서 나온다', 'O'],
+  ['모히토에는 민트가 들어간다', 'O'], ['마티니의 기본 재료는 진과 베르무트다', 'O'],
+  ['맥주의 쓴맛은 주로 홉에서 나온다', 'O'], ['포트 와인은 스페인 술이다', 'X'],
+  ['코냑은 브랜디의 한 종류다', 'O'], ['브랜디는 보통 포도주를 증류해서 만든다', 'O'],
+  ['와인을 디캔팅하는 이유 중 하나는 공기와 닿게 해 향을 여는 것이다', 'O'], ['로제 와인은 레드와 화이트 와인을 섞어서만 만든다', 'X'],
+  ['독일 옥토버페스트는 10월 말에 시작한다', 'X'], ['바이젠은 밀을 넣어 만든 맥주다', 'O'],
+  ['샹그리아는 와인에 과일을 넣어 만든 음료다', 'O'], ['청주와 사케는 원료가 전혀 다르다', 'X'],
+  ['복분자주는 산딸기류 열매로 만든 술이다', 'O'], ['와인 병 바닥의 움푹 들어간 부분을 ‘펀트’라고 한다', 'O'],
+  ['와인 코르크 마개는 코르크참나무 껍질로 만든다', 'O'], ['프로세코는 이탈리아 스파클링 와인이다', 'O'],
+  ['깔루아 밀크에는 커피 리큐어가 들어간다', 'O'], ['보드카는 원래 무색·무향에 가까운 술이다', 'O'],
+  ['카바는 스페인 스파클링 와인이다', 'O'], ['사케는 증류해서 만든 술이다', 'X']];
 const QZ = { order: [], cur: null, picked: null, right: 0, total: 0, until: 0 };
 function nextQuiz() { if (!QZ.order.length) QZ.order = QUIZ.map((_, i) => i).sort(() => Math.random() - 0.5); QZ.cur = QZ.order.pop(); QZ.picked = null; }
-// 기다리는 동안 위스키 상식: 기다릴 때마다 한 문제씩 (차례가 바뀌면 다음 문제)
+// 기다리는 동안 술 상식: 기다릴 때마다 한 문제씩 (차례가 바뀌면 다음 문제)
 function quizView() {
   const turnKey = S.turnNo != null ? S.turnNo : S.cur;
   if (QZ.cur == null || (QZ.picked != null && QZ.turn !== turnKey)) { nextQuiz(); }
   if (QZ.picked == null) QZ.turn = turnKey;
   const [q, a] = QUIZ[QZ.cur];
-  const box = h('div', { class: 'panel quiz' }, h('p', { class: 'sec' }, `🧠 기다리는 동안 위스키 상식 · 맞힌 개수 ${QZ.right}/${QZ.total}`), h('div', { class: 'card-d' }, q));
+  const box = h('div', { class: 'panel quiz' }, h('p', { class: 'sec' }, `🧠 기다리는 동안 술 상식 (맥주·와인·칵테일) · 맞힌 개수 ${QZ.right}/${QZ.total}`), h('div', { class: 'card-d' }, q));
   if (QZ.picked == null) {
     box.append(h('div', { class: 'choice' }, ['O', 'X'].map((v) => h('button', { class: 'btn', style: 'font-size:22px', onclick: () => {
       QZ.picked = v; QZ.total++; const ok = v === a; if (ok) { QZ.right++; send({ op: 'quiz', ok: true }); }
       render(); } }, v === 'O' ? '⭕' : '❌'))));
   } else box.append(h('p', { class: 'wait', style: `color:${QZ.picked === a ? '#13A36B' : '#D64545'};font-weight:700` }, QZ.picked === a ? `🎉 정답! (${a})` : `아쉽! 정답은 ${a}`), h('p', { class: 'small muted', style: 'margin:2px 0 0' }, '다음 문제는 다음 차례에 나와요'));
-  box.append(h('p', { class: 'small muted', style: 'margin:6px 0 0' }, '맞힌 개수는 끝날 때 ‘🧠 위스키 박사’ 시상에만 쓰여요'));
+  box.append(h('p', { class: 'small muted', style: 'margin:6px 0 0' }, '맞힌 개수는 끝날 때 ‘🧠 술 상식 박사’ 시상에만 쓰여요'));
   return box;
 }
-const CHEER = ['👏', '🔥', '😂', '🍻', '😱', '🥃'];
-let cheerAt = 0;
+const CHEER = ['👏', '🔥', '😂', '🍻', '😱', '🥃', '💪', '😭'];
+let cheerAt = 0, saidAt = 0, sayOpen = false, watchEd = false; let lastGK = '', pauseArm = 0, lastWarn = '';
+// 💬 한마디: 정해진 말 버튼 + (게임판에서 켜 두면) 직접 쓰기 20자. 관전자는 늘 펼쳐 두고, 팀 폰은 접어 둬요
+function sayBox(big) {
+  const left = Math.max(0, 4 - Math.floor((Date.now() - saidAt) / 1000));
+  const sendSay = (o) => { const n = Date.now(); if (n - saidAt < (o.txt != null ? 4000 : 2500)) return; saidAt = n; send({ op: 'say', ...o }); render(); setTimeout(render, 1600); setTimeout(render, 4100); };
+  const body = h('div', {}, h('div', { class: 'saygrid' }, (S.phrases || []).map((t) => h('button', { class: 'btn', onclick: () => sendSay({ p: t }) }, t))));
+  if (S.chatOn) {
+    const inp = h('input', { type: 'text', maxlength: 20, placeholder: '직접 쓰기 (20자까지)', 'data-keep': '1', 'aria-label': '한마디 직접 쓰기', value: drafts.__say || '' });
+    inp.oninput = () => { drafts.__say = inp.value; };
+    const go = () => { const v = inp.value.trim(); if (!v) return; drafts.__say = ''; inp.value = ''; inp.blur(); sendSay({ txt: v }); };
+    inp.onkeydown = (e) => { if (e.key === 'Enter') go(); };
+    body.append(h('div', { class: 'sayrow' }, inp, h('button', { class: 'btn', disabled: left > 0, onclick: go }, left > 0 ? `${left}초` : '보내기')));
+  }
+  if (Date.now() - saidAt < 1600) body.append(h('p', { class: 'small', style: 'margin:6px 0 0;color:#13A36B;font-weight:700;text-align:center' }, '✅ TV로 보냈어요!'));
+  if (big) return h('div', { class: 'panel' }, h('p', { class: 'sec' }, '💬 한마디 → TV에 흘러가요'), body);
+  const d = h('details', { class: 'saybox' }, h('summary', {}, '💬 한마디 보내기 (TV에 떠요)'), body);
+  if (sayOpen) d.open = true; d.ontoggle = () => { sayOpen = d.open; };
+  return d;
+}
+function watchView() {
+  const out = [];
+  const fanT = me.fan != null && S.teams && S.teams[me.fan] ? S.teams[me.fan] : null;
+  // 닉네임·응원 팀 (처음 한 번, 그다음엔 한 줄로)
+  if (watchEd || !me.wnickSet) {
+    const nk = h('input', { type: 'text', maxlength: 8, placeholder: '닉네임 (선택, 8자)', 'data-keep': '1', value: me.wnick || '', 'aria-label': '닉네임' });
+    nk.oninput = () => { me.wnick = nk.value.trim().slice(0, 8); save(); };
+    nk.onkeydown = (e) => { if (e.key === 'Enter') nk.blur(); };
+    out.push(h('div', { class: 'panel' }, h('p', { class: 'sec' }, '👀 관전자 · TV에 내 이름과 응원 팀 색으로 떠요'), nk,
+      h('p', { class: 'small muted', style: 'margin:10px 0 4px' }, '어느 팀을 응원할까요?'),
+      h('div', { class: 'saygrid' }, [...(S.teams || []).map((t, i) => h('button', { class: 'btn' + (me.fan === i ? ' on' : ''), style: `border:3px solid ${t.color}`, onclick: () => { me.fan = i; save(); hello(); render(); } }, t.name)),
+        h('button', { class: 'btn' + (me.fan == null ? ' on' : ''), onclick: () => { me.fan = null; save(); hello(); render(); } }, '🤝 중립 (다 응원)')]),
+      h('button', { class: 'big', style: 'width:100%;margin-top:10px', onclick: () => { me.wnickSet = true; watchEd = false; save(); hello(); render(); } }, '✅ 좋아요')));
+  } else out.push(h('div', { class: 'panel watchme', style: fanT ? `border:3px solid ${fanT.color}` : '' }, h('span', {}, `👀 ${me.wnick || '관전자'} · ${fanT ? fanT.name + ' 응원' : '중립'}`), h('button', { class: 'btn', onclick: () => { watchEd = true; render(); } }, '바꾸기')));
+  // 지금 상황
+  if (S.phase === 'setup') out.push(h('div', { class: 'panel wait' }, '⏳ 팀들이 준비 중이에요. 시작하면 여기서 응원해요'));
+  else if (S.phase === 'play' && S.modal) out.push(h('div', { class: 'panel', style: 'text-align:center' }, h('div', { style: 'font-size:34px' }, S.modal.e || ''), h('div', { class: 'disp', style: 'font-size:22px' }, S.modal.t || ''), h('p', { class: 'small muted', style: 'margin:4px 0 0' }, S.modal.who || '')));
+  if (S.phase === 'play' || S.phase === 'over') {
+    out.push(h('div', { class: 'panel' }, h('p', { class: 'sec' }, '📣 응원 (연타하면 TV에서 크게 터져요)'), h('div', { class: 'cheerbig' }, CHEER.map((e) => h('button', { class: 'btn', 'aria-label': '응원 ' + e, onclick: () => { const n = Date.now(); if (n - cheerAt < 600) return; cheerAt = n; send({ op: 'cheer', e }); } }, e)))));
+    out.push(sayBox(true));
+  }
+  return out;
+}
 function cheerBar() {
-  return h('div', { class: 'cheerbar' }, CHEER.map((e) => h('button', { class: 'btn', 'aria-label': '응원 ' + e, onclick: () => { const n = Date.now(); if (n - cheerAt < 700) return; cheerAt = n; send({ op: 'cheer', e }); } }, e)));
+  return h('div', { class: 'cheerbar' }, CHEER.map((e) => h('button', { class: 'btn', 'aria-label': '응원 ' + e, onclick: () => { const n = Date.now(); if (n - cheerAt < 600) return; cheerAt = n; send({ op: 'cheer', e }); } }, e)));
 }
 let tp = null, S = null, connectedRoom = null;
 let local = { sw: null, react: null }; // 폰 안에서 직접 재는 미니게임 상태
@@ -75,7 +116,7 @@ function h(tag, attrs = {}, ...kids) {
   for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(String(k)));
   return e;
 }
-const send = (cmd) => { if (tp) tp.send({ t: 'cmd', from: me.role, team: me.team, pid: me.pid, sq: S && S.seq || 0, ...cmd }); try { buzz(15); } catch (e) { /* 무시 */ } };
+const send = (cmd) => { if (tp) tp.send({ t: 'cmd', from: me.role, team: me.role === 'watch' ? null : me.team, pid: me.pid, sq: S && S.seq || 0, ...(me.role === 'watch' ? { fan: me.fan, nick: me.wnick } : {}), ...cmd }); try { buzz(15); } catch (e) { /* 무시 */ } };
 const isHost = () => me.role === 'host';
 // 진행폰: 진행 버튼 + 폰이 없는 팀의 버튼만 (폰이 있는 팀의 선택은 그 팀 폰에서만)
 // 🎮 진행폰이 없으면 지금 차례인 팀 폰이 진행 버튼을 대신 받아요 (진행폰 없이 모두 같이 놀 수 있게)
@@ -88,7 +129,7 @@ const canTeamAct = () => (!isHost() && myTurn()) || (isHost() && !teamHasPhone()
 let lastPassAsk = null;
 let lastToast = -1, toastTimer = null; // -1 = 아직 첫 상태를 못 받음 (들어오기 전 알림은 안 띄움)
 function save() { try { localStorage.setItem(KEY, JSON.stringify(me)); } catch (e) { /* 무시 */ } }
-const hello = () => tp && tp.send({ t: 'hello', from: me.role, pid: me.pid, team: me.role === 'player' ? me.team : null, nick: me.role === 'player' ? (me.nick || '') : null, ready: me.role === 'player' && !!me.ready });
+const hello = () => tp && tp.send({ t: 'hello', from: me.role, pid: me.pid, team: me.role === 'player' ? me.team : null, nick: me.role === 'player' ? (me.nick || '') : me.role === 'watch' ? (me.wnick || '') : null, fan: me.role === 'watch' ? me.fan : null, ready: me.role === 'player' && !!me.ready });
 // 게임 중에 화면이 꺼지지 않게
 async function keepAwake() { try { if ('wakeLock' in navigator && !wake && document.visibilityState === 'visible') { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } } catch (e) { wake = null; } }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { keepAwake(); hello(); } });
@@ -106,7 +147,7 @@ async function connect() {
   tp.onStatus((st) => { $('dot').className = 'dot ' + st; if (st === 'online') hello(); });
   hello(); keepAwake();
   // 진행폰은 30초마다 살아 있다고 알려요 (게임판 잠금용)
-  if (!helloIv) helloIv = setInterval(() => { if ((me.role === 'host' || me.role === 'player') && document.visibilityState === 'visible') hello(); }, 30000);
+  if (!helloIv) helloIv = setInterval(() => { if ((me.role === 'host' || me.role === 'player' || me.role === 'watch') && document.visibilityState === 'visible') hello(); }, 30000);
 }
 
 // ---------- 참가 화면 ----------
@@ -121,11 +162,14 @@ $('leave').onclick = (e) => { e.preventDefault();
   if (Date.now() - leaveArm > 3000) { leaveArm = Date.now(); const l = $('leave'), o = l.textContent; l.textContent = '한 번 더 누르면 나가요'; setTimeout(() => { l.textContent = o; }, 3000); return; } leaveArm = 0;
   // 플레이어는 팀 고르기 화면으로 (QR로 들어온 폰은 역할 버튼이 숨겨져 있어서), 진행폰은 처음 화면으로
   bye();
-  if (me.role === 'player') { me.team = null; me.sig = ''; me.ready = false; wantNew = false; save(); $('live').hidden = true; $('join').hidden = false; $('teamPick').hidden = false; hello(); drawTeamPick(); return; }
+  if (me.role === 'player' || me.role === 'watch') { me.role = 'player'; me.team = null; me.sig = ''; me.ready = false; wantNew = false; save(); $('live').hidden = true; $('join').hidden = false; $('teamPick').hidden = false; hello(); drawTeamPick(); return; }
   me.role = ''; me.team = null; save(); $('live').hidden = true; $('join').hidden = false; $('teamPick').hidden = true; };
 function checkRoom() { if (!/^[A-Z0-9]{3,8}$/.test(me.room)) { alert('방 코드를 확인해 주세요'); return false; } return true; }
 let wantNew = false; // '새 팀 만들기'를 눌러서 게임판이 팀 칸을 정해 주길 기다리는 중
-function drawTeamPick() {
+function drawTeamPick() { drawTeamPick0(); if (S && S.teams) $('teamBtns').append(h('div', { style: 'grid-column:1/-1;margin-top:14px;border-top:1px dashed #ccc;padding-top:12px' },
+  h('p', { class: 'small muted', style: 'margin:0 0 6px' }, '팀장이 아니면 여기로! 게임 버튼 없이 TV에 응원·한마디를 보내요'),
+  h('button', { class: 'big', style: 'width:100%;background:#2B6CE0;color:#fff', onclick: () => { me.role = 'watch'; me.team = null; wantNew = false; save(); goLive(); hello(); } }, '👀 관전자로 들어가기'))); }
+function drawTeamPick0() {
   const box = $('teamBtns'); box.innerHTML = '';
   if (!S || !S.teams) { box.append(h('p', { class: 'muted small' }, '게임판과 연결하는 중…')); return; }
   const join = (t) => { if (busyBy(t.i)) return; wantNew = false; me.team = t.i; me.sig = sigOf(S); save(); goLive(); hello(); };
@@ -175,11 +219,17 @@ function goLive() { $('join').hidden = true; $('live').hidden = false; render();
 // ---------- 메인 화면 ----------
 // 밝은 팀 색(노랑·청록) 위에는 검은 글씨
 const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16), L = (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255; return L > 0.45 ? '#1b1b1b' : '#fff'; }; // 청록(#0FA3B1)도 검은 글씨
+// 👆 누르는 도중(손가락이 화면에 닿아 있는 동안)엔 화면을 다시 그리지 않아요 → 터치가 씹히지 않게
+let held = false, heldRender = false, heldT = 0;
+document.addEventListener('pointerdown', () => { held = true; clearTimeout(heldT); heldT = setTimeout(rel, 1500); }, true);
+function rel() { if (!held) return; held = false; clearTimeout(heldT); if (heldRender) { heldRender = false; setTimeout(render, 0); } }
+document.addEventListener('pointerup', () => setTimeout(rel, 0), true); document.addEventListener('pointercancel', rel, true);
 function render() {
+  if (held) { heldRender = true; return; }
   if (!$('teamPick').hidden && $('live').hidden) drawTeamPick();
   if ($('live').hidden || !S) return;
   const myT = S.teams && S.teams[me.team];
-  $('me').textContent = isHost() ? `🎮 진행폰 · ${S.room || me.room}` : `📱 ${myT ? myT.name : '플레이어'} · ${S.room || me.room}`;
+  $('me').textContent = isHost() ? `🎮 진행폰 · ${S.room || me.room}` : me.role === 'watch' ? `👀 ${me.wnick || '관전자'} · ${S.room || me.room}` : `📱 ${myT ? myT.name : '플레이어'} · ${S.room || me.room}`;
   // 우리 차례가 되면 화면을 팀 색으로 칠하고 한 번 진동
   const mine0 = !isHost() && S.phase === 'play' && S.cur === me.team;
   document.body.classList.toggle('myturn', mine0); { const c = myT && /^#[0-9a-f]{6}$/i.test(myT.color) ? myT.color : '#e2571e'; document.documentElement.style.setProperty('--my', c); document.documentElement.style.setProperty('--myInk', inkOn(c)); }
@@ -188,7 +238,7 @@ function render() {
   // 상태
   const st = $('status'); st.innerHTML = '';
   if (isHost() && S.host && S.host !== tagOf(me.pid)) st.append(h('p', { class: 'warn' }, '⚠️ 이미 다른 진행폰이 연결돼 있어요. 이 폰의 버튼은 게임판에서 무시돼요. 게임판의 ‘📡 → 진행폰 바꾸기’를 누르거나, 나가기 후 플레이어로 들어오세요.'));
-  if (S.phase === 'setup') st.append(h('p', { class: 'wait' }, !isHost() && myT ? '우리 팀 이름과 멤버를 적어 주세요. 다 모이면 게임판에서 ‘게임 시작’을 눌러요' : '팀 폰에서 팀 이름·멤버를 적고, 게임판에서 ‘게임 시작’을 누르면 시작돼요'));
+  if (S.phase === 'setup') st.append(h('p', { class: 'wait' }, !isHost() && myT ? '우리 팀 이름과 멤버를 적어 주세요. 다 모이면 팀 폰에서 ‘🚀 게임 시작’ (게임판에서 눌러도 돼요)' : '팀 폰에서 팀 이름·멤버를 적고, 게임판에서 ‘게임 시작’을 누르면 시작돼요'));
   else if (S.teams && S.teams[S.cur] && S.phase === 'play') {
     const ct = S.teams[S.cur];
     const n = S.teams.length; let wait = null;
@@ -198,7 +248,7 @@ function render() {
     st.append(...[h('div', { class: 'disp', style: `font-size:${mine0 ? 30 : 22}px;color:${mine0 ? 'var(--myInk,#fff)' : ct.color};text-align:center` }, mine0 ? `🎲 우리 팀(${ct.name}) 차례예요!` : `🎲 ${ct.name} 차례`),
       wait ? h('p', { class: 'small' + (/다음이 우리/.test(wait) ? ' nextup' : ''), style: 'text-align:center;margin:4px 0 0;font-weight:700' }, wait) : null, h('p', { class: 'small muted', style: 'text-align:center;margin:4px 0 0' }, (S.modal || S.pick) && S.now ? S.now.replace(/^🎯 /, '') : (S.log || '')), S.cast ? h('p', { class: 'small cast', style: 'text-align:center;margin:4px 0 0;font-weight:700' }, S.cast) : null].filter(Boolean));
   }
-  if (S.auto) st.append(h('p', { class: 'small autoLine', style: 'text-align:center;margin:6px 0 0;font-weight:700' }, S.auto));
+  if (S.auto && !(S.warn && me.role === 'player' && S.warn.ti === me.team)) st.append(h('p', { class: 'small autoLine', style: 'text-align:center;margin:6px 0 0;font-weight:700' }, S.auto));
   st.hidden = !st.childNodes.length; // 게임이 끝났을 때 등 쓸 말이 없으면 빈 상자를 숨겨요
   // 📣 방금 일어난 일 (게임판 알림을 폰에도): 우리 팀 이야기면 크게 + 진동
   if (lastToast === -1) lastToast = S.toast ? S.toast.n : 0;
@@ -218,34 +268,46 @@ function render() {
   // 본문
   const main = $('main');
   if (S.phase === 'setup' && !isHost() && myT) { setupView(main, myT); renderTeams(); return; }
-  if (S.phase === 'setup' && !isHost() && !myT) { setupEd = null; $('live').hidden = true; $('join').hidden = false; $('teamPick').hidden = false; drawTeamPick(); return; }
+  if (S.phase === 'setup' && !isHost() && !myT && me.role !== 'watch') { setupEd = null; $('live').hidden = true; $('join').hidden = false; $('teamPick').hidden = false; drawTeamPick(); return; }
   // ⌨️ 글자를 입력하는 중이면 화면을 통째로 다시 그리지 않아요 (매초 바뀌는 카운트다운 때문에 한글 조합이 끊기던 문제)
   { const ae = document.activeElement;
     if (ae && ae.tagName === 'INPUT' && ae.dataset.rid && main.contains(ae) && S.modal && (S.modal.box || []).some((b) => b.k === 'in' && b.rid === ae.dataset.rid && !b.dis)) {
       const tx = [...main.querySelectorAll('.txt')], bs = S.modal.box.filter((b) => b.k === 'txt' && !(S.modal.react && /react/.test(b.cls)));
       if (tx.length === bs.length) { bs.forEach((b, i) => { if (tx[i].textContent !== b.text) tx[i].textContent = b.text; }); renderTeams(); return; }
     } }
+  // 👀 닉네임·한마디 입력 중엔 다시 그리지 않아요. 단, 게임 상황(차례·미션·마실 시간 등)이 바뀌면 바로 다시 그려요 (쓰던 글은 남아요)
+  { const gk = JSON.stringify([S.phase, S.cur, !!S.roll, S.modal ? S.modal.t + '|' + (S.modal.box || []).length : '', S.pick ? S.pick.title : '', !!S.taxi, !!S.drink, !!S.over, !!S.paused, !!S.intro, S.subTm]);
+    const ae = document.activeElement; const keep = ae && ae.tagName === 'INPUT' && ae.dataset.keep && main.contains(ae);
+    if (keep && (me.role === 'watch' || gk === lastGK)) { renderTeams(); return; } lastGK = gk; }
   setupEd = null; main.innerHTML = '';
   // 📱 게임판 연출을 폰에도: 화면이 번쩍 + 우리 팀 이야기면 진동
   if (lastFx === -1) lastFx = S.fx ? S.fx.n : 0; // 들어오기 전 연출은 다시 안 띄워요
   else if (S.fx && S.fx.n !== lastFx) { lastFx = S.fx.n; phoneFx(S.fx); }
-  if (S.intro) main.append(h('div', { class: 'panel' }, h('div', { class: 'disp', style: 'font-size:26px;text-align:center;color:#e2571e' }, '🎮 이렇게 해요'), ...S.intro.map((x) => h('p', { style: 'margin:8px 0;font-size:16px' }, x)),
+  // 📣 우리 팀이 한참 안 누르고 있으면 경고 (10초 지나면 한 번 진동, 마지막 10초는 카운트다운 + 진동)
+  if (S.warn && me.role === 'player' && me.team != null && S.warn.ti === me.team && !S.paused) {
+    const w = S.warn, k = `${w.id}|${w.st}`;
+    if (k !== lastWarn) { lastWarn = k; try { buzz(w.st === 2 ? [400, 120, 400, 120, 400] : [200, 100, 200]); } catch (e) { /* 무시 */ } }
+    main.append(h('div', { class: 'warnBanner' + (w.st === 2 ? ' hot' : '') }, w.st === 2 ? `⏰ ${w.left}초 뒤 앱이 우리 팀 대신 ${w.what === 'roll' ? '굴려요' : '골라요'}!` : `👋 우리 팀 차례예요! ${w.what === 'roll' ? '🎲 주사위를 굴려 주세요' : '아래 버튼을 눌러 주세요'}`));
+  }
+  if (S.intro && me.role !== 'watch') main.append(h('div', { class: 'panel' }, h('div', { class: 'disp', style: 'font-size:26px;text-align:center;color:#e2571e' }, '🎮 이렇게 해요'), ...S.intro.map((x) => h('p', { style: 'margin:8px 0;font-size:16px' }, x)),
     h('button', { class: 'big', style: 'width:100%', onclick: () => send({ op: 'introgo' }) }, '🍻 시작!')));
-  if (S.paused) main.append(h('div', { class: 'panel', style: 'text-align:center' }, h('div', { style: 'font-size:56px' }, '⏸️'), h('div', { class: 'disp', style: 'font-size:28px' }, '잠시 멈춤'), h('p', { class: 'small muted' }, isHost() ? '아래 ‘▶ 계속하기’로 다시 시작해요' : sub() ? '진행폰이 없어서 우리 팀이 다시 시작할 수 있어요' : '진행폰이나 게임판에서 다시 시작해요'), sub() ? h('button', { class: 'big', style: 'width:100%', onclick: () => send({ op: 'pause', on: false }) }, '▶ 계속하기') : null));
+  if (S.paused) main.append(h('div', { class: 'panel', style: 'text-align:center' }, h('div', { style: 'font-size:56px' }, '⏸️'), h('div', { class: 'disp', style: 'font-size:28px' }, '잠시 멈춤'), h('p', { class: 'small muted' }, isHost() ? '아래 ‘▶ 계속하기’로 다시 시작해요' : !S.hostOn ? '준비되면 아무 팀 폰에서나 ‘▶ 계속하기’' : '진행폰에서 다시 시작해요'), (!isHost() && !S.hostOn && me.role !== 'watch') ? h('button', { class: 'big', style: 'width:100%', onclick: () => send({ op: 'pause', on: false }) }, '▶ 계속하기') : null));
+  if (S.paused && !isHost() && me.role !== 'watch') { main.append(cheerBar()); renderTeams(); return; } // 멈춘 동안엔 굴리기·미션 버튼을 숨겨요
   // 🥃 마실 시간: 누가 마시는지 크게 + '다 마셨어요' (우리 팀이면 진동)
   if (S.drink) { const mineD = !isHost() && myT && (S.drink.ti ? S.drink.ti.includes(myT.i) : S.drink.l.some((x) => x.includes(myT.name)));
     if (mineD && lastDrink !== S.drink.l.join()) { try { buzz([300, 100, 300, 100, 300]); } catch (e) { /* 무시 */ } }
     lastDrink = S.drink.l.join();
-    main.append(h('div', { class: 'panel', style: `text-align:center;${mineD ? 'background:#e2571e;color:#fff' : ''}` }, h('div', { class: 'disp', style: 'font-size:30px' }, S.drink.h),
+    main.append(h('div', { class: 'panel drinkPanel', style: `text-align:center;${mineD ? 'background:#e2571e;color:#fff' : ''}` }, h('div', { class: 'disp', style: 'font-size:30px' }, S.drink.h),
       ...S.drink.l.map((x) => h('div', { style: 'font-size:20px;font-weight:800;margin:4px 0' }, x)), h('div', { class: 'disp', style: 'font-size:48px;margin:6px 0' }, S.drink.cd),
-      (isHost() || mineD || sub()) ? h('button', { class: 'big', style: 'width:100%;background:#13A36B;color:#fff', onclick: () => send({ op: 'drinkdone' }) }, '✅ 다 마셨어요') : null)); }
+      (isHost() || mineD) ? h('button', { class: 'big', style: 'width:100%;background:#13A36B;color:#fff', onclick: () => send({ op: 'drinkdone' }) }, '✅ 다 마셨어요') : null)); }
   else lastDrink = '';
+  if (me.role === 'watch') { if (S.over) main.append(overView()); main.append(...watchView()); renderTeams(); return; } // 👀 관전자: 응원·한마디만
   if (S.over) main.append(overView());
   else if (S.pick) main.append(pickView());
   else if (S.taxi) main.append(taxiView());
   else if (S.modal) main.append(cardView(S.modal));
   else if (S.spin) main.append(h('div', { class: 'panel wait' }, S.spin));
-  else if (S.roll && canTeamAct()) main.append(h('div', { class: 'panel', style: 'text-align:center' }, h('button', { class: 'big roll', onclick: () => doRoll() }, /탈출 주사위/.test(S.now || '') ? '🏝️ 탈출 주사위 (더블이면 탈출)' : '🎲 굴리기'),
+  else if (S.roll && canTeamAct() && !S.intro) main.append(h('div', { class: 'panel', style: 'text-align:center' }, h('button', { class: 'big roll', onclick: () => doRoll() }, /탈출 주사위/.test(S.now || '') ? '🏝️ 탈출 주사위 (더블이면 탈출)' : '🎲 굴리기'),
     shakeOn ? h('p', { class: 'small', style: 'margin:8px 0 0;font-weight:700' }, '📱 폰을 흔들어도 굴러가요!')
       : shakeAsk ? h('button', { class: 'btn', style: 'margin-top:8px;font-size:14px;min-height:0;padding:8px 12px', onclick: askShake }, '📱 흔들어서 굴리기 켜기') : null));
   else if (S.roll && isHost()) main.append(h('div', { class: 'panel wait' }, `🎲 ${S.teams[S.cur] ? S.teams[S.cur].name : '차례 팀'} 폰에서 굴려요`));
@@ -253,7 +315,8 @@ function render() {
   // 대기 중이면 위스키 상식, 게임 중엔 언제나 익명 응원
   const nothing = !main.querySelector('button:not([disabled]),input:not([disabled])');
   if (!isHost() && S.phase === 'play' && !mine0 && !S.over && !S.modal && !S.pick && !S.taxi && nothing) main.append(quizView());
-  if (S.phase === 'play') main.append(cheerBar());
+  if (S.phase === 'play') { main.append(cheerBar()); main.append(sayBox(false)); }
+  if (!isHost() && !S.hostOn && S.phase === 'play' && !S.paused) main.append(h('div', { style: 'text-align:center;margin:6px 0' }, h('button', { class: 'btn' + (Date.now() - pauseArm < 3000 ? ' armed' : ''), style: 'font-size:13px;padding:6px 14px', onclick: () => { if (Date.now() - pauseArm < 3000) { pauseArm = 0; send({ op: 'pause', on: true }); return; } pauseArm = Date.now(); render(); setTimeout(render, 3100); } }, Date.now() - pauseArm < 3000 ? '⏸️ 한 번 더 누르면 멈춰요' : '⏸️ 잠시 멈춤 (화장실·안주 타임)'))); // 진행폰이 없으면 아무 팀이나 멈출 수 있어요
   if (isHost() && S.phase === 'play' && S.now) main.prepend(h('div', { class: 'nowline' }, '📢 ' + S.now));
   if (isHost() && S.phase === 'play') main.append(h('div', { class: 'hostbar' },
     S.undo ? h('button', { class: 'btn' + (Date.now() - undoArm < 4000 ? ' armed' : ''), onclick: () => { if (Date.now() - undoArm < 4000) { undoArm = 0; send({ op: 'undo' }); return; } undoArm = Date.now(); render(); setTimeout(render, 4100); } }, Date.now() - undoArm < 4000 ? '↩️ 한 번 더 누르면 되돌려요' : '↩️ 방금 기록 되돌리기') : null,
@@ -262,10 +325,13 @@ function render() {
   // 📜 미션 버튼(OX·연타 등)이 화면 아래에 있으면 그 버튼이 처음 생길 때 한 번 화면 가운데로 올려요
   if (S.modal) { const tb = main.querySelector('.tapbig') || [...main.querySelectorAll('.panel button:not([disabled]), .panel input:not([disabled])')].find((b) => !/다른 조건/.test(b.textContent || ''));
     const k = S.mseq + ':' + (tb ? (tb.className + tb.textContent).slice(0, 40) : '');
-    if (tb && k !== lastScrollK) { lastScrollK = k; const r = tb.getBoundingClientRect(); if (r.bottom > innerHeight - 10 || r.top < 0) tb.scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
+    if (tb && k !== lastScrollK) { lastScrollK = k; const all = [...main.querySelectorAll('.panel button:not([disabled]), .panel input:not([disabled]), .tapbig')].filter((b) => !/다른 조건|잠시 멈춤/.test(b.textContent || '') && !b.closest('.cheers'));
+      const lastC = all.length ? all[all.length - 1] : tb, r0 = tb.getBoundingClientRect(), r1 = lastC.getBoundingClientRect();
+      if (r1.bottom > innerHeight - 10 || r0.top < 0) { const top = scrollY + r0.top, bot = scrollY + r1.bottom; const want = bot - top < innerHeight - 40 ? bot - innerHeight + 30 : top - 20; scrollTo({ top: Math.max(0, want), behavior: 'smooth' }); } } } // 버튼 묶음 전체(마지막 버튼까지)가 보이게
+  if (S.drink && lastDrinkScroll !== S.drink.h + (S.drink.l || []).join()) { lastDrinkScroll = S.drink.h + (S.drink.l || []).join(); const dp = main.querySelector('.drinkPanel'); if (dp) setTimeout(() => dp.scrollIntoView({ block: 'center', behavior: 'smooth' }), 30); } // 🥃 마실 시간이 뜨면 화면 가운데로
   renderTeams();
 }
-let lastScrollK = '';
+let lastScrollK = '', lastDrinkScroll = '';
 // 팀 현황
 // 😴 팀원 칩: 누르면 쉬기 ↔ 복귀 (쉬는 사람은 벌주 뽑기에서 빠져요)
 function restChip(t, n, pd) {
@@ -390,7 +456,7 @@ function cardView(m) {
   for (const b of m.box) {
     const afterIn = prevIn; prevIn = b.k === 'in';
     if (afterIn && b.k === 'btn' && /^(입력|확인|제출)$/.test(b.label)) continue;
-    if (b.k === 'txt') { if (!(m.react && /react/.test(b.cls))) p.append(h('div', { class: 'txt ' + (b.cls || '') }, b.text)); continue; }
+    if (b.k === 'txt') { if (m.sw && canTeamAct() && /big-num/.test(b.cls || '')) continue; /* ⏱️ 내 폰 스톱워치가 있으면 게임판 숫자는 또 안 보여요 */ if (!(m.react && /react/.test(b.cls))) p.append(h('div', { class: 'txt ' + (b.cls || '') }, b.text)); continue; }
     const okMine = b.j && !isHost() ? (!S.hostOn && me.team != null && (S.judge === me.team || (S.judge === -1 && (S.judgeAll || []).includes(me.team)))) : mine(b.teams); // ⚖️ 판정 버튼은 진행폰, 없으면 안 걸린 팀 폰
     if (b.j && !okMine && !isHost() && !S.hostOn && S.judge === -2 && !jNote) { jNote = true; p.append(h('p', { class: 'sec' }, '⚖️ 판정할 다른 팀 폰이 없어요 · 게임판에서 다 같이 보고 눌러요')); }
     if (!okMine || skipLocal(b)) continue;
@@ -449,10 +515,11 @@ function cardView(m) {
     p.append(h('button', { class: 'big' + (m.ok.pending ? ' pending' : ''), style: 'margin-top:12px', onclick: () => send({ op: 'click', rid: m.ok.rid }) }, m.ok.label));
   } else if (sub()) {
     // 진행폰이 없을 때 차례 팀 폰: 결과 고치기는 빼고 '확인'(다음으로)만
-    p.append(h('p', { class: 'small muted', style: 'text-align:center;margin:10px 0 0' }, S.cur === me.team ? '🎮 진행폰이 없어서 우리 팀이 진행 버튼도 눌러요' : `🎮 진행폰도 ${S.teams[S.cur] ? S.teams[S.cur].name : '차례 팀'} 폰도 없어서 우리 팀이 진행 버튼을 대신 눌러요`));
+    const okShow = !m.ok.pending && !(m.box || []).some((b) => b.k === 'txt' && /rvCd|\brv\b/.test(b.cls || '') && /공개 중|^\d$|공개!/.test(b.text || ''));
+    if (okShow) p.append(h('p', { class: 'small muted', style: 'text-align:center;margin:10px 0 0' }, S.cur === me.team ? '🎮 진행폰이 없어서 우리 팀이 진행 버튼도 눌러요' : `🎮 진행폰도 ${S.teams[S.cur] ? S.teams[S.cur].name : '차례 팀'} 폰도 없어서 우리 팀이 진행 버튼을 대신 눌러요`));
     // 미션이 끝나기 전 '건너뛰기'는 안 보여요 (우리 팀 벌주 미션을 우리가 건너뛰면 안 되니까). 결과가 나오면 '확인'만
     const revealing = (m.box || []).some((b) => b.k === 'txt' && /rvCd|\brv\b/.test(b.cls || '') && /공개 중|^\d$|공개!/.test(b.text || ''));
-    if (!m.ok.pending && !revealing) p.append(h('button', { class: 'big', style: 'margin-top:8px', onclick: () => send({ op: 'click', rid: m.ok.rid }) }, m.ok.label)); // 카드 공개 중엔 확인 숨김
+    if (okShow && !revealing) p.append(h('button', { class: 'big', style: 'margin-top:8px', onclick: () => send({ op: 'click', rid: m.ok.rid }) }, m.ok.label)); // 카드 공개 중엔 확인 숨김
   } else if (!acted) p.append(h('p', { class: 'wait' }, '👀 지금은 누를 게 없어요. 게임판을 봐 주세요'));
   return p;
 }
@@ -486,14 +553,14 @@ function stopwatchView(target) {
   const L = local.sw;
   const num = h('div', { class: 'txt big-num' }, L.txt);
   const bt = h('button', { class: 'big', disabled: L.done }, L.done ? '기록 완료' : L.t0 ? '■ 멈춤' : '▶ 시작');
-  const tick = () => { if (!L.t0 || L.done) return; const e = (performance.now() - L.t0) / 1000; L.txt = e < 3 ? e.toFixed(2) : '?.??'; num.textContent = L.txt; L.raf = requestAnimationFrame(tick); }; // 3초 뒤엔 숫자를 숨겨요 (감으로 멈추기)
+  const tick = () => { if (!L.t0 || L.done) return; const e = (performance.now() - L.t0) / 1000; L.txt = e.toFixed(2); num.textContent = L.txt; L.raf = requestAnimationFrame(tick); }; // 숫자는 끝까지 보여요
   bt.onclick = () => {
     if (!L.t0) { L.t0 = performance.now(); bt.textContent = '■ 멈춤'; tick(); send({ op: 'sw', e: -1 }); return; }
     L.done = true; cancelAnimationFrame(L.raf); const e = (performance.now() - L.t0) / 1000; L.txt = e.toFixed(2) + '초'; num.textContent = L.txt; bt.disabled = true; bt.textContent = '기록 완료';
     send({ op: 'sw', e: Math.round(e * 1000) / 1000 });
   };
   if (L.t0 && !L.done) requestAnimationFrame(tick);
-  return h('div', {}, h('p', { class: 'sec' }, `정확히 ${target}.00초에 멈추기! (숫자는 3초 뒤 사라져요 · ±0.10초)`), num, bt);
+  return h('div', {}, h('p', { class: 'sec' }, `정확히 ${target}.00초에 멈추기! (±0.10초)`), num, bt);
 }
 
 let lastFx = -1;
@@ -567,4 +634,4 @@ save();
 const asQ = qs.get('as');
 if (asQ === 'host' && me.room && !me.role) { me.role = 'host'; me.team = null; save(); }
 if (asQ === 'player' && me.room && !me.role) { me.role = 'player'; save(); }
-if (me.room && me.role) connect().then(() => { if (me.role === 'host' || me.team != null) goLive(); else { $('teamPick').hidden = false; drawTeamPick(); } });
+if (me.room && me.role) connect().then(() => { if (me.role === 'host' || me.role === 'watch' || me.team != null) goLive(); else { $('teamPick').hidden = false; drawTeamPick(); } });
