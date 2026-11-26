@@ -210,7 +210,7 @@ function snapshot() {
     roll: S.phase === 'play' && !busy && !$('rollBtn').disabled && !modalOn && !pickOn && !taxiOn,
     spin: spinOn ? ($('spinName').classList.contains('wheelHost') ? $('spinLbl').textContent : $('spinLbl').textContent + ' ' + $('spinName').textContent) : '',
     modal: modalOn ? {
-      who: $('mWho').textContent, e: $('mEm').textContent, t: $('mT').textContent, d: $('mD').textContent,
+      who: $('mWho').textContent, e: $('mEm').dataset.e || $('mEm').textContent, t: $('mT').textContent, d: $('mD').dataset.full != null ? $('mD').dataset.full : $('mD').textContent,
       x: shown($('mX')) ? $('mX').textContent : '', q: shown($('mQ')) ? $('mQ').textContent : '',
       def, box: shown(box) ? blocks(box, def) : [],
       sw: box.dataset.sw || '', swh: box.dataset.swh || '', react: box.dataset.react || '', react2: box.dataset.react2 || '', tap: box.dataset.tap || '',
