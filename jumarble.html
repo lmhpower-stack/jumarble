@@ -366,6 +366,22 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-o
 .numgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
 .numgrid button{padding:9px 0;font:inherit;font-size:16px;border-radius:10px;border:2px solid var(--center);background:var(--bg);color:var(--ink)}
 .numgrid button:disabled{opacity:.2}
+#mRecT .re{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;padding:6px 8px;border-radius:10px;background:#fff4e0}#mRecT .re span{flex-basis:100%;font-weight:800;color:#b45309}#mRecT .re button{border-radius:999px;padding:4px 12px;border:2px solid var(--c,#999);background:#fff}#mRecT .re button[aria-pressed=true]{background:var(--c,#555);color:var(--on,#fff)}
+.hwin{flex-wrap:wrap;justify-content:center}
+.spop .se.tdots{display:flex;gap:.1em;justify-content:center}
+.spop .se.tdots span{display:inline-flex;align-items:center;justify-content:center;font:400 .3em/1 "Black Han Sans",sans-serif;width:1.55em;height:1.55em;border-radius:50%;border:.08em solid #fff;box-shadow:0 .1em .25em rgba(0,0,0,.35);animation:tdIn .5s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes tdIn{0%{transform:translateY(1.2em) scale(.2);opacity:0}100%{transform:none;opacity:1}}
+.mwheel{display:inline-block;width:1em;height:1em;border-radius:50%;border:.07em solid #fff;box-shadow:0 0 0 .04em rgba(0,0,0,.25),0 .06em .12em rgba(0,0,0,.3);position:relative;vertical-align:middle;animation:mwSpin 6s linear infinite}
+.mwheel::after{content:'';position:absolute;left:50%;top:50%;width:.22em;height:.22em;margin:-.11em 0 0 -.11em;border-radius:50%;background:#fff;box-shadow:0 0 0 .03em rgba(0,0,0,.25)}
+.mwheel.cellw{background:conic-gradient(#E2571E 0 25%,#2B6CE0 25% 50%,#F2B705 50% 75%,#13A36B 75%);animation:none}
+@keyframes mwSpin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.mwheel{animation:none}}
+.pchips{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;margin:10px 0 6px}.pchips .pcl{flex-basis:100%;text-align:center;font-weight:800;font-size:15px;color:var(--muted)}
+.pchip{display:inline-flex;flex-direction:column;align-items:center;padding:8px 18px 10px;border-radius:16px;background:var(--c);color:var(--ink,#fff);box-shadow:0 5px 0 rgba(0,0,0,.18);animation:pcIn .5s cubic-bezier(.2,1.5,.4,1) both}
+.pchip small{font-size:13px;font-weight:800;opacity:.85}.pchip b{font-family:"Black Han Sans",sans-serif;font-size:30px;line-height:1.1;letter-spacing:1px}
+@keyframes pcIn{0%{transform:scale(.3) translateY(20px);opacity:0}100%{transform:none;opacity:1}}
+#mWho.allin{display:inline-block;padding:4px 14px;border-radius:999px;background:#7a4dd8;color:#fff;font-weight:900;animation:allinP 1.4s ease-in-out infinite}
+@keyframes allinP{50%{box-shadow:0 0 0 6px rgba(122,77,216,.25)}}
+@media (prefers-reduced-motion:reduce){.pchip,#mWho.allin{animation:none}}
 #startBtn:disabled{opacity:.55;filter:grayscale(.6);cursor:not-allowed;font-size:.8em}
 .duel{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;perspective:600px}
 .duel.diceall{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}
@@ -419,7 +435,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-o
 .react-pad:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.25)}
 .react-pad:disabled{opacity:.6}
 #mOk.cancelStyle{background:#e9eef2!important;color:#33424d!important;box-shadow:0 4px 0 #c5ccd3!important}
-/* 주루마블 모드 판: 밤 술집 느낌 (보라·네온 핑크) */
+/* 많이 마시기 모드 판: 밤 술집 느낌 (보라·네온 핑크) */
 body.juru .board{background:linear-gradient(135deg,#3a1f5c,#1e0f36);box-shadow:0 0 0 3px #ff4fa3,0 0 0 9px #2c1650,9px 9px 0 9px #140826,24px 24px 42px 14px rgba(30,10,60,.5)}
 body.juru .center{background:linear-gradient(135deg,#fff0f7,#ffe1f0);box-shadow:inset 0 0 0 3px #ff4fa3,inset 0 4px 14px rgba(0,0,0,.12)}
 body.juru .logo{color:#e8436a}
@@ -548,7 +564,7 @@ body:not(.netOn) #chatOpt{display:none} /* 관전자는 폰 연결할 때만 */
 .taptrack{height:22px;border-radius:11px;background:rgba(0,0,0,.08);overflow:hidden}.taptrack i{display:block;height:100%;width:0;border-radius:11px;transition:width .15s ease-out}
 .tappad{min-height:40px;border-radius:12px;font-size:20px;border:0}
 @media (prefers-reduced-motion:reduce){.bombgrid.tense button,.bombgrid button.boom{animation:none}}
-/* 🔥 주루마블 불꽃 */
+/* 🔥 많이 마시기 불꽃 */
 .tok.fire{filter:none!important;transform-style:preserve-3d}.tok.fire svg{position:relative;z-index:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.4))}
 .tok .fl{position:absolute;left:50%;bottom:-6%;width:170%;height:135%;z-index:0;pointer-events:none;transform-origin:50% 100%;
   background:radial-gradient(closest-side at 50% 58%,#fff6c2 0%,#ffd23f 30%,#ff7b00 58%,rgba(230,40,0,.75) 78%,rgba(230,40,0,0) 100%);
@@ -986,24 +1002,24 @@ const CELLS=[
  {e:'⭕',t:'OX 퀴즈',d:'OX 한 문제! 10초 안에 팀 폰으로 O/X. 틀리거나 못 고른 팀은 걸린 사람 벌주 한 잔.',k:'ox'},
  {e:'⚔️',t:'랜덤 결투',d:'{me} vs {them}! 👆연타 · ⚡순발력 · 🎲주사위 · 🔢업다운 · 🎯근접 중 하나가 랜덤으로 나와요. 진 쪽은 벌주 한 잔 + 1칸 뒤로 (이긴 팀은 제자리).',k:'duel'},
  {e:'🃏',t:'황금카드',k:'gold'},
- {e:'🎰',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 하나 뽑아요. 당첨된 팀 벌주 한 잔!',k:'roulette'},
- {e:'🎲',t:'하이로우',d:'주사위 2개의 합이 7보다 높을지(8↑) 낮을지(6↓) 정확히 7일지 맞혀요! 맞히면 면제권(7은 2개), 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'hilo'},
+ {e:'🎡',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 하나 뽑아요. 당첨된 팀 벌주 한 잔!',k:'roulette'},
+ {e:'🎲',t:'하이로우',d:'주사위 2개의 합이 7보다 높을지(8↑) 낮을지(6↓) 정확히 7일지 맞혀요! 8↑·6↓를 맞히면 통과, 7을 맞히면 🛡️ 면제권 또는 🎯 남 먹이기, 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'hilo'},
  {e:'🏝️',t:'무인도',d:'다음 차례엔 🏝️ 탈출 주사위! 더블이 나오면 바로 탈출해서 그 눈만큼 움직이고(한 번 더 굴리기는 없음), 아니면 그 차례만 쉬어요. 무인도에 있는 동안은 모든 미션과 벌주를 피해요!',k:'island'},
  {e:'🤝',t:'합동',d:'우리 팀 + {vsTeam} 합동 미션! 합동 업다운 · 합동 주사위 · 합동 연타 · 숫자 텔레파시 · 합동 하이로우 중 하나가 랜덤으로 나와요. 성공하면 두 팀 모두 면제권, 실패하면 두 팀 각각 걸린 사람 벌주 한 잔.',k:'joint'},
  {e:'💣',t:'숫자 폭탄',d:'숫자판(팀 수 × 4칸, 최대 20) 중 하나에 폭탄이 숨어 있어요! 우리 팀부터 팀마다 돌아가며 폰으로 숫자를 하나씩 골라요. 폭탄을 고른 팀은 걸린 사람 벌주 한 잔.',k:'nbomb'},
  {e:'⚡',t:'순발력 대결',d:'{me} vs {them}! 각자 자기 팀 폰(폰이 없으면 게임판 버튼)에 손가락 준비. 🟢초록으로 바뀌는 순간 더 빨리 누르는 쪽이 이겨요 (폰이 직접 시간을 재요)! 초록 전에 누르면 부정출발! 3판 2선승, 진 사람이 벌주 한 잔.',k:'react'},
  {e:'🎲',t:'주사위 서바이벌',d:'모든 팀 참가! 팀마다 자기 폰으로 주사위를 굴려요. 가장 낮은 팀은 걸린 사람 벌주 한 잔 + 2칸 뒤로. 꼴찌가 여럿이면 그 팀들끼리 다시 굴려요.',k:'diceall'},
  {e:'🃏',t:'황금카드',k:'gold'},
- {e:'🎁',t:'보물창고',d:'보물상자 3개 중 하나를 열어요! 면제권 2개, 택시 탑승권, 저격권… 꽝도 있어요.',k:'treasure'},
- {e:'🧩',t:'위스키 상식 초성',d:'20초 안에 위스키 초성 맞히기! 💡힌트 있음 · 여러 번 입력 OK. 맞히면 🛡️ 면제권 · 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'chosung'},
- {e:'🎲',t:'홀짝',d:'홀/짝 맞히기! 4·3·2·1 뒤 주사위가 굴러가요. 맞히면 🛡️ 면제권 · 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'oddeven'},
+ {e:'🎁',t:'보물창고',d:'보물상자 3개 중 하나를 열어요! 면제권, 택시 탑승권, 저격권, 한 번 더 굴리기… 꽝 없이 모두 보물!',k:'treasure'},
+ {e:'🧩',t:'위스키 상식 초성',d:'12초 안에 위스키 초성 맞히기! 💡힌트 있음 · 여러 번 입력 OK. 맞히면 🛡️ 면제권 또는 🎯 남 먹이기 · 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'chosung'},
+ {e:'🎲',t:'홀짝',d:'홀/짝 맞히기! 4·3·2·1 뒤 주사위가 굴러가요. 맞히면 통과 · 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'oddeven'},
  {e:'👆',t:'연타 레이스',d:'모든 팀 참가! 팀마다 앱이 고른 한 명이 3·2·1 뒤 5초 동안 팀 폰 버튼을 최대한 많이 눌러요. 누른 횟수가 게임판에서 경주해요. 꼴찌 팀은 걸린 사람 벌주 한 잔.',k:'tap'},
- {e:'🔢',t:'업다운',d:'앱이 1~20 중 숫자 하나를 숨겼어요. 우리 팀이 4번 안에 맞히기! (UP/DOWN 힌트) 맞히면 면제권, 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'updown'},
+ {e:'🔢',t:'업다운',d:'앱이 1~50 중 숫자 하나를 숨겼어요. 우리 팀이 4번 안에 맞히기! (UP/DOWN 힌트) 맞히면 🛡️ 면제권 또는 🎯 남 먹이기, 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'updown'},
  {e:'🃏',t:'황금카드',k:'gold'},
  {e:'🚕',t:'택시',d:'앞쪽 8칸 안에서 가고 싶은 칸을 골라 이동! 도착한 칸 미션도 진행해요.',k:'taxi'},
- {e:'⏱️',t:'10초 멈춰',d:'선수 {me}: 시작을 누르고 숫자를 보면서 정확히 10.00초에 멈추기! ±0.10초 안이면 면제권, 아니면 우리 팀 걸린 사람 벌주 한 잔.',k:'stopwatch'},
+ {e:'⏱️',t:'10초 멈춰',d:'선수 {me}: 시작을 누르고 숫자를 보면서 정확히 10.00초에 멈추기! ±0.10초 안이면 🛡️ 면제권 또는 🎯 남 먹이기, 아니면 우리 팀 걸린 사람 벌주 한 잔.',k:'stopwatch'},
  {e:'🎯',t:'근접 서바이벌',d:'모든 팀 참가! 앱이 위스키 숫자 문제를 내요 (설립 연도·도수·숙성 연수 등). 팀마다 팀 폰에 몰래 숫자 하나 (25초). 정답에서 가장 먼 팀(못 쓴 팀 포함)은 걸린 사람 벌주 한 잔, 딱 맞힌 팀은 면제권!',k:'nearall'},
- {e:'🎰',t:'잭팟',d:'주사위 2개! 더블 → 🛡️ 2개 · 합 10 이상 → 🛡️ 1개 · 7~9 통과 · 6 이하 → 우리 팀 걸린 사람 벌주 한 잔.',k:'jackpot'},
+ {e:'🎰',t:'잭팟',d:'주사위 2개! 더블 → 🛡️ 또는 🎯 남 먹이기 · 합 10 이상 → 🛡️ 1개 · 8~9 통과 · 7 이하 → 우리 팀 걸린 사람 벌주 한 잔.',k:'jackpot'},
  {e:'🧠',t:'순간 기억',d:'{me} vs {them}! 게임판에 숫자가 3초 동안 떴다 사라져요. 팀 폰에 기억한 숫자를 입력! 자리까지 더 많이 맞힌 팀이 승리, 진 쪽은 벌주 한 잔 + 1칸 뒤로. 동점이면 한 자리 늘려서 다시.',k:'memory'},
  {e:'🃏',t:'황금카드',k:'gold'}
 ];
@@ -1016,31 +1032,29 @@ const GOLD=[
  {e:'🔀',t:'역전 찬스',d:'지금 1등 팀(골인한 팀 제외)과 자리(칸과 바퀴 수)를 통째로 바꿔요. 이미 1등이면 면제권 하나.',swap:true},
  {e:'🎁',t:'떠넘기기',d:'우리 팀 벌주 기록 하나를 원하는 팀에 넘겨요! 그 팀 걸린 사람이 지금 벌주 한 잔, 우리 팀 기록은 −1. 넘길 기록이 없으면 대신 면제권 하나.',k:'handoff'},
  {e:'🍻',t:'우리 빼고',d:'우리 팀 빼고 다른 팀마다 걸린 사람 벌주 한 잔!'},
- {e:'🧩',t:'위스키 상식 초성',d:'20초 안에 위스키 초성 맞히기! 💡힌트 있음 · 여러 번 입력 OK. 맞히면 🛡️ 면제권 · 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'chosung'},
+ {e:'🧩',t:'위스키 상식 초성',d:'12초 안에 위스키 초성 맞히기! 💡힌트 있음 · 여러 번 입력 OK. 맞히면 🛡️ 면제권 또는 🎯 남 먹이기 · 못 맞히면 우리 팀 걸린 사람 벌주 한 잔.',k:'chosung'},
  {e:'🐌',t:'2칸 뒤로',d:'2칸 뒤로 이동! 도착한 칸 미션도 진행해요.',mv:-2},
- {e:'🤝',t:'동맹 혹은 배신',d:'상대: {vsTeam}. 두 팀 대표가 각자 몰래 🤝협력 또는 🗡️배신을 골라요. 둘 다 협력 → 두 팀 모두 면제권 / 한쪽만 배신 → 배신한 팀 면제권 2개, 당한 팀 걸린 사람 벌주 한 잔 / 둘 다 배신 → 두 팀 모두 걸린 사람 벌주 한 잔 + 1칸 뒤로.',k:'pd'},
- {e:'🎲',t:'하이로우',d:'주사위 2개의 합이 7보다 높을지(8↑) 낮을지(6↓) 정확히 7일지 맞혀요! 맞히면 면제권(7은 2개), 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'hilo'},
- {e:'🔮',t:'운명의 홀짝',d:'홀/짝 하나 고르기! 맞히면 🛡️ 면제권 · 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'fate'},
+ {e:'🤝',t:'동맹 혹은 배신',d:'상대: {vsTeam}. 두 팀 대표가 각자 몰래 🤝협력 또는 🗡️배신을 골라요. 둘 다 협력 → 두 팀 모두 통과 / 한쪽만 배신 → 배신한 팀 🛡️ 면제권, 당한 팀 걸린 사람 벌주 한 잔 + 1칸 뒤로 / 둘 다 배신 → 두 팀 모두 걸린 사람 벌주 한 잔.',k:'pd'},
+ {e:'🎲',t:'하이로우',d:'주사위 2개의 합이 7보다 높을지(8↑) 낮을지(6↓) 정확히 7일지 맞혀요! 8↑·6↓를 맞히면 통과, 7을 맞히면 🛡️ 면제권 또는 🎯 남 먹이기, 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'hilo'},
+ {e:'🔮',t:'운명의 홀짝',d:'홀/짝 하나 고르기! 맞히면 통과 · 틀리면 우리 팀 걸린 사람 벌주 한 잔.',k:'fate'},
  {e:'🎯',t:'저격',d:'우리 팀 혜택! 벌주 기록이 가장 적은 팀(우리 팀 제외)의 걸린 사람 벌주 한 잔!',k:'leader'},
  {e:'🍀',t:'행운',d:'우리 팀 벌주 기록 −1!',k:'luck'},
  {e:'🤗',t:'꼴찌 응원',d:'지금 벌주가 가장 많은 팀(꼴찌)에게 🛡️ 면제권 하나! 우리 팀이 꼴찌면 우리 팀이 받아요.',k:'underdog'},
  {e:'🚀',t:'4칸 앞으로',d:'4칸 앞으로 이동! 도착한 칸 미션도 진행해요.',mv:4},
  {e:'🎲',t:'보너스 주사위',d:'주사위를 한 번 더 굴려요!',k:'again2'},
- {e:'⏱️',t:'5초 멈춰',d:'선수 {me}: 시작을 누르고 숫자를 보면서 정확히 5.00초에 멈추기! ±0.10초 안이면 면제권, 아니면 우리 팀 걸린 사람 벌주 한 잔.',k:'stopwatch5'},
+ {e:'⏱️',t:'5초 멈춰',d:'선수 {me}: 시작을 누르고 숫자를 보면서 정확히 5.00초에 멈추기! ±0.10초 안이면 🛡️ 면제권 또는 🎯 남 먹이기, 아니면 우리 팀 걸린 사람 벌주 한 잔.',k:'stopwatch5'},
  {e:'👆',t:'연타 레이스',d:'모든 팀 참가! 팀마다 앱이 고른 한 명이 3·2·1 뒤 5초 동안 팀 폰 버튼을 최대한 많이 눌러요. 누른 횟수가 게임판에서 경주해요. 꼴찌 팀은 걸린 사람 벌주 한 잔.',k:'tap'},
  {e:'🧠',t:'위스키 퀴즈',d:'우리 팀만 푸는 보너스 OX! ‘문제 공개’를 누르면 10초 동안 O/X를 골라요. 시간이 끝나면 정답 공개. 맞히면 면제권, 틀리거나 못 고르면 우리 팀 걸린 사람 벌주 한 잔.',k:'soloox'},
  {e:'💣',t:'숫자 폭탄',d:'숫자판(팀 수 × 4칸, 최대 20) 중 하나에 폭탄이 숨어 있어요! 우리 팀부터 팀마다 돌아가며 폰으로 숫자를 하나씩 골라요. 폭탄을 고른 팀은 걸린 사람 벌주 한 잔.',k:'nbomb'},
- {e:'🎰',t:'잭팟',d:'주사위 2개를 굴려요! 더블이면 면제권 2개, 합이 10 이상이면 면제권 1개, 7~9는 통과, 6 이하면 우리 팀 걸린 사람 벌주 한 잔.',k:'jackpot'},
+ {e:'🎰',t:'잭팟',d:'주사위 2개를 굴려요! 더블이면 면제권 또는 🎯 남 먹이기, 합이 10 이상이면 면제권 1개, 8~9는 통과, 7 이하면 우리 팀 걸린 사람 벌주 한 잔.',k:'jackpot'},
 ];
 const OX=[
- {q:'버번은 미국에서 만든 위스키다.',a:'O'},
  {q:'버번은 반드시 켄터키에서 만들어야 한다.',a:'X (미국 어디서든 가능)'},
  {q:'스카치 위스키는 최소 3년 이상 숙성해야 한다.',a:'O'},
  {q:'싱글 몰트는 한 증류소에서 만든 몰트 위스키다.',a:'O'},
  {q:'블렌디드 위스키는 몰트 위스키만 섞어 만든다.',a:'X (그레인 위스키도 섞어요)'},
  {q:'피트 향은 보리를 말릴 때 피트를 태워서 생긴다.',a:'O'},
  {q:'버번은 새로 그을린 오크통에서 숙성해야 한다.',a:'O'},
- {q:'아일라는 스코틀랜드의 위스키 산지다.',a:'O'},
  {q:'위스키는 병에 담은 뒤에도 계속 숙성된다.',a:'X'},
  {q:'아일랜드 위스키는 보통 Whiskey라고 e를 넣어 쓴다.',a:'O'},
  {q:'엔젤스 셰어는 숙성 중 증발해서 사라지는 위스키를 말한다.',a:'O'},
@@ -1054,44 +1068,45 @@ const OX=[
  {q:'버번은 쓰던 통을 재사용해서 숙성할 수 있다.',a:'X (매번 새로 그을린 오크통)'},
  {q:'테네시 위스키는 켄터키에서 만든다.',a:'X (테네시주에서 만들어요)'},
  {q:'테네시 위스키는 보통 단풍나무 숯으로 거르는 과정을 거친다.',a:'O (링컨 카운티 공정)'},
- {q:'스카치 위스키는 최소 10년 숙성해야 한다.',a:'X (최소 3년)'},
  {q:'스카치 위스키는 병입할 때 도수가 40% 이상이어야 한다.',a:'O'},
- {q:'스카치 위스키는 오크통에서 숙성해야 한다.',a:'O'},
  {q:'스카치 위스키에는 색을 맞추는 캐러멜 색소를 넣을 수 있다.',a:'O (E150a 허용)'},
  {q:'스카치 위스키는 미국산 버번 통을 쓰면 안 된다.',a:'X (버번 통을 아주 많이 써요)'},
  {q:'싱글 몰트 스카치는 단식 증류기(팟 스틸)로 증류해야 한다.',a:'O'},
  {q:'싱글 몰트는 한 통(캐스크)에서 나온 위스키만 담은 것이다.',a:'X (한 증류소 원액, 여러 통 섞기 가능)'},
  {q:'싱글 캐스크 위스키는 여러 통을 섞어서 만든다.',a:'X (한 통에서만 나와요)'},
  {q:'블렌디드 몰트는 여러 증류소의 몰트 위스키만 섞은 것이다.',a:'O'},
- {q:'라벨에 적힌 숙성 연수는 가장 어린 원액 기준이다.',a:'O'},
  {q:'NAS는 숙성 연수를 표기하지 않은 위스키를 말한다.',a:'O (No Age Statement)'},
  {q:'캐스크 스트렝스 위스키는 보통 일반 위스키보다 도수가 높다.',a:'O'},
  {q:'칠 필터링은 차갑게 해서 흐려짐을 줄이는 여과 방법이다.',a:'O'},
- {q:'몰트 위스키의 주원료는 싹 틔운 보리(맥아)다.',a:'O'},
  {q:'보리를 싹 틔워 말리는 과정을 ‘몰팅’이라고 한다.',a:'O'},
  {q:'피트는 숙성할 때 오크통 안에 넣는 나무 조각이다.',a:'X (보리를 말릴 때 태우는 이탄)'},
  {q:'그레인 위스키는 보통 연속식 증류기로 만든다.',a:'O'},
  {q:'셰리 캐스크는 스페인의 주정강화 와인 ‘셰리’를 담았던 통이다.',a:'O'},
  {q:'스페이사이드는 스코틀랜드에서 증류소가 가장 많이 모인 지역이다.',a:'O'},
  {q:'캠벨타운은 스코틀랜드 위스키 산지 중 하나다.',a:'O'},
- {q:'아일라에는 피트 향이 강한 위스키를 만드는 증류소가 많다.',a:'O'},
  {q:'아이리시 위스키는 반드시 피트 향이 난다.',a:'X (피트 없는 게 대부분)'},
- {q:'아이리시 위스키는 3번 증류하는 경우가 많다.',a:'O'},
  {q:'일본 최초의 상업 위스키 증류소는 야마자키다.',a:'O (1923년)'},
- {q:'캐나다 위스키를 흔히 ‘라이’라고 부르기도 한다.',a:'O'},
- {q:'위스키는 냉장고에 보관해야 상하지 않는다.',a:'X (상온 보관 OK)'},
  {q:'코르크 마개 위스키는 병을 눕혀서 보관하는 것이 좋다.',a:'X (세워서 보관)'},
  {q:'위스키는 도수가 높아서 따놓아도 맛이 전혀 변하지 않는다.',a:'X (오래 두면 서서히 변해요)'},
- {q:'위스키에 물 몇 방울을 넣으면 향이 더 잘 느껴질 수 있다.',a:'O'},
- {q:'‘니트’는 물이나 얼음 없이 그대로 마시는 것이다.',a:'O'},
- {q:'얼음 위에 위스키를 부어 마시는 것을 ‘온 더 록’이라고 한다.',a:'O'},
- {q:'하이볼은 위스키에 탄산수 등을 섞은 음료다.',a:'O'},
  {q:'위스키의 ‘피니시’는 마신 뒤 입에 남는 여운을 말한다.',a:'O'},
  {q:'글렌캐런은 위스키 시음용 잔 이름이다.',a:'O'},
  {q:'퀘익(Quaich)은 스코틀랜드 전통 술잔이다.',a:'O'},
  {q:'위스키 한 잔을 ‘드램(dram)’이라고 부르기도 한다.',a:'O'},
- {q:'바에서 쓰는 ‘지거’는 술을 재는 계량컵이다.',a:'O'},
- {q:'영화 《엔젤스 셰어》는 스코틀랜드가 배경이다.',a:'O'}
+ {q:'영화 《엔젤스 셰어》는 스코틀랜드가 배경이다.',a:'O'},
+ {q:'스카치 위스키 규정상 숙성 통 하나의 용량은 700리터를 넘으면 안 된다.',a:'O'},
+ {q:'버번은 증류할 때 도수가 80%(160 proof)를 넘으면 안 된다.',a:'O'},
+ {q:'버번을 통에 넣을 때 도수는 62.5%(125 proof) 이하여야 한다.',a:'O'},
+ {q:'버번은 병에 담을 때 도수가 40%(80 proof) 이상이어야 한다.',a:'O'},
+ {q:'보틀드 인 본드 위스키는 한 증류소에서 한 증류 시즌에 만든 원액만 쓸 수 있다.',a:'O'},
+ {q:'숙성 4년 미만인 스트레이트 버번은 라벨에 숙성 연수를 적어야 한다.',a:'O'},
+ {q:'블렌디드 위스키 라벨의 숙성 연수는 섞인 원액 중 가장 오래된 것 기준이다.',a:'X (가장 어린 원액 기준)'},
+ {q:'아이리시 위스키는 법 규정상 최소 3년 숙성해야 한다.',a:'O'},
+ {q:'캐나다 위스키는 법 규정상 최소 3년 숙성해야 한다.',a:'O'},
+ {q:'미국 라이 위스키도 새로 그을린 오크통에서 숙성해야 한다.',a:'O'},
+ {q:'잭 다니엘 라벨에는 ‘버번’이 아니라 ‘테네시 위스키’라고 적혀 있다.',a:'O'},
+ {q:'일본양주주조조합 기준 ‘재패니즈 위스키’는 일본에서 3년 이상 숙성해야 한다.',a:'O'},
+ {q:'싱글 몰트 스카치는 2012년부터 스코틀랜드 안에서만 병입할 수 있다.',a:'O'},
+ {q:'싱글 그레인 스카치는 한 증류소에서 만든 그레인 위스키다.',a:'O'}
 ];
 const BAL=['평생 라면만 vs 평생 치킨만?','여름에 패딩 vs 겨울에 반팔?','피트 vs 셰리?','주말 내내 집 vs 주말 내내 밖?','전화 vs 문자?','아침형 vs 저녁형?','부먹 vs 찍먹?','산 vs 바다?','민초 vs 반민초?','혼자 여행 vs 같이 여행?','과거로 가기 vs 미래로 가기?','투명인간 vs 하늘 날기?','짜장 vs 짬뽕?','여행 계획 꼼꼼히 vs 즉흥 여행?'];
 const TALK=['최애 술안주는?', '처음 마셔본 위스키는?', '제일 좋아하는 계절은?', '최애 라면은?', '최애 과일은?', '최애 치킨 메뉴는?', '좋아하는 색깔은?', '1~10 중 좋아하는 숫자는?', '가장 좋아하는 동물은?', '최애 디저트는?', '가장 좋아하는 위스키 산지는?', '가보고 싶은 나라 하나는?', '최애 하이볼 조합은?', '자주 마시는 커피 메뉴는?', '최애 분식은?', '제일 좋아하는 피자 토핑은?'];
@@ -1115,14 +1130,14 @@ const RULE={split:'걸린 사람',all:'전원 벌주 한 잔씩'};
 const PICK=['이름이 가나다순으로 제일 빠른 사람', '이름이 가나다순으로 제일 늦은 사람', '팀에서 제일 오른쪽에 앉은 사람', '팀에서 제일 왼쪽에 앉은 사람', '팀장 바로 오른쪽 사람', '팀장 바로 왼쪽 사람'];
 const MULTI=()=>!SOLO()&&!JURU()&&(S.teams||[]).some(o=>rotK(o)>1);
 function pickLine(d){
-  if(SOLO())return '';
+  if(SOLO()||S.teams.every(o=>o.members&&o.members.length))return ''; /* 팀원 이름이 다 있으면 마실 사람은 마실 때 앱이 뽑아요 (게임한 선수가 있으면 그 사람) */
   if(/진 사람|낮은 쪽|진 쪽|vs /.test(d))return /잔/.test(d)&&!JURU()?'🎯 지면 마실 사람: {ROT}':'';
   if(S.rule==='all'||!/팀[^.!]*(잔|모금)/.test(d)||/물 한|빼고|다 같이|지목된|폰을 든|폰을 들고/.test(d))return '';
   return '🎯 벌주가 나오면 마실 사람: {ROT}';
 }
 // 🎯 걸린 사람 순번제: 팀 안에서 돌아가며 한 명씩 (같은 사람만 계속 걸리는 문제 방지). 멤버 이름이 없는 팀은 조건으로
 // 🥃 벌주 양: 팀전 적게 마시기에서는 팀 인원에 맞춰 한 번에 걸리는 사람 수(K)를 정해요 → 인당 목표 잔 수에 맞춤
-const DOSE_E=2.4,DOSE_EJ=10; // 한 게임에서 팀 하나가 받는 평균 벌주(주루마블은 한 잔) 횟수 (시뮬레이션으로 맞춘 값)
+const DOSE_E=2.4,DOSE_EJ=10; // 한 게임에서 팀 하나가 받는 평균 벌주(많이 마시기은 한 잔) 횟수 (시뮬레이션으로 맞춘 값)
 const DOSE=()=>S.dose||4.5;
 // 😴 쉬는 사람: 팀 폰에서 '쉬기'로 바꾼 팀원은 벌주 뽑기에서 빠지고, 남은 팀원 중에서 뽑아요
 const ACT=t=>(t&&t.members||[]).filter(m=>!(t.out&&t.out[m]));
@@ -1153,6 +1168,23 @@ function coord(i){
   if(i<=18)return[1,i-11];
   return[i-17,7];
 }
+/* 👤 이번 선수: 팀마다 앱이 한 명 골라 크게 보여 주고, 지면 그 사람이 마셔요 (게임한 사람 = 마시는 사람) */
+function pickPlayers(pool){if(SOLO())return null;const m={};pool.forEach(o=>{const n=pickMember(o);if(n)m[S.teams.indexOf(o)]=n});if(!Object.keys(m).length)return null;PL_PENDING=Object.assign(PL_PENDING||{},m);if(recSel)recSel.who=Object.assign(recSel.who||{},m);return m}
+let PL_PENDING=null; /* 미션 화면이 기록 준비보다 먼저 그려져서, 뽑은 선수를 잠깐 들고 있다가 기록에 합쳐요 */
+function playerChips(m){const w=mk('div','pchips');w.appendChild(mk('span','pcl',JURU()?'👤 이번 선수':'👤 이번 선수 · 지면 이 사람이 마셔요'));
+  Object.keys(m).forEach((ti,k)=>{const o=S.teams[ti];const c=mk('span','pchip');c.style.setProperty('--c',o.color);c.style.setProperty('--ink',onColor(o.color));c.style.animationDelay=(k*.15)+'s';c.append(mk('small',null,o.name),mk('b',null,m[ti]));w.appendChild(c)});return w}
+/* 🎯 진짜 어려운 미션 성공 보상 (적게 마시기): 🛡️ 면제권 받기 또는 🎯 다른 팀 먹이기 — 우리 팀 폰에서 골라요 (20초 안 고르면 면제권) */
+function hardWin(t,r,msg){if(JURU()){r.textContent=msg+' 🛡️ 면제권 획득';grantPass(t);return}
+  const ti=S.teams.indexOf(t),box=r.parentNode;let done=false;r.textContent=msg+' 보상을 고르세요';try{confetti(40);sfx('ding')}catch(e){}
+  const row=mk('div','row2 hwin');row.dataset.teams=String(ti);const tg=mk('div','row2 hwin');tg.dataset.teams=String(ti);r.after(row);
+  const fin=(o)=>{if(done)return;done=true;row.remove();tg.remove();
+    if(!o){r.textContent=msg+' 🛡️ 면제권 획득';grantPass(t);return}
+    const j=S.teams.indexOf(o);if(recSel){if(recSel.only&&!recSel.only.includes(j))recSel.only.push(j)}
+    r.textContent=`${msg} 🎯 ${o.name} 먹이기! ${o.name} 걸린 사람 ${amt('벌주 한 잔')}`;markRec(o);try{spotTeams([j]);stagePop('🎯',`${o.name} 먹이기!`,o.color,'res',1800)}catch(e){}};
+  row.append(mbtn('🛡️ 면제권 받기',()=>fin(null)),mbtn(SOLO()?'🎯 다른 사람 먹이기':'🎯 다른 팀 먹이기',()=>{row.remove();tg.append(mk('p','cap','🎯 누구를 먹일까요?'));
+    S.teams.forEach(o=>{if(o===t||onIsland(o)||lostT(o))return;const b=mbtn(o.name,()=>fin(o));b.style.background=o.color;b.style.color=onColor(o.color);tg.appendChild(b)});r.after(tg);if(tg.children.length<2)fin(null)}));
+  _ST(()=>{try{seeIt(row);stagePop('🎯','보상을 고르세요!',t.color,'res',1600)}catch(e){}},350);
+  setTimeout(()=>fin(null),20000)}
 function pickMember(t,ex){
   if(!t.members.length)return null;
   if(!t.cnt||t.cnt.length!==t.members.length)t.cnt=t.members.map(()=>0);
@@ -1168,10 +1200,10 @@ const onIsland=o=>!!(o&&o.pos===6&&o.isle);
 // 다 같이 하는 게임(주사위 서바이벌·연타·숫자 폭탄·룰렛)인데 같이 할 팀이 없으면 혼자 꼴찌가 되지 않게 쉬어가요
 // 🥃 위스키 숫자 퀴즈 (정답이 정해진 사실만): 근접 서바이벌 칸에서 써요
 const NUMQ=[
- {q:'스카치위스키는 오크통에서 최소 몇 년 숙성해야 할까요?',a:3,u:'년',lo:1,hi:30},
+ {q:'스카치위스키는 법 규정상 오크통에서 최소 몇 년 숙성해야 할까요?',a:3,u:'년',lo:1,hi:30},
  {q:'스카치위스키의 법정 최저 도수는 몇 %일까요?',a:40,u:'%',lo:20,hi:70},
- {q:'스카치위스키 숙성 오크통의 최대 용량은 몇 리터일까요?',a:700,u:'L',lo:50,hi:2000},
- {q:'버번은 원료 곡물 중 옥수수가 최소 몇 %여야 할까요?',a:51,u:'%',lo:1,hi:100},
+ {q:'스카치위스키 법 규정상, 숙성에 쓰는 통 하나의 용량은 최대 몇 리터까지 허용될까요?',a:700,u:'L',lo:50,hi:2000},
+ {q:'버번은 법 규정상 원료 곡물 중 옥수수가 최소 몇 %여야 할까요?',a:51,u:'%',lo:1,hi:100},
  {q:'버번을 오크통에 넣을 때 최대 도수는 몇 proof일까요?',a:125,u:' proof',lo:80,hi:200,note:'62.5%'},
  {q:'버번을 증류할 때 최대 도수는 몇 proof일까요?',a:160,u:' proof',lo:80,hi:200,note:'80%'},
  {q:'보틀드 인 본드(Bottled-in-Bond) 위스키의 병입 도수는 몇 proof일까요?',a:100,u:' proof',lo:60,hi:160,note:'50%'},
@@ -1179,16 +1211,16 @@ const NUMQ=[
  {q:'‘스트레이트 버번’이라고 쓰려면 최소 몇 년 숙성해야 할까요?',a:2,u:'년',lo:1,hi:20},
  {q:'미국 ‘보틀드 인 본드’ 법은 몇 년에 생겼을까요?',a:1897,u:'년',lo:1700,hi:2000},
  {q:'미국 금주법이 끝난 해는?',a:1933,u:'년',lo:1800,hi:2000},
- {q:'라프로익 증류소는 몇 년에 세워졌을까요?',a:1815,u:'년',lo:1700,hi:2000},
- {q:'라가불린 증류소는 몇 년에 세워졌을까요?',a:1816,u:'년',lo:1700,hi:2000},
- {q:'보모어 증류소는 몇 년에 세워졌을까요?',a:1779,u:'년',lo:1700,hi:2000},
- {q:'맥캘란 증류소는 몇 년에 세워졌을까요?',a:1824,u:'년',lo:1700,hi:2000},
- {q:'글렌피딕 증류소는 몇 년에 세워졌을까요?',a:1887,u:'년',lo:1700,hi:2000},
- {q:'하이랜드 파크 증류소는 몇 년에 세워졌을까요?',a:1798,u:'년',lo:1700,hi:2000},
- {q:'글렌모렌지 증류소는 몇 년에 세워졌을까요?',a:1843,u:'년',lo:1700,hi:2000},
- {q:'스프링뱅크 증류소는 몇 년에 세워졌을까요?',a:1828,u:'년',lo:1700,hi:2000},
- {q:'탈리스커 증류소는 몇 년에 세워졌을까요?',a:1830,u:'년',lo:1700,hi:2000},
- {q:'제임슨(아이리시 위스키)은 몇 년에 시작했을까요?',a:1780,u:'년',lo:1700,hi:2000},
+ {q:'라프로익 증류소의 공식 설립 연도는?',a:1815,u:'년',lo:1700,hi:2000},
+ {q:'라가불린 증류소의 공식 설립 연도는?',a:1816,u:'년',lo:1700,hi:2000},
+ {q:'보모어 증류소의 공식 설립 연도는?',a:1779,u:'년',lo:1700,hi:2000},
+ {q:'맥캘란 증류소의 공식 설립 연도는?',a:1824,u:'년',lo:1700,hi:2000},
+ {q:'글렌피딕 증류소의 공식 설립 연도는?',a:1887,u:'년',lo:1700,hi:2000},
+ {q:'하이랜드 파크 증류소의 공식 설립 연도는?',a:1798,u:'년',lo:1700,hi:2000},
+ {q:'글렌모렌지 증류소의 공식 설립 연도는?',a:1843,u:'년',lo:1700,hi:2000},
+ {q:'스프링뱅크 증류소의 공식 설립 연도는?',a:1828,u:'년',lo:1700,hi:2000},
+ {q:'탈리스커 증류소의 공식 설립 연도는?',a:1830,u:'년',lo:1700,hi:2000},
+ {q:'제임슨(아이리시 위스키) 보 스트리트 증류소의 공식 설립 연도는?',a:1780,u:'년',lo:1700,hi:2000},
  {q:'버번을 병에 담을 때 최저 도수는 몇 proof일까요?',a:80,u:' proof',lo:40,hi:160,note:'40%'},
 ];
 const alone=(k,t)=>['diceall','nearall','tap','nbomb','roulette'].includes(k)&&!S.teams.some(o=>o!==t&&!onIsland(o)&&!lostT(o)&&!o.fin);
@@ -1338,9 +1370,9 @@ function makeAct(k,t,ctx){
   if(k==='jackpot')return{custom:box=>{const go=mbtn('🎰 레버 당기기',null,'btn fill');go.style.cssText='width:100%;font-size:20px';const stage=mk('div','stage');const rr=mk('div','res');rr.style.minHeight='3em';box.append(go,stage,rr);
     go.onclick=async()=>{go.remove();const a=r6(),b=r6();const dw=mk('div','mdice');const d1=mk('div','die3'),d2=mk('div','die3');dw.append(d1,d2);stage.appendChild(dw);
       [d1,d2].forEach(d=>{buildDie(d);setDie(d,r6())});sfx('roll');await sleep(40);setDie(d1,a,true);setDie(d2,b,true);await sleep(reduce?100:1200);
-      if(a===b){rr.textContent=`🎰 ${a}·${b} 더블 잭팟! 🛡️ 면제권 2개`;grantPass(t);grantPass(t);confetti(50);sfx('win')}
+      if(a===b){hardWin(t,rr,`🎰 ${a}·${b} 더블 잭팟!`);confetti(50);sfx('win')}
       else if(a+b>=10){rr.textContent=`🎰 ${a}+${b}=${a+b}! 🛡️ 면제권 획득`;grantPass(t);sfx('win')}
-      else if(a+b>=7){rr.textContent=`🎰 ${a}+${b}=${a+b} · 아슬아슬 통과! 이번엔 아무도 안 마셔요`;mDone();sfx('tick')}
+      else if(a+b>=(JURU()?7:8)){rr.textContent=`🎰 ${a}+${b}=${a+b} · 아슬아슬 통과! 이번엔 아무도 안 마셔요`;mDone();sfx('tick')}
       else{rr.textContent=`🎰 ${a}+${b}=${a+b}… 꽝! 걸린 사람 벌주 한 잔`;markRec(t)}}}};
   if(k==='soloox')return{custom:box=>{
     const go=mbtn('❓ 문제 공개',null,'btn fill');go.style.cssText='width:100%;font-size:20px';box.appendChild(go);
@@ -1350,8 +1382,8 @@ function makeAct(k,t,ctx){
         bo.disabled=bx.disabled=true;const ans=String(ctx.ox.a)[0];(ans==='O'?bo:bx).classList.add('isAns');if(pick)(pick==='O'?bo:bx).classList.add(pick===ans?'okPick':'wrongPick');$('mQ').textContent=`❓ ${ctx.ox.q}\n✅ 정답: ${ctx.ox.a}`;const r=mk('div','res');box.appendChild(r);
         if(pick===ans){r.textContent='정답! 🛡️ 면제권 획득';grantPass(t)}else{r.textContent=(pick?'틀렸어요':'시간 초과')+' · 걸린 사람 벌주 한 잔';markRec(t)}},1000)};
   }};
-  if(k==='oddeven')return{custom:box=>oddevenUI(box,t,(win,n,res,r)=>{r.textContent=`🎲 ${n} → ${res}! ${win?'맞혔어요 🎉 🛡️ 면제권 획득':'틀렸어요… 걸린 사람 '+amt('벌주 한 잔')}`;if(!win)markRec(t);else markWin(t)})};
-  if(k==='fate')return{custom:box=>oddevenUI(box,t,(win,n,res,r)=>{r.textContent=`🎲 ${n} → ${res}! ${win?'맞혔어요! 🛡️ 면제권 획득':'틀렸어요… 걸린 사람 '+amt('벌주 한 잔')}`;if(win)grantPass(t);else markRec(t)})};
+  if(k==='oddeven')return{custom:box=>oddevenUI(box,t,(win,n,res,r)=>{if(win&&!JURU()){r.textContent=`🎲 ${n} → ${res}! 맞혔어요 🎉 통과 · 이번엔 아무도 안 마셔요`;mDone();return}r.textContent=`🎲 ${n} → ${res}! ${win?'맞혔어요 🎉 🛡️ 면제권 획득':'틀렸어요… 걸린 사람 '+amt('벌주 한 잔')}`;if(!win)markRec(t);else markWin(t)})};
+  if(k==='fate')return{custom:box=>oddevenUI(box,t,(win,n,res,r)=>{if(win&&!JURU()){r.textContent=`🎲 ${n} → ${res}! 맞혔어요! 통과 · 이번엔 아무도 안 마셔요`;mDone();return}r.textContent=`🎲 ${n} → ${res}! ${win?'맞혔어요! 🛡️ 면제권 획득':'틀렸어요… 걸린 사람 '+amt('벌주 한 잔')}`;if(win)grantPass(t);else markRec(t)})};
   if(k==='dicebattle')return{custom:box=>duelUI(box,t,ctx.vs,loser=>duelResult(loser===t?ctx.vs:t,loser))};
   if(k==='realfake')return{custom:box=>{
     const cap=mk('p','cap','🤫 상대 선수만 보세요! 다른 사람은 잠깐 눈 감기');const row=mk('div','row2');row.dataset.teams=S.teams.indexOf(ctx.vs);box.append(cap,row);let truth=null;
@@ -1361,19 +1393,19 @@ function makeAct(k,t,ctx){
         const ok=g===truth,loser=ok?ctx.vs:t;duelResult(loser===t?ctx.vs:t,loser);const res=mk('div','res',`정답은 ${truth==='real'?'진짜':'가짜'}! ${ok?'맞혔어요 🎉':'틀렸어요'} → ${loser.name} 걸린 사람 ${amt('벌주 한 잔')}`);box.appendChild(res)})))})));
   }};
   if(k==='stopwatch'||k==='stopwatch5')return{custom:box=>{
-    const TG=k==='stopwatch5'?5:10,TOL=0.10,HIDE=Infinity; // 숫자는 끝까지 보여요 (±0.10초)
+    const TG=k==='stopwatch5'?5:10,TOL=0.10,HIDE=Infinity; /* 숫자는 끝까지 보여요 (±0.10초) */
     const num=mk('div','big-num','0.00');const bt=mbtn('▶ 시작',null);bt.classList.add('swbtn');const res=mk('div','res');box.append(num,bt,res);let t0=0,iv=0;
-    box.dataset.sw=TG;let doneSW=false;
+    box.dataset.sw=TG;box.dataset.swh=isFinite(HIDE)?HIDE:'';let doneSW=false;
     const fin=e=>{if(doneSW)return;doneSW=true;clearInterval(iv);const dv=Math.abs(e-TG);num.textContent=e.toFixed(2)+'초';bt.disabled=true;
       num.classList.remove('swrun');num.classList.add(dv<=TOL?'swok':'swno');try{sfx(dv<=TOL?'win':'lose')}catch(e){}pushFx('reveal',`⏱️ ${e.toFixed(2)}초 (${dv<=TOL?'성공!':dv.toFixed(2)+'초 차이'})`,dv<=TOL?'#13A36B':'#e23b3b',[t]);
-      if(dv<=TOL){res.textContent=`🎯 ${dv.toFixed(2)}초 차이! 🛡️ 면제권 획득`;grantPass(t)}
+      if(dv<=TOL){hardWin(t,res,`🎯 ${dv.toFixed(2)}초 차이!`)}
       else{res.textContent=`😵 ${dv.toFixed(2)}초 차이 · 걸린 사람 벌주 한 잔`;markRec(t)}};
     box.__sw=e=>{if(!t0)return;const real=(performance.now()-t0)/1000;e=+e;if(!isFinite(e)||Math.abs(e-real)>1.5)e=real;fin(e)}; // 폰이 보낸 시간이 게임판이 잰 시간과 너무 다르면 게임판 시간으로
     let swLim=0;const armLim=()=>{clearTimeout(swLim);swLim=setTimeout(()=>{if(!doneSW&&t0)fin((performance.now()-t0)/1000)},(TG+10)*1000)}; // ⏱️ 아무도 안 멈추면(폰이 끊겨도) 목표+10초에 자동으로 멈춰요
     box.__swStart=()=>{if(doneSW)return;t0=performance.now();armLim();bt.textContent='📱 선수 폰에서 재는 중';bt.disabled=true;num.classList.add('swrun');clearInterval(iv);iv=setInterval(()=>{const e=(performance.now()-t0)/1000;num.textContent=e<HIDE?e.toFixed(2):'?.??'},30)};
     bt.onclick=()=>{if(!t0){t0=performance.now();armLim();bt.textContent='■ 멈춤';num.classList.add('swrun');iv=setInterval(()=>{const e=(performance.now()-t0)/1000;num.textContent=e<HIDE?e.toFixed(2):'?.??'},30);return}
       fin((performance.now()-t0)/1000);return;const e=0,dv=0;
-      if(dv<=TOL){res.textContent=`🎯 ${dv.toFixed(2)}초 차이! 🛡️ 면제권 획득`;grantPass(t)}
+      if(dv<=TOL){hardWin(t,res,`🎯 ${dv.toFixed(2)}초 차이!`)}
       else{res.textContent=`😵 ${dv.toFixed(2)}초 차이 · 걸린 사람 벌주 한 잔`;markRec(t)}};
   }};
   if(k==='hilo')return{custom:box=>{
@@ -1384,7 +1416,9 @@ function makeAct(k,t,ctx){
       const dw=mk('div','mdice');const d1=mk('div','die3'),d2=mk('div','die3');dw.append(d1,d2);stage.appendChild(dw);
       [d1,d2].forEach(d=>{buildDie(d);setDie(d,1+Math.floor(Math.random()*6))});await sleep(40);setDie(d1,a,true);setDie(d2,b,true);await sleep(reduce?100:1200);
       const real=sum>7?'hi':sum<7?'lo':'seven',win=real===v;const r=rr;
-      if(win){r.textContent=`🎲 ${a}+${b}=${sum} 적중! 🛡️ 면제권 ${v==='seven'?'2개':''} 획득`;grantPass(t);if(v==='seven')grantPass(t)}
+      if(win&&!JURU()&&v!=='seven'){r.textContent=`🎲 ${a}+${b}=${sum} 적중! 통과 · 이번엔 아무도 안 마셔요`;mDone()} /* 🔥 적게 마시기: 8↑·6↓는 통과, 7만 면제권 */
+      else if(win&&!JURU()){hardWin(t,r,`🎲 ${a}+${b}=${sum} 7 적중!`)}
+      else if(win){r.textContent=`🎲 ${a}+${b}=${sum} 적중! 🛡️ 면제권 ${v==='seven'?'2개':''} 획득`;grantPass(t);if(v==='seven')grantPass(t)}
       else{r.textContent=`🎲 ${a}+${b}=${sum} 틀렸어요 · 걸린 사람 벌주 한 잔`;markRec(t)}})));
   }};
   if(k==='bomb')return{custom:box=>{
@@ -1398,11 +1432,11 @@ function makeAct(k,t,ctx){
   }};
 
   if(k==='updown')return{custom:box=>{
-    const secret=1+Math.floor(Math.random()*20);let tries=4,lo=1,hi=20;const cap=mk('p','cap','남은 기회 ❤️❤️❤️❤️');const hint=mk('div','big-num','?');hint.style.fontSize='40px';
+    const UMAX=JURU()?20:50;const secret=1+Math.floor(Math.random()*UMAX);let tries=4,lo=1,hi=UMAX; /* 🔥 적게 마시기는 1~50에 4번: 반씩 좁혀도 성공률 30% */const cap=mk('p','cap','남은 기회 ❤️❤️❤️❤️');const hint=mk('div','big-num','?');hint.style.fontSize='40px';
     const grid=mk('div','numgrid');grid.dataset.teams=S.teams.indexOf(t);const res=mk('div','res');box.append(hint,cap,grid,res);const bs=[]; // 숫자는 우리 팀 폰에서도 눌러요
     const end=()=>bs.forEach(b=>b.disabled=true);
-    for(let n=1;n<=20;n++){const b=mk('button',null,String(n));bs.push(b);grid.appendChild(b);
-      b.onclick=()=>{tries--;if(n===secret){hint.textContent=`🎯 ${n}`;res.textContent=JURU()?'정답! 🍻 상으로 한 잔':'정답! 🛡️ 면제권 획득';grantPass(t);end();return}
+    for(let n=1;n<=UMAX;n++){const b=mk('button',null,String(n));bs.push(b);grid.appendChild(b);
+      b.onclick=()=>{tries--;if(n===secret){hint.textContent=`🎯 ${n}`;end();if(JURU()){res.textContent='정답! 🍻 상으로 한 잔';grantPass(t)}else hardWin(t,res,'정답!');return}
         if(n<secret){lo=n+1;udShow(hint,n,1)}else{hi=n-1;udShow(hint,n,-1)}
         bs.forEach((x,ix)=>x.disabled=ix+1<lo||ix+1>hi);cap.textContent=`남은 기회 ${'❤️'.repeat(tries)}${'🤍'.repeat(Math.max(0,4-tries))}`;
         if(!tries){res.textContent=JURU()?`😵 정답은 ${secret}! 💧 물 한 잔`:`😵 정답은 ${secret}! 걸린 사람 ${amt('벌주 한 잔')}`;markRec(t);end()}}}
@@ -1435,8 +1469,8 @@ function makeAct(k,t,ctx){
     const [c,w,hint]=CHOSUNG[Math.floor(Math.random()*CHOSUNG.length)];
     const go=mbtn('🧩 초성 공개',null,'btn fill');go.style.cssText='width:100%;font-size:20px';box.appendChild(go); // 공개는 진행자 몫, 입력은 우리 팀 폰에서
     go.onclick=()=>{go.remove();const q=mk('div','big-num',c);q.style.letterSpacing='8px';box.appendChild(q);if(hint)box.appendChild(mk('p','cap',`💡 힌트: ${hint}`));
-      const tw=mk('div');tw.dataset.teams=S.teams.indexOf(t);box.appendChild(tw);timedTextGuess(tw,20,v=>sameAns(w,v),'정답 입력 (예: 버번)',ok=>{const r=mk('div','res');box.appendChild(r);
-        if(ok){r.textContent=`정답! ${w} · 🛡️ 면제권 획득`;grantPass(t)}else{r.textContent=`시간 끝! 정답은 ${w} · 걸린 사람 벌주 한 잔`;markRec(t)}})};
+      const tw=mk('div');tw.dataset.teams=S.teams.indexOf(t);box.appendChild(tw);timedTextGuess(tw,JURU()?20:12,v=>sameAns(w,v),'정답 입력 (예: 버번)',ok=>{const r=mk('div','res');box.appendChild(r);
+        if(ok){hardWin(t,r,`정답! ${w} ·`)}else{r.textContent=`시간 끝! 정답은 ${w} · 걸린 사람 벌주 한 잔`;markRec(t)}})};
   }};
   if(k==='group')return{custom:box=>{const cap=mk('p','cap','끝까지 진 팀은?');const row=mk('div','row2');row.dataset.teams='host';box.append(cap,row);
     S.teams.filter(o=>o===t||!onIsland(o)).forEach(o=>{const b=mbtn(o.name,()=>{row.remove();cap.remove();box.appendChild(mk('div','res',`💥 ${o.name} 벌주 한 잔 + ${BACK}칸 뒤로`));groupLose(o)});b.style.borderColor=o.color;row.appendChild(b)})}};
@@ -1447,9 +1481,9 @@ function makeAct(k,t,ctx){
     const reveal=async()=>{row.remove();cap.textContent='두 팀 선택 완료! 공개합니다';const a=pick[A.name],b=pick[B.name];const L={c:'🤝 협력',b:'🗡️ 배신'};
       await flipReveal(box,[{label:A.name,color:A.color,face:L[a]},{label:B.name,color:B.color,face:L[b]}],{fx:`${A.name} ${L[a]} · ${B.name} ${L[b]}`,fxTeams:[A,B]});
       const r=mk('div','res');r.style.whiteSpace='pre-line';box.appendChild(r);let msg=`${A.name}: ${L[a]}\n${B.name}: ${L[b]}\n`;
-      if(a==='c'&&b==='c'){msg+='우정 성립! 🛡️ 두 팀 모두 면제권';grantPass(A);grantPass(B)}
-      else if(a==='b'&&b==='b'){msg+='서로 배신! 두 팀 각각 걸린 사람 벌주 한 잔 + 1칸 뒤로';markRec(A);markRec(B);backN(A,1);backN(B,1);renderBoard()}
-      else{const tr=a==='b'?A:B,vi=a==='b'?B:A;msg+=`${tr.name}의 배신! 🛡️ 면제권 2개 · ${vi.name} 걸린 사람 벌주 한 잔`;grantPass(tr);grantPass(tr);markRec(vi)}
+      if(a==='c'&&b==='c'){msg+='우정 성립! 두 팀 모두 통과 · 이번엔 아무도 안 마셔요';mDone()}
+      else if(a==='b'&&b==='b'){msg+='서로 배신! 두 팀 각각 걸린 사람 벌주 한 잔';markRec(A);markRec(B)} /* 🤝 죄수의 딜레마: 혼자 배신 > 둘 다 협력 > 둘 다 배신 > 혼자 당함 */
+      else{const tr=a==='b'?A:B,vi=a==='b'?B:A;msg+=`${tr.name}의 배신! 🛡️ 면제권 · ${vi.name} 걸린 사람 벌주 한 잔 + 1칸 뒤로`;grantPass(tr);markRec(vi);backN(vi,1);renderBoard()}
       r.textContent=msg};
     const go=mbtn('▶ 시작',()=>{go.remove();row.remove();cap.textContent='🤫 두 팀 대표가 각자 몰래 골라요 (게임판에서 고를 땐 다른 사람은 눈 감기)';[A,B].forEach(tm=>{const lab=mk('p','cap',tm.name);const r=mk('div','row2');r.dataset.teams=S.teams.indexOf(tm);[['🤝 협력','c'],['🗡️ 배신','b']].forEach(([l,v])=>r.appendChild(mbtn(l,()=>{pick[tm.name]=v;r.innerHTML='';r.appendChild(mk('div','cap',`🔒 ${tm.name} 골랐어요`));if(pick[A.name]&&pick[B.name])reveal()})));box.append(lab,r)})},'btn fill');
     go.style.cssText='width:100%;font-size:20px';row.appendChild(go);cap.textContent='두 팀 대표를 정하고 시작!';
@@ -1550,7 +1584,7 @@ function makeAct(k,t,ctx){
         const pad=mk('button','tappad','👆');pad.dataset.teams='board';pad.style.background=o.color;pad.style.color=onColor(o.color);pad.disabled=true;pad.onpointerdown=e=>{e.preventDefault();hit(o,1)};
         const tr=mk('div','taptrack');tr.appendChild(bar);ln.append(nm,tr,n,pad);lanes.appendChild(ln);bars.set(o,{bar,n,pad})});
       const cd=mk('div','cd','5');cd.hidden=true;const go=mbtn('▶ 합동 연타 시작',null,'btn fill');go.style.cssText='width:100%;font-size:20px';
-      box.append(mk('p','cap','📱 두 팀 폰에 큰 버튼이 떠요 (폰이 없으면 게임판의 팀 색 👆)'),go,cd,tot,lanes);
+      box.append(go,cd,tot,lanes);
       const draw=()=>{let sum=0;cnt.forEach((v,o)=>{sum+=v;const b=bars.get(o);b.bar.style.width=Math.min(100,100*v/GOAL*2)+'%';b.n.textContent=String(v)});tot.textContent=`${sum} / ${GOAL}`};
       const hit=(o,k2)=>{if(!open||!cnt.has(o))return;cnt.set(o,cnt.get(o)+k2);draw()};
       box.__tap=(ti,k2)=>{const o=S.teams[ti];if(o)hit(o,Math.max(0,Math.min(25,k2)))};
@@ -1639,7 +1673,7 @@ function makeAct(k,t,ctx){
         const pad=mk('button','tappad','👆');pad.dataset.teams='board';pad.style.background=o.color;pad.style.color=onColor(o.color);pad.disabled=true;pad.onpointerdown=e=>{e.preventDefault();hit(o,1)};
         const tr=mk('div','taptrack');tr.appendChild(bar);ln.append(nm,tr,n,pad);lanes.appendChild(ln);bars.set(o,{bar,n,pad})});
       const cd=mk('div','cd','5');cd.hidden=true;const go=mbtn('▶ 결투 시작',null,'btn fill');go.style.cssText='width:100%;font-size:20px';const rr=mk('div','res');
-      box.append(mk('p','cap','📱 두 팀 폰에 큰 버튼이 떠요 (폰이 없으면 게임판의 팀 색 👆)'),go,cd,lanes,rr);
+      box.append(go,cd,lanes,rr);
       const draw=()=>{const mx=Math.max(10,...cnt.values());cnt.forEach((v,o)=>{const b=bars.get(o);b.bar.style.width=(100*v/mx)+'%';b.n.textContent=String(v)})};
       const hit=(o,k2)=>{if(!open||!cnt.has(o))return;cnt.set(o,cnt.get(o)+k2);draw()};
       box.__tap=(ti,k2)=>{const o=S.teams[ti];if(o)hit(o,Math.max(0,Math.min(25,k2)))};
@@ -1673,13 +1707,13 @@ function makeAct(k,t,ctx){
   }};
   if(k==='diceall')return{custom:box=>{
     // 🎲 주사위 서바이벌: 모든 팀이 자기 폰으로 굴리고, 가장 낮은 팀이 걸려요 (꼴찌 동점이면 그 팀들끼리 다시)
-    let pool=S.teams.filter(o=>o===t||(!onIsland(o)&&!lostT(o)&&!o.fin));const cap=mk('p','cap','팀마다 자기 주사위를 굴려요! 가장 낮은 팀이 걸려요');const wrap=mk('div','duel diceall');const rr=mk('div','res');box.append(cap,wrap,rr);
+    let pool=S.teams.filter(o=>o===t||(!onIsland(o)&&!lostT(o)&&!o.fin));const cap=mk('p','cap','팀마다 자기 주사위를 굴려요! 가장 낮은 팀이 걸려요');const wrap=mk('div','duel diceall');const rr=mk('div','res');const pm=pickPlayers(pool);box.append(cap);if(pm)box.appendChild(playerChips(pm));box.append(wrap,rr);
     const build=()=>{wrap.innerHTML='';const rolls=new Map();
       pool.forEach(tm=>{const col=mk('div');const die=mk('div','die3');buildDie(die);setDie(die,1);const lab=mk('div','cap',tm.name);lab.style.color=inkOf(tm.color);
         const bt=mbtn(pool.length>3?'🎲 굴리기':`🎲 ${tm.name}`,async()=>{bt.disabled=true;seeIt(wrap);const n=r6();setDie(die,n,true);await sleep(reduce?100:1150);rolls.set(tm,n);lab.textContent=`${tm.name} · ${n}`;
           if(rolls.size<pool.length)return;const mn=Math.min(...rolls.values()),lo=pool.filter(o=>rolls.get(o)===mn);
           if(lo.length>1){rr.textContent=`😱 ${lo.map(o=>o.name).join('·')} 똑같이 ${mn}! 이 팀들끼리 다시 굴려요`;pool=lo;await sleep(reduce?100:1200);build();return}
-          rr.textContent=`🎲 ${lo[0].name} ${mn}, 꼴찌! 걸린 사람 ${amt('벌주 한 잔')} + ${BACK}칸 뒤로`;groupLose(lo[0])});
+          {const nm=pm&&pm[S.teams.indexOf(lo[0])];rr.textContent=`🎲 ${lo[0].name} ${mn}, 꼴찌! ${nm?nm+' ':'걸린 사람 '}${amt('벌주 한 잔')} + ${BACK}칸 뒤로`}groupLose(lo[0])});
         bt.dataset.teams=String(S.teams.indexOf(tm));col.append(die,lab,bt);wrap.appendChild(col)})};
     build()}};
   if(k==='memory')return{custom:box=>{
@@ -1713,11 +1747,11 @@ function makeAct(k,t,ctx){
     // 💣 숫자 폭탄: 팀마다 돌아가며 자기 폰으로 숫자 하나씩. 폭탄을 고른 팀이 벌주 (앱이 판정)
     const ord=(()=>{const a=S.teams.filter(o=>o===t||(!onIsland(o)&&!lostT(o)&&!o.fin));const k0=a.indexOf(t);return a.slice(k0).concat(a.slice(0,k0))})();
     const N=Math.min(20,Math.max(8,ord.length*4)),bomb=1+Math.floor(Math.random()*N);let turn=0,over=false; // 팀 수 × 4칸 (2팀 8 · 3팀 12 · 5팀 20)
-    const cap=mk('p','cap');const grid=mk('div','numgrid bombgrid');const rr=mk('div','res');box.append(cap,grid,rr);
+    const cap=mk('p','cap');const grid=mk('div','numgrid bombgrid');const rr=mk('div','res');const pm=pickPlayers(ord);if(pm)box.appendChild(playerChips(pm));box.append(cap,grid,rr);
     const setTurn=()=>{const tm=ord[turn%ord.length];grid.dataset.teams=String(S.teams.indexOf(tm));cap.textContent=`💣 ${tm.name} 차례 · 숫자 하나 골라요 (남은 ${grid.querySelectorAll('button:not([disabled])').length}개)`;cap.style.color=inkOf(tm.color)};
     for(let n=1;n<=N;n++){const b=mk('button',null,String(n));grid.appendChild(b);b.onclick=()=>{if(over||b.disabled)return;const tm=ord[turn%ord.length];
       if(n===bomb){over=true;b.textContent='💣';b.classList.add('boom');grid.querySelectorAll('button').forEach(x=>x.disabled=true);cap.textContent=`💥 펑! ${tm.name}`;
-        rr.textContent=JURU()?`💥 ${tm.name} 폭탄! 💧 물 한 잔`:`💥 ${tm.name} 폭탄! 걸린 사람 ${amt('벌주 한 잔')}`;JURU()?mDone():markRec(tm);return}
+        rr.textContent=JURU()?`💥 ${tm.name} 폭탄! 💧 물 한 잔`:`💥 ${tm.name} 폭탄! ${pm&&pm[S.teams.indexOf(tm)]?pm[S.teams.indexOf(tm)]+' ':'걸린 사람 '}${amt('벌주 한 잔')}`;JURU()?mDone():markRec(tm);return}
       b.disabled=true;b.textContent='✅';sfx('tick');turn++;setTurn();
       const left=grid.querySelectorAll('button:not([disabled])').length;if(left<=4)grid.classList.add('tense')}}
     setTurn()}};
@@ -1725,13 +1759,13 @@ function makeAct(k,t,ctx){
     // 👆 연타 레이스: 5초 동안 각자 폰 버튼 연타 → 팀별 합계가 게임판에서 경주. 꼴찌 팀 벌주
     const pool=S.teams.filter(o=>o===t||(!onIsland(o)&&!lostT(o)&&!o.fin));const cnt=new Map(pool.map(o=>[o,0]));let open=false,done=false;
     // 🎯 팀마다 연타할 사람을 앱이 돌아가며 골라요 (팀 폰은 한 대라서, 매번 팀장만 하지 않게)
-    if(!SOLO()){const who=pool.map(o=>{const m=pickMember(o);return m?`${o.name} ${m}`:null}).filter(Boolean);if(who.length)box.appendChild(mk('p','cap',`👆 연타 선수: ${who.join(' · ')}`))}
+    const pm=pickPlayers(pool);if(pm)box.appendChild(playerChips(pm));
     const lanes=mk('div','taplanes');const bars=new Map();
     pool.forEach(o=>{const ln=mk('div','tapln');const nm=mk('b',null,o.name);const bar=mk('i');bar.style.background=o.color;const n=mk('span',null,'0');
       const pad=mk('button','tappad','👆');pad.dataset.teams='board';pad.style.background=o.color;pad.style.color=onColor(o.color);pad.disabled=true;pad.onpointerdown=e=>{e.preventDefault();hit(o,1)};
       ln.append(nm,mk('div','taptrack'),n,pad);ln.querySelector('.taptrack').appendChild(bar);lanes.appendChild(ln);bars.set(o,{bar,n,pad})});
     const cd=mk('div','cd','5');cd.hidden=true;const go=mbtn('▶ 레이스 시작',null,'btn fill');go.style.cssText='width:100%;font-size:20px';const rr=mk('div','res');
-    box.append(mk('p','cap','📱 팀 폰에 큰 버튼이 떠요 · 연타 선수가 눌러요 (폰이 없으면 게임판의 팀 색 👆)'),go,cd,lanes,rr);
+    box.append(go,cd,lanes,rr);
     const draw=()=>{const mx=Math.max(10,...cnt.values());cnt.forEach((v,o)=>{const b=bars.get(o);b.bar.style.width=(100*v/mx)+'%';b.n.textContent=String(v)})};
     let late=false;const hit=(o,k,ph)=>{if(!(open||(late&&ph))||!cnt.has(o))return;cnt.set(o,cnt.get(o)+k);draw()};
     box.__tap=(ti,k)=>{const o=S.teams[ti];if(o)hit(o,Math.max(0,Math.min(25,k)),true)}; // 📱 폰에서 오는 마지막 묶음은 0.7초 더 받아요 (네트워크 지연)
@@ -1740,19 +1774,20 @@ function makeAct(k,t,ctx){
       open=false;late=true;box.dataset.tapLate=box.dataset.tap;delete box.dataset.tap;bars.forEach(b=>b.pad.disabled=true);cd.textContent='0';await sleep(700);late=false;delete box.dataset.tapLate;done=true;
       const mn=Math.min(...cnt.values()),mxv=Math.max(...cnt.values()),losers=pool.filter(o=>cnt.get(o)===mn);
       const win=pool.filter(o=>cnt.get(o)===mxv);
-      rr.textContent=(mn===mxv?'🤝 무승부! ':`🏆 ${win.map(o=>o.name).join('·')} 1등! · `)+(JURU()?`💧 ${losers.map(o=>o.name).join('·')} 꼴찌, 물 한 잔 · 나머지 모두 🍻 한 잔`:`🐢 ${losers.map(o=>o.name).join('·')} 꼴찌, 걸린 사람 ${amt('벌주 한 잔')}`);
+      const lnm=o=>pm&&pm[S.teams.indexOf(o)]?`${o.name} ${pm[S.teams.indexOf(o)]}`:`${o.name} 걸린 사람`;
+      rr.textContent=`🏆 ${win.map(o=>o.name).join('·')} 승리! · `+(JURU()?`💧 ${losers.map(o=>o.name).join('·')} 꼴찌, 물 한 잔 · 나머지 모두 🍻 한 잔`:`🐢 ${losers.map(o=>o.name).join('·')} 꼴찌 → ${losers.map(lnm).join('·')} ${amt('벌주 한 잔')}`);
       if(losers.length===pool.length&&pool.length>1){mDone();rr.textContent=mxv===0?'🤷 아무도 안 눌렀어요! 이번엔 넘어가요':'🤝 모두 동점! 이번엔 아무도 안 마셔요'}else losers.forEach(o=>markRec(o))}}};
   if(k==='roulette')return{custom:box=>{
     // 🎡 진짜 돌림판: 팀 색으로 나눈 원판이 돌다가 째깍째깍 느려지며 멈춰요
     let pool=S.teams.filter(o=>!onIsland(o)&&!lostT(o));if(!pool.length)pool=S.teams.filter(o=>!onIsland(o));if(!pool.length)pool=S.teams.slice();
     const W=makeWheel(pool);
-    const go=mbtn('🎰 룰렛 돌리기',null,'btn fill');go.dataset.teams=String(S.teams.indexOf(t));go.style.cssText='width:100%;font-size:20px';const rr=mk('div','res');rr.style.minHeight='2.4em';
+    const go=mbtn('🎡 룰렛 돌리기',null,'btn fill');go.dataset.teams=String(S.teams.indexOf(t));go.style.cssText='width:100%;font-size:20px';const rr=mk('div','res');rr.style.minHeight='2.4em';
     box.append(W.wrap,go,rr);
-    go.onclick=async()=>{go.onclick=null;go.classList.add('busy');go.textContent='🎰 돌아가는 중…';try{W.wrap.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'})}catch(e){}
+    go.onclick=async()=>{go.onclick=null;go.classList.add('busy');go.textContent='🎡 돌아가는 중…';try{W.wrap.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'})}catch(e){}
       const w=Math.floor(Math.random()*pool.length),tm=pool[w];const s0=MSEQ;
       await W.spin(w,reduce?400:4600);if(MSEQ!==s0)return;
-      go.textContent=JURU()?`🎰 ${tm.name} 당첨! 🍻 한 잔`:`🎰 ${tm.name} 당첨!`;go.disabled=true;
-      rr.textContent=JURU()?`🎉 ${tm.name} 당첨! 🍻 한 잔`:`🎯 ${tm.name} 당첨! ${amt('벌주 한 잔')}`;markLuck(tm);spotTeams([S.teams.indexOf(tm)]);pushFx('reveal',`🎰 ${tm.name} 당첨!`,tm.color,[tm])}}};
+      go.textContent=JURU()?`🎡 ${tm.name} 당첨! 🍻 한 잔`:`🎡 ${tm.name} 당첨!`;go.disabled=true;
+      rr.textContent=JURU()?`🎉 ${tm.name} 당첨! 🍻 한 잔`:`🎯 ${tm.name} 당첨! ${amt('벌주 한 잔')}`;markLuck(tm);spotTeams([S.teams.indexOf(tm)]);pushFx('reveal',`🎡 ${tm.name} 당첨!`,tm.color,[tm])}}};
   if(k==='nunchi')return twoWay(t,'✅ 끝까지 안 겹침 → 면제권','❌ 겹쳤어요 → 벌주');
   if(k==='snack')return withCount(twoWay(t,'✅ 두 명 이상 같음 → 면제권','❌ 모두 달랐어요 → 벌주'),'🔔 셋 세기 (3·2·1)',COUNT3);
   if(k==='bal')return withCount(twoWay(t,'✅ 전원 같은 쪽 → 면제권','❌ 한 명이라도 갈림 → 벌주'),'🔔 셋 세기 (3·2·1)',COUNT3);
@@ -1760,7 +1795,7 @@ function makeAct(k,t,ctx){
   if(k==='unan')return withCount(twoWay(t,'✅ 모두 같은 사람 → 면제권','❌ 갈렸어요 → 벌주'),'🔔 셋 세기 (3·2·1)',COUNT3);
   if(k==='win')return{label:'✅ 성공! 면제권 받기',run:b=>{grantPass(t);b.disabled=true;b.textContent='🛡️ 면제권 획득'}};
   if(k==='ox')return{custom:box=>{
-    // OX 퀴즈: 한 문제를 모든 팀이 각자 풀어요. 틀리면 벌주 (주루마블은 맞힌 팀이 한 잔)
+    // OX 퀴즈: 한 문제를 모든 팀이 각자 풀어요. 틀리면 벌주 (많이 마시기은 맞힌 팀이 한 잔)
     const OXSEC=10,ROUNDS=1;let alive=S.teams.filter(o=>o===t||(!onIsland(o)&&!o.fin));let round=0;const used=new Set();
     const board=mk('div','res');board.style.whiteSpace='pre-line';const log=[];
     const go=mbtn('❓ 문제 공개',null,'btn fill');go.dataset.teams='host';go.style.cssText='width:100%;font-size:20px';box.append(go,board);
@@ -1817,7 +1852,7 @@ function seg(id,opts,val,set){
     b.setAttribute('aria-pressed',String(val===v));
     b.onclick=()=>{set(v);save();renderSetup()};g.appendChild(b)});
 }
-function setSub(){const e=$('subT');if(e)e.textContent=(SOLO()?'개인전 · ':'팀전 · ')+(JURU()?'🍻 주루마블 · 오늘의 술왕은 누구?':'적게 마신 '+(SOLO()?'사람이':'팀이')+' 이긴다')}
+function setSub(){const e=$('subT');if(e)e.textContent=(SOLO()?'개인전 · ':'팀전 · ')+(JURU()?'🍻 많이 마시기 · 오늘의 술왕은 누구?':'적게 마신 '+(SOLO()?'사람이':'팀이')+' 이긴다')}
 // 상한에 닿은(탈락) 팀: 👻 유령으로 계속(장난 카드) 또는 ⏸️ 멈춤(차례 건너뜀)
 function drawDoseSeg(){const h=$('hitOpt');if(h){h.hidden=SOLO()||JURU();if(!h.hidden)seg('hitSeg',[['one','랜덤 한 명 (추천)'],['half','랜덤 절반'],['all','팀 전원']],S.hit||'one',v=>{S.hit=v;save()})}
   const o=$('doseOpt');if(!o)return;o.hidden=(SOLO()&&JURU())||(!SOLO()&&!JURU());o.querySelector('span').textContent=JURU()?'마시는 양':'벌주 양';
@@ -1837,7 +1872,7 @@ function renderSetup(){_ST(drawLostSeg,0);_ST(drawDoseSeg,0);seg('toastSeg',[[0,
       const nm=box.querySelector('.nm'),x=box.querySelector('.x');nm.value=p.name;nm.oninput=()=>{p.name=nm.value;save()};
       x.style.visibility='visible';x.onclick=()=>{S.solo.splice(i,1);save();renderSetup()};el.appendChild(box)});
     $('addT').textContent='+ 사람 추가';$('addT').hidden=S.solo.length>=10;startGate(S.solo.length,true);
-    seg('winSeg',[['least','적게 마시기 (승부)'],['juru','🍻 주루마블 (많이 마시기)']],S.win==='most'?'juru':S.win||'least',v=>{S.win=v;S.cap=5;S.goal=v==='juru'?2:3;S.goalPicked=S.capPicked=false;save();renderSetup()});
+    seg('winSeg',[['least','🥃 적게 마시기 (승부)'],['juru','🍻 많이 마시기 (술왕 뽑기)']],S.win==='most'?'juru':S.win||'least',v=>{S.win=v;S.cap=5;S.goal=v==='juru'?2:3;S.goalPicked=S.capPicked=false;save();renderSetup()});
     if(JURU())capInput(5,true);
     else{const few=S.solo.length<=5;if(!S.capPicked)S.cap=few?6:5; // 👥 5명 이하는 6잔 (5잔이면 절반이 유령이 되는 판이 많아요)
       capInput(few?6:5,false)}
@@ -1859,7 +1894,7 @@ function renderSetup(){_ST(drawLostSeg,0);_ST(drawDoseSeg,0);seg('toastSeg',[[0,
     el.appendChild(box);
   });
   $('addT').hidden=S.setup.length>=6;startGate(S.setup.length,false);
-    seg('winSeg',[['least','적게 마시기 (승부)'],['juru','🍻 주루마블 (많이 마시기)']],S.win==='most'?'juru':S.win||'least',v=>{S.win=v;S.cap=v==='juru'?12:6;S.goal=v==='juru'?2:3;S.goalPicked=S.capPicked=false;save();renderSetup()}); // 🍻 팀 주루는 2바퀴 (3바퀴면 한 사람 6잔 넘게)
+    seg('winSeg',[['least','🥃 적게 마시기 (승부)'],['juru','🍻 많이 마시기 (술왕 뽑기)']],S.win==='most'?'juru':S.win||'least',v=>{S.win=v;S.cap=v==='juru'?12:6;S.goal=v==='juru'?2:3;S.goalPicked=S.capPicked=false;save();renderSetup()}); // 🍻 팀 주루는 2바퀴 (3바퀴면 한 사람 6잔 넘게)
   if(JURU())capInput(12,true);
   else{const two=S.setup.length===2;if(!S.capPicked)S.cap=two?7:6; // 2팀이면 7잔 (6잔이면 한 팀 상한으로 갑자기 끝나는 판이 많아요)
     capInput(two?7:6,false)}
@@ -1881,7 +1916,7 @@ function startGame(){
   S.final=false;S.turnNo=0;S.rnd=0;S.toastDue=false;S.toasts=0;S.deckG=null;S.deckJ=null;document.body.classList.remove('final');
   S.react={};S.mcLeft=3;S.cur=0;S.winner=-1;S.goal=S.goal||3;S.cap=S.cap==null?6:S.cap;S.level=S.level||1;S.rule='split';S.phase='play';
   S.boost=false;S.dash=[];
-  S.log=JURU()?`🍻 주루마블! ${S.goal}바퀴를 누군가 돌면 끝, 가장 많이 마신 ${SOLO()?'사람':'팀'}이 술왕`:`${S.goal}바퀴 레이스! 적게 마신 ${SOLO()?'사람':'팀'}이 승리. 첫 주사위를 굴려 주세요`;
+  S.log=JURU()?`🍻 많이 마시기! ${S.goal}바퀴를 누군가 돌면 끝, 가장 많이 마신 ${SOLO()?'사람':'팀'}이 술왕`:`${S.goal}바퀴 레이스! 적게 마신 ${SOLO()?'사람':'팀'}이 승리. 첫 주사위를 굴려 주세요`;
   buildBoard();setDie($('d1'),1);setDie($('d2'),1);save();show();
   if(!S.introAt||Date.now()-S.introAt>6*3600e3){S.introAt=Date.now();save();introFx()}
 }
@@ -1954,7 +1989,7 @@ function buildBoard(){
     el.style.gridRow=r;el.style.gridColumn=col;el.id='c'+i;
     el.setAttribute('aria-label',`${c.t} 칸`);
     const lb=BOARD_SHORT[c.t]||c.t; // 판 위에는 짧은 이름 (카드에는 원래 이름)
-    el.innerHTML=`<span class="sign"><span class="t disp" data-len="${lb.replace(/ /g,'').length}">${lb}</span><span class="e">${c.e}</span></span><span class="toks"></span>`;
+    el.innerHTML=`<span class="sign"><span class="t disp" data-len="${lb.replace(/ /g,'').length}">${lb}</span><span class="e">${c.e==='🎡'?'<span class="mwheel cellw"></span>':c.e}</span></span><span class="toks"></span>`;
     el.onclick=()=>{if(taxiResolve){const r=taxiResolve;taxiResolve=null;r(i);return}if(!busy)peek(i)};
     b.appendChild(el);
   });
@@ -2017,7 +2052,7 @@ function renderBoard(){{const bw=$('board').offsetWidth;if(bw&&window.__fitW!==b
     d.querySelector('.minus').onclick=()=>{if(busy)return;q.drinks=Math.max(0,(q.drinks||0)-1);save();renderBoard()};ch.appendChild(d);
   });
   if(window.__drawPhones)try{window.__drawPhones()}catch(e){} /* 📱 다시 그린 팀 칸에 폰 상태 배지 바로 붙이기 */
-  $('note').innerHTML=JURU()?`<b>🍻 주루마블: 미션 승패는 앱이 판정해요. 이기거나 성공하면 한 잔(= 점수), 지면 물. 누군가 ${S.goal}바퀴를 돌면 끝, 가장 많이 마신 팀이 술왕!</b> 마실 땐 ‘🥃 마실 시간’에 누가 마시는지 떠요 (‘✅ 다 마셨어요’로 넘어가기). 물은 항상 옆에, 양은 각자 알아서.`
+  $('note').innerHTML=JURU()?`<b>🍻 많이 마시기: 미션 승패는 앱이 판정해요. 이기거나 성공하면 한 잔(= 점수), 지면 물. 누군가 ${S.goal}바퀴를 돌면 끝, 가장 많이 마신 팀이 술왕!</b> 마실 땐 ‘🥃 마실 시간’에 누가 마시는지 떠요 (‘✅ 다 마셨어요’로 넘어가기). 물은 항상 옆에, 양은 각자 알아서.`
    :`<b>미션 승패와 누가 마실지는 앱이 정해요.</b> 1:1 대결은 직접 한 사람이, 팀 벌주는 그 순간 앱이 고른 사람이 마셔요 (덜 마신 사람부터 골고루). 🛟 우리 차례가 아닐 때 두 번째로 걸린 벌주부터는 기록만 +1, 마시는 건 물이에요. 한계인 사람은 팀 폰에서 이름을 눌러 😴 쉬기로 바꾸면 벌주·선수 뽑기에서 빠지고 남은 팀원이 마셔요. ‘🥃 마실 시간’ 10초 동안 마시고 ‘✅ 다 마셨어요’. 면제권(🛡️)이 있으면 팀 폰에 ‘쓸까요?’가 떠요 (2개면 🔁 반사). 팀 벌주가 상한에 닿으면 이후 물로 마시고 패배. 누군가 골인하면 그 라운드 끝까지 하고, 적게 마신 팀이 승리. 잘못 기록됐으면 ‘↩️ 방금 기록 되돌리기’(1분 안). 양은 각자 알아서, 물은 항상 옆에.`;
 }
 
@@ -2052,9 +2087,20 @@ function drawRec(){
       b.onclick=()=>{recSel.tg[i]=j;drawRec()};row.appendChild(b)});
     tr.appendChild(row);
   });
+  /* 🔁 반사의 반사: 반사당한 팀이 면제권 2개 이상이면 되받아치기 (한 팀은 한 번만 → 핑퐁이 끝없이 가지 않아요) */
+  Object.keys(recSel.st).map(Number).filter(i=>recSel.st[i]===3&&recSel.tg[i]!=null).forEach(i=>{
+    const used=new Set([i]);let j=recSel.tg[i],from=i;
+    while(j!=null&&!used.has(j)&&(S.teams[j].pass||0)>=2){used.add(j);const jj=j,fr=from;
+      const row=document.createElement('div');row.className='re';row.dataset.from=String(fr);
+      const lab=document.createElement('span');lab.textContent=`🔁 ${S.teams[fr].name}의 반사 → ${S.teams[jj].name}! 되받아칠까요? (면제권 2개)`;row.appendChild(lab);
+      const no=document.createElement('button');no.textContent='🥃 그냥 마시기';no.dataset.team=jj;no.setAttribute('aria-pressed',String(recSel.re[jj]==null));no.onclick=()=>{delete recSel.re[jj];drawRec()};row.appendChild(no);
+      S.teams.forEach((tm,k)=>{if(k===jj||onIsland(tm)||lostT(tm))return;const b=document.createElement('button');b.style.setProperty('--c',tm.color);b.style.setProperty('--on',onColor(tm.color));
+        b.textContent=`🔁 ${tm.name}`;b.dataset.team=jj;b.setAttribute('aria-pressed',String(recSel.re[jj]===k));b.onclick=()=>{recSel.re[jj]=k;drawRec()};row.appendChild(b)});
+      tr.appendChild(row);if(recSel.re[jj]==null)break;from=jj;j=recSel.re[jj]}
+  });
 }
 // 🛟 연속 벌주 보호 (적게 마시기): 우리 차례가 아닐 때 받은 두 번째 벌주부터는 기록만 +1 하고 물로 마셔요
-const allRest=tm=>!SOLO()&&tm.members&&tm.members.length&&!ACT(tm).length; // 😴 팀원 모두 쉬는 중 (주루마블에선 물은 점수가 안 돼요)
+const allRest=tm=>!SOLO()&&tm.members&&tm.members.length&&!ACT(tm).length; // 😴 팀원 모두 쉬는 중 (많이 마시기에선 물은 점수가 안 돼요)
 function offTurnGuard(tm,i){if(JURU()||i===S.cur)return false;const was=tm.offHits||0;tm.offHits=was+1;return was>=1}
 function commitRec(){
   const snap0=S.teams.map(t=>JSON.stringify({drinks:t.drinks||0,gl:t.gl||0,pass:t.pass||0,offHits:t.offHits||0,pd:t.pd||{}}));
@@ -2070,7 +2116,7 @@ function commitRec(){
   for(const k in recSel.st){const i=+k,st=recSel.st[k],tm=S.teams[i];
     if(st===1){const wasCap=CAP()>0&&(tm.drinks||0)>=CAP();const nm=whoNow(tm,W[i]);noteSlot(tm,nm,W[i]&&!(tm.out&&tm.out[W[i]]));const prot=offTurnGuard(tm,i);const ln=prot?`💧 ${tm.name}${nm&&nm.length?' '+nm.join('·'):''} 물 한 잔 (다른 팀 차례에 두 번째 · 기록은 +1)`:drinkLine(tm,nm);msgs.push(ln);dfx.push(ln);dTi.push(i);const kk=nm?nm.length:null;if(!(JURU()&&allRest(tm))){addDrink(i,false,kk);if(recSel.double)addDrink(i,false,kk)}if(nm&&!prot&&!wasCap)notePd(tm,nm)}
     else if(st===2&&tm.pass>0){tm.pass--;msgs.push(`🛡️ ${tm.name} 면제권으로 패스`);fxs.push(['block',tm])}
-    else if(st===3&&tm.pass>=2&&recSel.tg[i]!=null){tm.pass-=2;const j=recSel.tg[i],o=S.teams[j];const oCap=CAP()>0&&(o.drinks||0)>=CAP();const nm=whoNow(o,W[i]?null:null);noteSlot(o,nm,false);const pr=offTurnGuard(o,j);const ln=pr?`💧 ${o.name}${nm&&nm.length?' '+nm.join('·'):''} 물 한 잔 (다른 팀 차례에 두 번째 · 기록은 +1)`:drinkLine(o,nm);msgs.push(`🔁 ${tm.name} 반사! → ${ln}`);fxs.push(['reflect',tm,o]);dfx.push(ln);dTi.push(j);if(!(JURU()&&allRest(o)))addDrink(j,false,nm?nm.length:null);if(nm&&!pr&&!oCap)notePd(o,nm)}}
+    else if(st===3&&tm.pass>=2&&recSel.tg[i]!=null){tm.pass-=2;let j=recSel.tg[i];const path=[tm.name];{const used=new Set([i]);while(recSel.re&&recSel.re[j]!=null&&!used.has(j)&&(S.teams[j].pass||0)>=2){used.add(j);S.teams[j].pass-=2;path.push(S.teams[j].name);fxs.push(['reflect',S.teams[j],S.teams[recSel.re[j]]]);j=recSel.re[j]}}const o=S.teams[j];const oCap=CAP()>0&&(o.drinks||0)>=CAP();const nm=whoNow(o,W[i]?null:null);noteSlot(o,nm,false);const pr=offTurnGuard(o,j);const ln=pr?`💧 ${o.name}${nm&&nm.length?' '+nm.join('·'):''} 물 한 잔 (다른 팀 차례에 두 번째 · 기록은 +1)`:drinkLine(o,nm);msgs.push(`🔁 ${path.length>1?path.join(' → ')+' 반사의 반사!':tm.name+' 반사!'} → ${ln}`);fxs.push(['reflect',tm,o]);dfx.push(ln);dTi.push(j);if(!(JURU()&&allRest(o)))addDrink(j,false,nm?nm.length:null);if(nm&&!pr&&!oCap)notePd(o,nm)}}
   if(msgs.length)toast(msgs.join('  ·  '));else if(recSel&&Object.keys(recSel.st).length)toast('✅ 이번엔 아무도 안 마셔요');
   {const r=fxs.find(f=>f[0]==='reflect')||fxs[0];if(r)passFx(...r);if(dfx.length){window.__drinkTi=dTi;const d0=r?2300:0;let rd=0;if(slots.length){window.__drawSlots=null;_ST(()=>reelFx(slots),d0);rd=REEL_MS-300+(Math.min(4,slots.reduce((a,b)=>a+b.names.length,0))-1)*250+1200}else window.__drawSlots=null;window.__drinkP=drinkFx(dfx,d0+rd)}}
   if(msgs.length&&S.teams.some((t,i)=>snap0[i]!==JSON.stringify({drinks:t.drinks||0,gl:t.gl||0,pass:t.pass||0,offHits:t.offHits||0,pd:t.pd||{}})))showUndo(snap0,msgs.join(' · '));
@@ -2139,7 +2185,7 @@ function _passFx(kind,a,b){pushFx(kind,kind==='reflect'?`🔁 ${a.name} 반사! 
 }catch(e){}}
 // 많이 마시기 모드에서는 보상과 벌칙이 뒤집혀요: 이긴 쪽이 한 잔(= 점수)
 const CAP=()=>S.cap||Infinity; // 0 = 상한 없음
-const MOST=()=>false; // (이전 '부스터 레이스'는 주루마블 모드로 대체)
+const MOST=()=>false; // (이전 '부스터 레이스'는 많이 마시기 모드로 대체)
 const JURU=()=>S.win==='juru'||S.win==='most';
 function grantPass(tm){mDone();
   if(JURU()){const i=S.teams.indexOf(tm);
@@ -2151,10 +2197,10 @@ function grantPass(tm){mDone();
     addDrink(i);toast(`🍻 ${tm.name} 보상 한 잔! (기록 +1)`);save();renderBoard();return}
   tm.pass=(tm.pass||0)+1;toast(`🛡️ ${tm.name} 면제권 획득!`);save();gainFx(tm)}
 // 성공했지만 적게 마시기 모드에선 보상이 없는 경우 (많이 마시기 모드에선 한 잔)
-// 성공 보상: 적게 마시기 = 면제권, 주루마블 = 한 잔 (모든 미션은 결과가 있어야 해요)
+// 성공 보상: 적게 마시기 = 면제권, 많이 마시기 = 한 잔 (모든 미션은 결과가 있어야 해요)
 function markWin(tm){mDone();grantPass(tm)}
 const DASH=3,BOOST=2;
-// 🔥 주루마블: 많이 마실수록 말과 팀 카드가 불타올라요 (0~4단계, 상한 대비)
+// 🔥 많이 마시기: 많이 마실수록 말과 팀 카드가 불타올라요 (0~4단계, 상한 대비)
 function fireLv(t){if(!JURU()||!t)return 0;const d=t.drinks||0;if(!d)return 0;const c=S.cap>0?S.cap:(SOLO()?5:12);return Math.min(4,Math.max(1,Math.ceil(4*d/c)))}
 const FIRE_MSG=['','🔥 불씨가 붙었어요!','🔥🔥 활활 타오른다!','🔥🔥🔥 불길이 거세져요!','🌋 완전히 불타오름!'];
 function addDrink(i,noDash,k){const tm=S.teams[i];tm.drinks=tm.drinks||0;if(tm.drinks>=CAP())return;const fl0=fireLv(tm);tm.drinks++;tm.gl=(tm.gl||0)+(k!=null?k:rotK(tm));
@@ -2257,7 +2303,7 @@ let cutQ=Promise.resolve();
 function cutIn(text,color){cutQ=cutQ.then(()=>new Promise(res=>{pushFx('cut',text,color,[]);try{const o=document.createElement('div');o.className='cut';o.style.setProperty('--a',color||'#e2571e');
   o.innerHTML='<div class="cut-band"><b></b></div>';{const b=o.querySelector('b');b.textContent=text;b.style.fontSize=(innerWidth<=480?Math.min(46,innerWidth*.11):Math.max(22,Math.min(84,innerWidth*.11,innerWidth*.88/([...text].length*1.05))))+'px'}document.body.appendChild(o);try{sfx('go')}catch(e){}
   _ST(()=>{o.remove();res()},reduce?900:1800)}catch(e){res()}}))}
-// 역전 감지: 선두(적게 마시기 = 앞선 팀 중 벌주 적은 팀이 아니라 '가장 멀리 간 팀', 주루마블 = 가장 많이 마신 팀)가 바뀌면 컷인
+// 역전 감지: 선두(적게 마시기 = 앞선 팀 중 벌주 적은 팀이 아니라 '가장 멀리 간 팀', 많이 마시기 = 가장 많이 마신 팀)가 바뀌면 컷인
 let leadPrev=null;
 function watchLead(){if(S.phase!=='play'||!S.teams||S.teams.length<2)return;
   const sc=t=>JURU()?(t.drinks||0)*1000+(t.laps*24+t.pos):(lostT(t)?-1e6:-(t.drinks||0)*1000+(t.laps*24+t.pos));const sorted=[...S.teams].sort((a,b)=>sc(b)-sc(a));
@@ -2268,8 +2314,8 @@ function confetti(n=40){if(reduce)return;const box=document.createElement('div')
   const cols=['#E2571E','#2B6CE0','#F2B705','#8E44C9','#13A36B','#E83F8A'];
   for(let i=0;i<n;i++){const p=document.createElement('i');p.style.left=Math.random()*100+'%';p.style.background=cols[i%cols.length];p.style.animationDelay=(Math.random()*.3)+'s';p.style.transform=`rotate(${Math.random()*360}deg)`;box.appendChild(p)}
   _ST(()=>box.remove(),2200)}
-// 1:1 대결 결과: 진 쪽 벌주 + 1칸 뒤로(주루마블은 물 + 2칸), 이긴 쪽은 제자리 (적게 마시기 3연승이면 🛡️ 면제권)
-const LOSE_STEP=()=>JURU()?2:1;let WIN_STEP=0; /* 대결: 이긴 팀은 제자리(너무 빨리 앞서지 않게), 진 팀은 주루마블 2칸 · 적게 마시기 1칸 뒤로 (시뮬: 2칸이면 앞선 팀이 너무 굳어짐) */
+// 1:1 대결 결과: 진 쪽 벌주 + 1칸 뒤로(많이 마시기은 물 + 2칸), 이긴 쪽은 제자리 (적게 마시기 3연승이면 🛡️ 면제권)
+const LOSE_STEP=()=>JURU()?2:1;let WIN_STEP=0; /* 대결: 이긴 팀은 제자리(너무 빨리 앞서지 않게), 진 팀은 많이 마시기 2칸 · 적게 마시기 1칸 뒤로 (시뮬: 2칸이면 앞선 팀이 너무 굳어짐) */
 // 결과 글씨에 쓰는 이긴 쪽 칸 수 (파이널 랩이면 +1, 3연승 보너스는 따로 알림)
 const WSTEP=()=>0;
 function duelResult(winner,loser){mDone();markRec(loser);sfx('win');confetti(30);resultFx(winner,loser);
@@ -2301,7 +2347,7 @@ let mIdleSince=0;
 function mBusy(){const mb=$('mBox');return mLive()||!!document.querySelector('.bigcd')||!!(mb&&(mb.dataset.tap||mb.dataset.tapLate||mb.dataset.sw||mb.dataset.react2||mb.dataset.react||mb.querySelector('.wheel:not(.done)')))||!!document.querySelector('.pickWheel:not(.done),.duelslot.spin')}
 function mPending(){if(MDONE||MFREE)return false;if(mBusy()){mIdleSince=0;return true}if(!mIdleSince)mIdleSince=Date.now();return Date.now()-mIdleSince<5000} // 5초 넘게 아무것도 안 돌아가면(안내만 있는 카드) 확인 가능
 function mLive(){return [...$('mBox').querySelectorAll('button,input'),$('mAct')].some(b=>b&&!b.hidden&&!b.disabled&&b.offsetParent!==null)}
-const TMP_RES=/다시 굴려요|늘려서 다시|새 문제로 다시/; // 동점 → 다시 하는 안내는 결과가 아니에요
+const TMP_RES=/다시 굴려요|늘려서 다시|새 문제로 다시|보상을 고르세요/; // 동점 → 다시 하는 안내는 결과가 아니에요
 setInterval(()=>{try{if(MOPEN)updOk()}catch(e){}},1000);
 function updOk(){const b=$('mOk');if(!b||b.classList.contains('cancelStyle'))return;const p=mPending();b.classList.toggle('pendingOk',p);b.textContent=p?(okArm?'⏭️ 정말 건너뛸까요? 한 번 더 누르면 넘어가요':'⏭️ 미션 건너뛰기'):(b.dataset.lbl||'확인')}
 // 🧹 카드를 닫거나 새로 열 때 지난 미션의 폰 연결(연타·반응·스톱워치)과 3·2·1 화면을 모두 지워요
@@ -2314,7 +2360,7 @@ const seeIt=el=>{try{el.scrollIntoView({behavior:reduce?'auto':'smooth',block:'c
     if(last)last.scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'})}catch(e){}};
   const start=()=>{const mb=$('mBox');if(!mb)return _ST(start,500);new MutationObserver(()=>{clearTimeout(tm);tm=_ST(follow,200)}).observe(mb,{childList:true,subtree:true,characterData:true})};start()})();
 function clrBox(mb){['sw','react','react2','tap','tapLate'].forEach(k=>delete mb.dataset[k]);mb.__sw=mb.__react=mb.__react2=mb.__tap=mb.__swStart=null;document.querySelectorAll('.bigcd').forEach(e=>e.remove())}
-function modal({who,e,t,d,x,gold,act,rec,free}){window.__mOpenAt=Date.now();
+function modal({who,e,t,d,x,gold,act,rec,free}){window.__mOpenAt=Date.now();PL_PENDING=null;
 
   {const df=$('drinkFx');if(df)df.classList.add('mini')}
   MSEQ++;MOPEN=true;MDONE=!act;MFREE=!!free;okArm=0;mIdleSince=0;$('mOk').dataset.lbl='확인';
@@ -2325,8 +2371,9 @@ function modal({who,e,t,d,x,gold,act,rec,free}){window.__mOpenAt=Date.now();
   d=amt(d);x=amt(x);if(d&&MULTI()&&!(rec&&rec.who))d=d.split('진 사람은 벌주 한 잔').join('진 팀은 걸린 사람이 벌주 한 잔');
   let rotUsed=false;if(x&&x.includes('{ROT}')){const rt=rotText(rec&&rec.only,rec&&rec.who);rotUsed=!!rt;x=x.replace('{ROT}',rt||PICK[Math.floor(Math.random()*PICK.length)])}
   $('card').className='card'+(gold?' goldc goldflip':'');if(gold)try{sfx('go')}catch(e){}
-  if(S.phase==='play'&&!/미리 보기/.test(who||'')&&t&&!/건배|다 같이 한 잔/.test(t)){const ct=S.teams[S.cur];_ST(()=>stagePop(e,t,ct&&ct.color,gold?'enter goldc':'enter',gold?1800:1500),gold?700:60)} // 🎬 미션 등장: 게임판 위에 큰 이모지+제목
-  $('mWho').textContent=who||'';$('mEm').textContent=e;$('mT').textContent=t;if(/건배|다 같이 한 잔/.test(t||''))setTimeout(clinkFx,gold?650:150);
+  if(S.phase==='play'&&!/미리 보기/.test(who||'')&&t&&!/건배|다 같이 한 잔/.test(t)){const ct=S.teams[S.cur];_ST(()=>stagePop(e,t,ct&&ct.color,gold?'enter goldc':'enter',gold?1800:1500),gold?700:60)}
+  {const allIn=/👥/.test(who||'');$('mWho').classList.toggle('allin',allIn);if(allIn&&S.phase==='play')_ST(()=>stagePop('👥','모든 팀 참여!','#7a4dd8','enter',1500),gold?2600:1700)} /* 👥 모든 팀이 하는 게임은 크게 알려요 */ // 🎬 미션 등장: 게임판 위에 큰 이모지+제목
+  $('mWho').textContent=who||'';$('mEm').textContent=e==='🎡'?'':e;if(e==='🎡')$('mEm').appendChild(wheelIcon());$('mT').textContent=t;if(/건배|다 같이 한 잔/.test(t||''))setTimeout(clinkFx,gold?650:150);
   $('mD').textContent=d||'';if(MOST()&&rec)x=[x,`🍻 부스터 레이스: 이 미션에서 이긴 쪽이 한 잔 마시고 🚀 ${DASH}칸 대시! 진 쪽은 패스`].filter(Boolean).join('\n');
   $('mX').textContent=x||'';$('mX').hidden=!x;
   // ⚔️ 1:1 대결이면 두 팀 색으로 VS 띠
@@ -2336,7 +2383,7 @@ function modal({who,e,t,d,x,gold,act,rec,free}){window.__mOpenAt=Date.now();
      const vb=mk('div','vsban');vb.append(side(mm[1],tA),mk('i',null,'VS'),side(mm[2],tB));$('mX').after(vb)}}
   const rr=$('mReroll');rr.hidden=rotUsed||!(x&&/🎯 (걸린 사람|벌주가 나오면 마실 사람|지면 마실 사람): /.test(x));rr.onclick=()=>{const cur=$('mX').textContent;let p2;do{p2=PICK[Math.floor(Math.random()*PICK.length)]}while(cur.includes(p2));$('mX').textContent=cur.replace(/(🎯 (?:걸린 사람|벌주가 나오면 마실 사람|지면 마실 사람): )[^\n]*/,'$1'+p2)};
   setTimerBtn(d,act);
-  recSel=rec?{st:{},tg:{},only:rec.only||null,double:!!rec.double,who:rec.who||null}:null;$('mRec').hidden=!rec;$('mRec').querySelector('span').textContent=JURU()?(SOLO()?'🍻 기록: 마실 사람(이긴 쪽)은 ‘마심’ · 진 쪽은 물':'🍻 기록: 마실 팀(이긴 쪽)은 ‘마심’ · 진 쪽은 물'):SOLO()?'🥃 기록: 마신 사람은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 사람에게':'🥃 기록: 마신 팀은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 팀에게';
+  recSel=rec?{st:{},tg:{},re:{},only:rec.only||null,double:!!rec.double,who:(rec.who||PL_PENDING)?Object.assign({},rec.who||{},PL_PENDING||{}):null}:null;PL_PENDING=null;$('mRec').hidden=!rec;$('mRec').querySelector('span').textContent=JURU()?(SOLO()?'🍻 기록: 마실 사람(이긴 쪽)은 ‘마심’ · 진 쪽은 물':'🍻 기록: 마실 팀(이긴 쪽)은 ‘마심’ · 진 쪽은 물'):SOLO()?'🥃 기록: 마신 사람은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 사람에게':'🥃 기록: 마신 팀은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 팀에게';
   if(rec){(rec.pre||[]).forEach(i=>recSel.st[i]=1);drawRec()}
   if(rec&&!act&&(rec.pre||[]).length)setTimeout(()=>spotTeams(rec.pre),gold?700:200); // 🔦 바로 마시는 카드면 걸린 팀 말에 불빛
   $('modal').classList.add('on');updOk();setTimeout(()=>{try{$('mOk').focus({preventScroll:true})}catch(e){$('mOk').focus()}const c=$('card');if(c&&c.scrollTop)c.scrollTop=0},50); // 카드가 열릴 때 아래로 밀리지 않게
@@ -2378,7 +2425,8 @@ function resultStamp(txt){
   if(win){sfx('win');confetti(26)}else{sfx('lose');card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake')}
   _ST(()=>st.remove(),reduce?900:1700);
   { // 🏆 게임판 위 결과 배너: 결과에 나온 팀 이름 + 성공/벌주 (팀 색)
-    const ts=S.teams.filter(o=>txt.includes(o.name)).slice(0,3);const nm=ts.map(o=>o.name).join(' · ');const ans=(txt.match(/정답[은:]?\s*([^\s!\n(]+)/)||[])[1];
+    const wseg=(txt.match(/🏆[^!·\n]*?(최종\s*)?(승리|1등)/)||[])[0]||'',src=win?(wseg||txt.split(/[·\n]/)[0]):(wseg?txt.replace(wseg,''):txt); /* 이긴 팀 배너엔 ‘🏆 ○○ 승리’ 부분의 팀만, 벌주 배너엔 나머지 팀만 */
+    const ts=S.teams.filter(o=>src.includes(o.name)).slice(0,3);const nm=ts.map(o=>o.name).join(' · ');const ans=(txt.match(/정답[은:]?\s*([^\s!\n(]+)/)||[])[1];
     const em=win?(/승리|🏆/.test(txt)?'🏆':'🎉'):(jw?'💧':'🥃');const tx=win?(nm?`${nm} ${/승리/.test(txt)?'승리!':'성공!'}`:word.replace(/^\S+\s/,'')):(nm?`${nm} ${jw?'물 한 잔':'벌주!'}`:word.replace(/^\S+\s/,''));
     const fire=()=>{if(Date.now()<stageHold){_ST(fire,stageHold-Date.now()+30);return}stagePop(em,(ans&&!win?`정답 ${ans} · `:'')+tx,ts[0]&&ts[0].color||(win?'#13A36B':'#d62828'),'res',1900)};_ST(fire,300)}
 }
@@ -2416,7 +2464,7 @@ function makeWheel(pool){
     g.appendChild(sl);return sl});
   for(let k=0;k<16;k++){const c=document.createElementNS(NS,'circle');c.setAttribute('cx',(104*Math.cos(k*Math.PI/8)).toFixed(1));c.setAttribute('cy',(104*Math.sin(k*Math.PI/8)).toFixed(1));c.setAttribute('r','3.2');c.classList.add('wbulb');c.style.animationDelay=(k%2?.35:0)+'s';disc.appendChild(c)}
   const hub=document.createElementNS(NS,'circle');hub.setAttribute('r','16');hub.classList.add('whub');disc.appendChild(hub);
-  const hubT=document.createElementNS(NS,'text');hubT.textContent='🎰';hubT.setAttribute('text-anchor','middle');hubT.setAttribute('dominant-baseline','central');hubT.setAttribute('font-size','16');disc.appendChild(hubT);
+  const hubT=document.createElementNS(NS,'text');hubT.textContent='';hubT.setAttribute('text-anchor','middle');hubT.setAttribute('dominant-baseline','central');hubT.setAttribute('font-size','16');disc.appendChild(hubT);
   const ptr=mk('div','wptr');wrap.append(ptr,disc);
   const spin=(w,dur)=>new Promise(res=>{
     const jit=(Math.random()-.5)*seg*.6,turns=reduce?1:Math.max(3,Math.round(dur/800))+Math.floor(Math.random()*2);
@@ -2445,7 +2493,7 @@ async function spinPick(target,self){
 }
 function helpHTML(){
   const J=JURU(),cap=S.cap;
-  const win=J?`<li><b>🍻 주루마블: 마시는 게 목적인 클래식 술자리 보드</b></li><li>정한 바퀴(${S.goal||3}바퀴)를 누군가 먼저 돌면 끝, <b>가장 많이 마신 쪽이 오늘의 술왕</b></li><li><b>상과 벌이 반대예요: 게임에서 이기면 🍻 한 잔(상), 지면 💧 물 한 잔(벌)</b></li><li>원샷·왼쪽·오른쪽·나 빼고 전원·지목·더블·다 같이 한 잔 등 마시는 칸이 가득! 면제권은 없어요</li>${cap?`<li>술잔 상한 ${cap}을 채우면 그 뒤로는 물만</li>`:'<li>술잔 상한 없음 — 각자 페이스는 알아서!</li>'}`
+  const win=J?`<li><b>🍻 많이 마시기 모드: 마시는 게 목적인 클래식 술자리 보드</b></li><li>정한 바퀴(${S.goal||3}바퀴)를 누군가 먼저 돌면 끝, <b>가장 많이 마신 쪽이 오늘의 술왕</b></li><li><b>상과 벌이 반대예요: 게임에서 이기면 🍻 한 잔(상), 지면 💧 물 한 잔(벌)</b></li><li>원샷·왼쪽·오른쪽·나 빼고 전원·지목·더블·다 같이 한 잔 등 마시는 칸이 가득! 면제권은 없어요</li>${cap?`<li>술잔 상한 ${cap}을 채우면 그 뒤로는 물만</li>`:'<li>술잔 상한 없음 — 각자 페이스는 알아서!</li>'}`
     :`<li>정한 바퀴(${S.goal||3}바퀴)를 누군가 돌면, <b>그 라운드 끝까지</b> 진행하고 게임 끝 (먼저 시작한 팀이 유리하지 않게)</li><li><b>벌주를 적게 마신 팀이 승리</b>, 그 라운드 안에 골인한 팀은 모두 벌주 기록 −1 보너스</li><li>팀 벌주가 상한 ${cap||6}에 닿으면 그 팀은 이후 물로 마시고 패배 (👻 유령)</li>`;
   const ghost=J?'':S.lostMode==='stop'?`<h3>⏸️ 탈락 팀</h3><ul><li>상한에 닿은 팀은 그 자리에서 멈추고, 이후 차례를 건너뛰어요 (설정에서 ‘👻 유령으로 계속’도 고를 수 있어요)</li></ul>`:`<h3>👻 유령 팀</h3><ul><li>(설정에서 ‘⏸️ 멈춤’을 고르면 탈락 팀은 차례를 건너뛰어요)</li><li>상한에 닿아 진 팀은 유령이 돼요. 이후 어느 칸에 서든 미션 대신 <b>유령 장난 카드</b>!</li><li>살아있는 팀 하나를 골라 2칸 뒤로, 한 턴 쉬기, 벌주, 면제권 뺏기·선물, 자리 바꾸기</li><li>대상은 유령 팀이 골라요 · 고르기 어려우면 ‘건너뛰기’도 돼요</li></ul>`;
   const drink=SOLO()?`<h3>🥃 ${J?'한 잔':'벌주'}</h3><ul><li>카드에 나온 사람이 자기 잔으로 한 잔 (양은 각자 알아서)</li><li>1:1 대결은 대결한 본인이 직접 ${J?'(이기면 한 잔, 지면 물)':'(진 사람이 벌주)'}</li></ul>`:`<h3>🥃 ${J?'한 잔':'벌주'}</h3><ul>${TOAST_EVERY()?`<li>🥂 <b>라운드 건배</b>: ${TOAST_EVERY()}라운드마다 모두 같이 자기 잔으로 한 잔 (순위에는 안 들어가요)</li>`:''}<li><b>걸린 사람</b>만 자기 잔으로 한 잔 (양은 각자 알아서). 잔은 절대 돌려 마시지 않아요</li>${J?'':'<li>‘벌주 양’(인당 2·3·4~5잔)에 맞춰 한 번에 마시는 사람 수가 정해져요. 예: 인당 2잔, 4명 팀 → 한 번에 3명 · 인당 4~5잔이면 팀 전원</li>'}<li>팀원 이름을 안 적은 팀은 팀 안에서 마실 사람을 정해요</li><li>1:1 대결은 대결한 본인이 직접 ${J?'(이기면 한 잔, 지면 물)':'(진 사람이 벌주)'}</li></ul>`;
@@ -2488,8 +2536,11 @@ function buildDie(el){
 let bdBox=null,bdT=0;
 // 🎬 게임판 위 큰 연출: 미션 등장(이모지+제목), 돌림판 당첨 등
 let stageHold=0; // 결정적 순간 연출(💥·정답·지금!)이 끝날 때까지 결과 배너는 기다려요
+/* 🎡 룰렛 그림 = 실제 돌림판과 같은 팀 색 원판 (카드·칸·등장 연출 모두) */
+function wheelIcon(){const cs=(S.teams&&S.teams.length?S.teams.map(t=>t.color):COLORS.slice(0,4));const n=cs.length;const w=document.createElement('span');w.className='mwheel';
+  w.style.background=`conic-gradient(${cs.map((c,i)=>`${c} ${(i*100/n).toFixed(2)}% ${((i+1)*100/n).toFixed(2)}%`).join(',')})`;return w}
 function stagePop(em,txt,color,cls,dur){try{if(/boom|flash/.test(cls||'')||(cls==='win'&&em&&em.length<=2&&/정답/.test(txt||'')))stageHold=Date.now()+(dur||1600)-250;document.querySelectorAll('.spop').forEach(x=>x.remove());const o=document.createElement('div');o.className='spop '+(cls||'');o.style.setProperty('--c',color||'#e2571e');
-  if(em){const e=document.createElement('div');e.className='se';e.textContent=em;o.appendChild(e)}if(txt){const t=document.createElement('div');t.className='st';t.textContent=txt;o.appendChild(t)}
+  if(em){const e=document.createElement('div');e.className='se';if(em==='🎡')e.appendChild(wheelIcon());else if(em==='👥'&&S.teams&&S.teams.length){e.classList.add('tdots');S.teams.forEach((t,k)=>{const d=document.createElement('span');d.textContent=t.name.slice(0,1);d.style.background=t.color;d.style.color=onColor(t.color);d.style.animationDelay=(k*.09)+'s';e.appendChild(d)})}else e.textContent=em;o.appendChild(e)}if(txt){const t=document.createElement('div');t.className='st';t.textContent=txt;o.appendChild(t)}
   document.body.appendChild(o);{const t=o.querySelector('.st');if(t){const av=o.clientWidth*0.92;if(t.scrollWidth>av){const fs=parseFloat(getComputedStyle(t).fontSize);t.style.fontSize=Math.max(22,Math.floor(fs*av/t.scrollWidth))+"px"}}} /* 긴 글(팀 여럿)은 게임판 폭에 맞게 줄여요 */_ST(()=>o.remove(),dur||1600)}catch(e){}}
 // 🥃🛡️ 게임판 말 위에 말풍선: 마실 팀은 🥃(물은 💧), 면제권을 받은 팀은 🛡️
 function pawnFx(tm,em){try{const i=S.teams.indexOf(tm);if(i<0)return;const k=document.querySelector(`#board .tok[data-ti="${i}"]`);if(!k)return;const r=k.getBoundingClientRect();if(!r.width)return;
@@ -2765,13 +2816,13 @@ const SOLO_CELL={ // (8번 ‘건배 타임’은 뺐어요 → 개인전도 �
 // 개인전 지목·짝꿍은 앱이 랜덤으로 (카드 설명)
 const SOLO_RAND={start:()=>JURU()?'다 같이 건배! 출발 칸에 딱 멈췄으니 앱이 한 명을 랜덤으로 뽑아요. 뽑힌 사람 한 잔.':null,buddy:()=>JURU()?'앱이 짝꿍 한 명을 랜덤으로 뽑아요! 나와 짝꿍 둘이 같이 한 잔!':'앱이 짝꿍 한 명을 랜덤으로 뽑아요! 나와 짝꿍 둘이 같이 벌주 한 잔. (둘 다 기록)',point1:()=>JURU()?'앱이 한 명을 랜덤으로 뽑아요! 뽑힌 사람 한 잔.':'앱이 한 명을 랜덤으로 뽑아요! 뽑힌 사람 벌주 한 잔.'};
 const SOLO_GOLD={}; // (진행자 판정이 필요한 카드는 뺐어요)
-// ===== 🍻 주루마블 모드: 많이 마시는 게 목적인 클래식 술자리 보드 =====
+// ===== 🍻 많이 마시기 모드: 많이 마시는 게 목적인 클래식 술자리 보드 =====
 const JURU_CELLS=[
  {e:'🏁',t:'출발',d:'딱 멈췄다! 앱이 한 팀을 랜덤으로 뽑아요 → 그 팀 걸린 사람 한 잔.',k:'start',r:'pick'},
  {e:'🥃',t:'원샷',d:'우리 팀 걸린 사람 한 잔!',r:'self'},
  {e:'⬅️',t:'왼쪽',d:'왼쪽 팀({left}) 걸린 사람 한 잔!',r:'left'},
  {e:'🃏',t:'황금카드',k:'gold'},
- {e:'🎰',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 뽑아요. 당첨된 팀 한 잔!',k:'roulette'},
+ {e:'🎡',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 뽑아요. 당첨된 팀 한 잔!',k:'roulette'},
  {e:'🙋',t:'나 빼고 전원',d:'우리 팀 빼고 다른 팀 전부 걸린 사람 한 잔!',r:'others'},
  {e:'🏝️',t:'무인도',d:'다음 차례엔 🏝️ 탈출 주사위! 더블이면 바로 탈출, 아니면 그 차례만 쉬어요. 무인도에 있는 동안은 마실 수도, 대결할 수도 없어요 (상도 벌도 없음).',k:'island'},
  {e:'⚔️',t:'랜덤 결투',d:'{me} vs {them}! 👆연타 · ⚡순발력 · 🎲주사위 · 🔢업다운 · 🎯근접 중 하나가 랜덤으로 나와요. 이긴 팀이 한 잔, 진 쪽은 물 한 잔 + 2칸 뒤로.',k:'duel'},
@@ -2804,11 +2855,11 @@ const JURU_GOLD=[
  {e:'⭕',t:'OX 퀴즈',d:'OX 한 문제! 모든 팀이 10초 동안 각자 O/X. 틀린 팀은 물 한 잔, 맞힌 팀이 한 잔!',k:'ox'},
  {e:'⏩',t:'2칸 앞으로',d:'2칸 앞으로! 도착한 칸도 진행해요.',mv:2},
  {e:'🔙',t:'3칸 뒤로',d:'3칸 뒤로! 도착한 칸도 진행해요.',mv:-3},
- {e:'🎰',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 뽑아요. 당첨된 팀 한 잔!',k:'roulette'},
+ {e:'🎡',t:'룰렛',d:'아래 버튼을 누르면 앱이 아무 팀이나 뽑아요. 당첨된 팀 한 잔!',k:'roulette'},
  {e:'🎯',t:'근접 서바이벌',d:'위스키 숫자 퀴즈! 팀마다 팀 폰에 몰래 숫자 하나. 정답에서 가장 먼 팀 걸린 사람 한 잔, 딱 맞힌 팀도 상으로 한 잔!',k:'nearall'},
  {e:'🔮',t:'운명의 홀짝',d:'우리 팀이 홀이나 짝을 누르면 주사위가 굴러가요! 맞히면 우리 팀 걸린 사람 두 잔, 틀리면 물 한 잔.',k:'fatej'},
  {e:'🧩',t:'위스키 상식 초성',d:'20초 안에 위스키 초성 맞히기! 💡힌트 있음 · 여러 번 입력 OK. 맞히면 우리 팀 걸린 사람 한 잔, 못 맞히면 물 한 잔.',k:'chosung'}];
-// 주루마블 1등/꼴찌 = 마신 잔 수 기준 (동점이면 판에서 앞선 쪽이 1등)
+// 많이 마시기 1등/꼴찌 = 마신 잔 수 기준 (동점이면 판에서 앞선 쪽이 1등)
 const juruProg=o=>o.laps*24+o.pos;
 function juruFirst(){return S.teams.filter(o=>!onIsland(o)).sort((a,b)=>(b.drinks||0)-(a.drinks||0)||juruProg(b)-juruProg(a))[0]}
 function juruLast(){return S.teams.filter(o=>!onIsland(o)).sort((a,b)=>(a.drinks||0)-(b.drinks||0)||juruProg(a)-juruProg(b))[0]}
@@ -2841,7 +2892,7 @@ function goldPick(){const src=JURU()?JURU_GOLD:GOLD,key=JURU()?'deckJ':'deckG';
   let ix=S[key].pop();if(!(ix>=0&&ix<src.length)){S[key]=shuffle(src.map((_,i)=>i));ix=S[key].pop()}const g=src[ix];save();if(JURU()&&SOLO()&&JSOLO_G[g.t])return JSOLO_G[g.t]()||g;return !JURU()&&SOLO()&&SOLO_GOLD[g.t]||g}
 const SOLO_TXT=[[' ({vsTeam})',''],['{vsTeam} 걸린 사람','{vsTeam}'],['두 팀 모두 걸린 사람','두 사람 모두'],['모든 팀 대표가','모두'],['우리 팀 면제권','면제권'],['우리 팀 혜택','내 혜택'],['우리 팀 벌주 기록','내 벌주 기록'],['우리 팀에 걸린','나에게 걸린'],['원하는 팀에','원하는 사람에게'],['우리 팀 전원이','내가'],['우리 팀 모두 물','물'],['한 바퀴 돈 팀에','한 바퀴 돈 사람에게'],['1등 팀과','1등과'],['다음 차례 팀을','다음 차례 사람을'],['우리 팀 걸린 사람','내가'],['두 팀 각각 걸린 사람','두 사람 모두'],['다른 팀마다 걸린 사람','다른 사람 모두'],['다른 팀 전부 걸린 사람','다른 사람 전부'],['모든 팀 걸린 사람','모두'],['두 팀 대표가','두 사람이'],['두 팀 걸린 사람이','둘이'],['팀 하나를','사람 한 명을'],['그 팀 걸린 사람','그 사람'],['우리 팀이','내가'],[') 걸린 사람',')'],['팀 걸린 사람','사람'],['우리 팀원 모두','모두'],['우리 팀원끼리','다 같이'],['걸린 팀(우리 팀)','나'],['우리 팀 + ','나 + '],['우리 팀 걸린 사람','내가'],['두 팀 각각 걸린 사람','두 사람 모두'],['두 팀 모두','두 사람 모두'],['두 팀 대표','두 사람'],['다른 팀마다 걸린 사람','다른 사람 모두'],['우리 팀 빼고','나 빼고'],['진 팀 걸린 사람','진 사람'],['진 팀은 걸린 사람','진 사람은'],['낮은 팀 걸린 사람','낮은 사람'],['틀린 팀 걸린 사람','틀린 사람'],['당첨된 팀','당첨된 사람'],['탈락 팀은 걸린 사람','탈락한 사람은'],['폰을 들고 있던 팀은 걸린 사람','폰을 들고 있던 사람은'],['팀마다 한 명씩','모두'],['팀마다 대표를 정하고','모두 참여'],['팀별로','각자'],['팀 대표들이','모두'],['팀 대표가','본인이'],['다음 팀으로','다음 사람에게'],['의 걸린 사람',''],['상대 선수','상대'],['선수 ',''],['우리 팀','나'],['팀','사람']];
 // 개인전일 때 카드 안에서 새로 생기는 글자도 개인용 문구로 바꿔요 (팀 이름이 '사람'으로 바뀌지 않게 이름은 건드리지 않음)
-// 주루마블(상벌 반대)에서는 미션 결과 문구도 바꿔요: 성공 = 🍻 한 잔, 실패 = 💧 물
+// 많이 마시기(상벌 반대)에서는 미션 결과 문구도 바꿔요: 성공 = 🍻 한 잔, 실패 = 💧 물
 const JURU_TXT=[['🛡️ 면제권 2개 획득','🍻 상으로 두 잔'],['면제권 2개','두 잔'],['🛡️ 면제권 보너스','🍻 상으로 한 잔'],['🛡️ 면제권 획득','🍻 상으로 한 잔'],['🛡️ 두 팀 모두 면제권','🍻 두 팀 모두 한 잔'],['🛡️ 두 사람 모두 면제권','🍻 두 사람 모두 한 잔'],['면제권 획득','상으로 한 잔'],
   ['걸린 사람 벌주 한 잔','💧 물 한 잔'],['→ 벌주','→ 💧 물'],['벌주 + ','물 + '],['벌주 없이 넘어가요','통과!']];
 function juruText(d){if(!JURU()||!d)return d;for(const [a,b] of JURU_TXT)d=d.split(a).join(b);return d}
@@ -2856,7 +2907,7 @@ function whoText(v,W){if(!W||SOLO())return v;const ks=Object.keys(W);for(const k
 function soloText(d){if(!SOLO()||!d)return d;for(const [a,b] of SOLO_TXT)d=d.split(a).join(b);return d.replace(/(\S) 걸린 사람 (벌주|한 잔)/g,'$1 $2')}
 // 왼쪽·오른쪽·다음 팀: 무인도에 있는 팀은 건너뛰어요 (무인도에선 안 마셔요)
 const nb=(t,dir)=>{const n=S.teams.length;let i=S.teams.indexOf(t);for(let k=0;k<n;k++){i=(i+dir+n)%n;const o=S.teams[i];if(o===t||!onIsland(o))return o}return S.teams[(S.teams.indexOf(t)+dir+n)%n]};
-// 🧍 한 사람이 대결·도전한 미션: 지면(주루마블은 이기면) 그 사람이 마셔요
+// 🧍 한 사람이 대결·도전한 미션: 지면(많이 마시기은 이기면) 그 사람이 마셔요
 function withWho(rec,t,ctx){if(!rec||SOLO()||!ctx)return rec;const w={};if(ctx.meName)w[S.teams.indexOf(t)]=ctx.meName;if(ctx.themName&&ctx.vs)w[S.teams.indexOf(ctx.vs)]=ctx.themName;if(Object.keys(w).length)rec.who=w;return rec}
 function recFor(name,t,o={}){
   if(JURU()){const def=[...JURU_CELLS,...JURU_GOLD].find(d=>d.t===name);if(def){const r=juruRec(def,t);if(r!==undefined)return r;if(!def.k&&!def.mv)return null}}
@@ -2896,8 +2947,8 @@ function chooseCard(){
   });
 }
 const TREASURE=[
- {e:'🛡️',t:'면제권 2개',f:'pass2'},{e:'🍀',t:'벌주 기록 −1',f:'erase'},{e:'🎲',t:'한 번 더 굴리기',f:'again'},
- {e:'🚕',t:'택시 탑승권',f:'taxi'},{e:'🎯',t:'저격권',f:'snipe'},{e:'🐢',t:'1등 팀 3칸 뒤로',f:'turtle'},{e:'🐌',t:'꽝! 우리 팀 2칸 뒤로',f:'water'}];
+ {e:'🛡️',t:'면제권',f:'pass1'},{e:'🍀',t:'벌주 기록 −1',f:'erase'},{e:'🎲',t:'한 번 더 굴리기',f:'again'},
+ {e:'🚕',t:'택시 탑승권',f:'taxi'},{e:'🎯',t:'저격권',f:'snipe'},{e:'🐢',t:'1등 팀 3칸 뒤로',f:'turtle'}]; /* 🎁 보물창고엔 꽝 없이 보물만 */
 function pickChest(){
   return new Promise(res=>{
     const pool=shuffle([...TREASURE]).slice(0,3);
@@ -2912,7 +2963,9 @@ function pickChest(){
 async function openChest(t,dbl,depth){
   const tr=await pickChest();let again=dbl;
   const who=whoLine(t)+' · 보물창고';
-  if(tr.f==='pass2'){grantPass(t);grantPass(t);await modal({who,e:tr.e,t:tr.t,d:'우리 팀 면제권 2개 획득! 반사도 바로 쓸 수 있어요.'})}
+  if(tr.f==='pass1'){grantPass(t);await modal({who,e:tr.e,t:tr.t,d:'우리 팀 면제권 1개 획득!'})}
+  else if(tr.f==='drink'){await modal({who,e:tr.e,t:tr.t,d:`꽝! 우리 팀 걸린 사람 ${amt('벌주 한 잔')}`,rec:{pre:[S.teams.indexOf(t)],only:[S.teams.indexOf(t)]}})}
+  else if(tr.f==='pass2'){grantPass(t);grantPass(t);await modal({who,e:tr.e,t:tr.t,d:'우리 팀 면제권 2개 획득! 반사도 바로 쓸 수 있어요.'})}
   else if(tr.f==='erase'){const ok=(t.drinks||0)>0&&t.drinks<CAP();if(ok)t.drinks--;await modal({who,e:tr.e,t:tr.t,d:ok?'우리 팀 벌주 기록 −1!':'지울 기록이 없어서 대신 면제권 하나!'});if(!ok)grantPass(t)}
   else if(tr.f==='again'){again=true;await modal({who,e:tr.e,t:tr.t,d:'주사위를 한 번 더 굴려요!'})}
   else if(tr.f==='taxi'){return taxiRide(t,dbl,depth)}
@@ -3003,7 +3056,7 @@ async function landHere(t,dbl,depth){
     if(alone(g.k,t))gctx.noVs=true;
     if(gctx.noVs){await modal({who:whoLine(t)+' · 황금카드',e:'🏝️',t:'상대가 없어요',d:`${g.t}: 같이 할 상대가 모두 무인도에 있거나 탈락했어요! 이번 카드는 쉬어가요.`});S.log=`${t.name}: ${g.t} (상대 없음)`;return {again,done:false}}
     if(gctx.vs)await spinPick(gctx.vs,t);
-    await modal({who:whoLine(t)+' · 황금카드'+scope(g.t),e:g.e,t:g.t,d,gold:true,act:makeAct(g.k,t,gctx),rec:withWho(recFor(g.t,t,{vs:gctx.vs,lead,swapFail:!!g.swap&&!leader}),t,gctx),x:[pickLine(d),dbl&&!g.island?'🎲 주사위 더블(같은 숫자)! 이 미션이 끝나면 한 번 더 굴려요':''].filter(Boolean).join('\n')});
+    await modal({who:whoLine(t)+' · 황금카드'+scope(g.t),e:g.e,t:g.t,d,gold:true,act:makeAct(g.k,t,gctx),rec:withWho(recFor(g.t,t,{vs:gctx.vs,lead,swapFail:!!g.swap&&!leader}),t,gctx),x:[pickLine(d)].filter(Boolean).join('\n')});
     if(g.mv){const ps=await step(t,g.mv);if(ps)toast(`${t.name} 한 바퀴! 👏`);if(isFin(t))return {again:false,done:true};chain=true}
     if(g.to!=null){t.pos=g.to;t.isle=false;t.lastDir=-1;renderBoard()}
     if(leader){swapSpots(t,leader);renderBoard()}
@@ -3022,7 +3075,7 @@ async function landHere(t,dbl,depth){
   }else{
     if(cell.k==='island'){t.skip=1;t.isle=true;again=false}
     if(cell.k==='again')again=true;
-    const x=(dbl&&cell.k!=='island'&&cell.k!=='again')?'🎲 주사위 더블(같은 숫자)! 이 미션이 끝나면 한 번 더 굴려요':'';
+    const x=''; /* 더블 안내는 주사위 연출에서 이미 보여 줘요 */
     const ctx={};if(cell.k==='ox'||cell.k==='soloox')ctx.ox=OX[Math.floor(Math.random()*OX.length)];
     let d=cell.k==='ox'?cell.d:cell.k==='bal'?BAL[Math.floor(Math.random()*BAL.length)]+'? 셋 세고 우리 팀원 전원이 동시에 손가락으로 A(왼쪽) 또는 B(오른쪽)를 가리켜요. 전원이 같은 쪽이면 면제권, 한 명이라도 갈리면 걸린 사람 벌주 한 잔.':fill(cell.d,t,ctx);
     if(SOLO()&&SOLO_RAND[cell.k]){const x=SOLO_RAND[cell.k]();if(x)d=x}

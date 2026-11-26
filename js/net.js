@@ -167,6 +167,8 @@ function blocks(root, def) {
         continue;
       } else if (el.classList.contains('mdice') || el.classList.contains('duel') && !el.querySelector('button')) {
         out.push({ k: 'txt', cls: 'dice', text: '🎲 (게임판을 봐 주세요)' });
+      } else if (el.classList.contains('pchips')) { // 👤 이번 선수 칩은 폰에 한 줄로
+        out.push({ k: 'txt', cls: 'cap pl', text: '👤 이번 선수: ' + [...el.querySelectorAll('.pchip')].map((c) => c.innerText.replace(/\s+/g, ' ').trim()).join(' · ') });
       } else if (el.classList.contains('rvRow')) {
         out.push({ k: 'txt', cls: 'big-num rv', text: el.dataset.sum || '🎴 공개 중…' }); // 🎴 카드 공개는 폰에 한 줄로
       } else if (el.classList.contains('numgrid')) {
@@ -211,7 +213,7 @@ function snapshot() {
       who: $('mWho').textContent, e: $('mEm').textContent, t: $('mT').textContent, d: $('mD').textContent,
       x: shown($('mX')) ? $('mX').textContent : '', q: shown($('mQ')) ? $('mQ').textContent : '',
       def, box: shown(box) ? blocks(box, def) : [],
-      sw: box.dataset.sw || '', react: box.dataset.react || '', react2: box.dataset.react2 || '', tap: box.dataset.tap || '',
+      sw: box.dataset.sw || '', swh: box.dataset.swh || '', react: box.dataset.react || '', react2: box.dataset.react2 || '', tap: box.dataset.tap || '',
       act: shown($('mAct')) ? { rid: srid('act'), label: $('mAct').textContent, dis: $('mAct').disabled } : null,
       reroll: shown($('mReroll')) ? srid('reroll') : null,
       timer: shown($('mTimer')) ? { rid: srid('timer'), label: $('mTimer').textContent } : null,
@@ -219,6 +221,7 @@ function snapshot() {
         rows: [...$('mRecB').querySelectorAll('.recrow')].map((r) => ({ name: (r.querySelector('.rn') || r).textContent, off: r.classList.contains('off'), color: r.style.getPropertyValue('--c'),
           ti: (() => { const b = r.querySelector('button[data-team]'); return b ? +b.dataset.team : null; })(),
           btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true', v: b.dataset.v != null ? +b.dataset.v : null })) })),
+        re: [...$('mRecT').querySelectorAll('.re')].map((r) => ({ label: (r.querySelector('span') || r).textContent, ti: (() => { const b = r.querySelector('button[data-team]'); return b ? +b.dataset.team : null; })(), btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true' })) })),
         tgt: [...$('mRecT').querySelectorAll('.tgt')].map((r) => ({ label: (r.querySelector('span') || r).textContent, ti: (() => { const b = r.querySelector('button[data-team]'); return b ? +b.dataset.team : null; })(), btns: [...r.querySelectorAll('button')].map((b) => ({ rid: rid(b), label: b.textContent, on: b.getAttribute('aria-pressed') === 'true', v: 3 })) })) } : null,
       ok: { rid: srid('ok'), label: $('mOk').textContent, pending: $('mOk').classList.contains('pendingOk') || (typeof mPending === 'function' && mPending()) || passWaiting() }
     } : null,
@@ -276,6 +279,7 @@ function run(c) {
   const sub = team != null && String(subTeam()) === team;
   const owns = (el) => {
     // 🛡️ 면제권·🔁 반사는 마실 팀 폰에서 (그 팀 폰이 없을 때만 진행폰). 안 마심/마심 기록은 진행폰
+    if (el.closest('#mRecT .re') && el.dataset.team != null) { const own = String(el.dataset.team); return isHost ? !teamAlive(own) : team === own; } // 🔁 되받아치기는 반사당한 팀 폰에서
     if (el.closest('#mRecB,#mRecT') && el.dataset.team != null) {
       const own = String(el.dataset.team), v = +el.dataset.v;
       if (isHost) return v <= 1 || !teamAlive(own);

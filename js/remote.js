@@ -38,12 +38,12 @@ const QUIZ = [
   ['모히토에는 민트가 들어간다', 'O'], ['마티니의 기본 재료는 진과 베르무트다', 'O'],
   ['맥주의 쓴맛은 주로 홉에서 나온다', 'O'], ['포트 와인은 스페인 술이다', 'X'],
   ['코냑은 브랜디의 한 종류다', 'O'], ['브랜디는 보통 포도주를 증류해서 만든다', 'O'],
-  ['와인을 디캔팅하는 이유 중 하나는 공기와 닿게 해 향을 여는 것이다', 'O'], ['로제 와인은 레드와 화이트 와인을 섞어서만 만든다', 'X'],
+  ['샴페인은 병 안에서 2차 발효를 시켜 거품을 만든다', 'O'], ['로제 와인은 레드와 화이트 와인을 섞어서만 만든다', 'X'],
   ['독일 옥토버페스트는 10월 말에 시작한다', 'X'], ['바이젠은 밀을 넣어 만든 맥주다', 'O'],
   ['샹그리아는 와인에 과일을 넣어 만든 음료다', 'O'], ['청주와 사케는 원료가 전혀 다르다', 'X'],
   ['복분자주는 산딸기류 열매로 만든 술이다', 'O'], ['와인 병 바닥의 움푹 들어간 부분을 ‘펀트’라고 한다', 'O'],
   ['와인 코르크 마개는 코르크참나무 껍질로 만든다', 'O'], ['프로세코는 이탈리아 스파클링 와인이다', 'O'],
-  ['깔루아 밀크에는 커피 리큐어가 들어간다', 'O'], ['보드카는 원래 무색·무향에 가까운 술이다', 'O'],
+  ['깔루아 밀크에는 커피 리큐어가 들어간다', 'O'], ['‘브뤼(Brut)’ 샴페인은 ‘엑스트라 드라이’보다 덜 달다', 'O'], ['테킬라는 블루 아가베를 100% 써야만 테킬라라고 부를 수 있다', 'X'],
   ['카바는 스페인 스파클링 와인이다', 'O'], ['사케는 증류해서 만든 술이다', 'X']];
 const QZ = { order: [], cur: null, picked: null, right: 0, total: 0, until: 0 };
 function nextQuiz() { if (!QZ.order.length) QZ.order = QUIZ.map((_, i) => i).sort(() => Math.random() - 0.5); QZ.cur = QZ.order.pop(); QZ.picked = null; }
@@ -355,7 +355,7 @@ function render() {
   if (S.drink && lastDrinkScroll !== S.drink.h + (S.drink.l || []).join()) { lastDrinkScroll = S.drink.h + (S.drink.l || []).join(); const dp = main.querySelector('.drinkPanel'); if (dp) setTimeout(() => dp.scrollIntoView({ block: 'center', behavior: 'smooth' }), 30); } // 🥃 마실 시간이 뜨면 화면 가운데로
   renderTeams();
 }
-let lastScrollK = '', lastDrinkScroll = '', extrasOpen = false, quizOpen = false;
+let lastReAsk = '', lastScrollK = '', lastDrinkScroll = '', extrasOpen = false, quizOpen = false;
 // 팀 현황
 // 😴 팀원 칩: 누르면 쉬기 ↔ 복귀 (쉬는 사람은 벌주 뽑기에서 빠져요)
 function restChip(t, n, pd) {
@@ -505,7 +505,7 @@ function cardView(m) {
     pad.addEventListener('pointerdown', (e) => { e.preventDefault(); L.n++; L.q++; cnt.textContent = String(L.n); try { buzz(8); } catch (er) { /* 무시 */ } });
     p.append(h('p', { class: 'sec' }, '5초! 최대한 많이 누르세요'), cnt, pad); acted = true;
   } else if (local.tap) { if (local.tap.q) send({ op: 'tap', n: local.tap.q }); clearInterval(local.tapIv); local.tap = null; }
-  if (m.sw && canTeamAct()) { p.append(stopwatchView(+m.sw)); acted = true; }
+  if (m.sw && canTeamAct()) { p.append(stopwatchView(+m.sw, +m.swh || 0)); acted = true; }
   else if (m.sw) p.append(h('p', { class: 'wait' }, '⏱️ 선수가 폰으로 재는 중! 게임판에서 시간을 보세요'));
   else if (m.react2 && !isHost() && JSON.parse(m.react2).t.includes(me.team)) { p.append(react2View(JSON.parse(m.react2))); acted = true; }
   else if (m.react) {
@@ -552,6 +552,13 @@ function cardView(m) {
       p.append(box); acted = true;
       if (lastPassAsk !== S.mseq) { lastPassAsk = S.mseq; try { buzz([150, 60, 150]); } catch (e) { /* 무시 */ } }
     }
+  }
+  // 🔁 반사당했을 때: 우리 팀 면제권 2개로 되받아치기 (반사의 반사)
+  if (!isHost() && m.rec && (m.rec.re || []).length) {
+    const rr = (m.rec.re || []).filter((x) => x.ti === me.team).pop();
+    if (rr) { p.append(h('div', { class: 'passpick reflectme' }, h('p', { class: 'sec' }, rr.label),
+      h('div', { class: 'seg' }, rr.btns.map((b) => h('button', { class: 'btn' + (b.on ? ' on' : ''), onclick: () => send({ op: 'click', rid: b.rid }) }, b.label)))));
+      acted = true; if (lastReAsk !== S.mseq + ':' + rr.label) { lastReAsk = S.mseq + ':' + rr.label; try { buzz([200, 80, 200, 80, 200]); } catch (e) { /* 무시 */ } } }
   }
   if (isHost()) {
     if (m.rec) {
@@ -611,19 +618,19 @@ function overView() {
 }
 
 // ⏱️ 스톱워치: 폰에서 직접 재고 결과(초)만 보냄 (통신 지연 영향 없음)
-function stopwatchView(target) {
+function stopwatchView(target, hideAt) {
   if (!local.sw || local.sw.ms !== S.mseq) local.sw = { ms: S.mseq, t0: 0, done: false, txt: '0.00' }; // 카드마다 새 스톱워치 (연속으로 나와도)
   const L = local.sw;
   const num = h('div', { class: 'txt big-num' }, L.txt);
   const bt = h('button', { class: 'big', disabled: L.done }, L.done ? '기록 완료' : L.t0 ? '■ 멈춤' : '▶ 시작');
-  const tick = () => { if (!L.t0 || L.done) return; const e = (performance.now() - L.t0) / 1000; L.txt = e.toFixed(2); num.textContent = L.txt; L.raf = requestAnimationFrame(tick); }; // 숫자는 끝까지 보여요
+  const tick = () => { if (!L.t0 || L.done) return; const e = (performance.now() - L.t0) / 1000; L.txt = hideAt && e >= hideAt ? '?.??' : e.toFixed(2); num.textContent = L.txt; L.raf = requestAnimationFrame(tick); }; // 🔥 적게 마시기: 몇 초 뒤 숫자가 사라져요
   bt.onclick = () => {
     if (!L.t0) { L.t0 = performance.now(); bt.textContent = '■ 멈춤'; tick(); send({ op: 'sw', e: -1 }); return; }
     L.done = true; cancelAnimationFrame(L.raf); const e = (performance.now() - L.t0) / 1000; L.txt = e.toFixed(2) + '초'; num.textContent = L.txt; bt.disabled = true; bt.textContent = '기록 완료';
     send({ op: 'sw', e: Math.round(e * 1000) / 1000 });
   };
   if (L.t0 && !L.done) requestAnimationFrame(tick);
-  return h('div', {}, h('p', { class: 'sec' }, `정확히 ${target}.00초에 멈추기! (±0.10초)`), num, bt);
+  return h('div', {}, h('p', { class: 'sec' }, `정확히 ${target}.00초에 멈추기! (±0.10초)${hideAt ? ` · ${hideAt}초 뒤 숫자가 사라져요` : ''}`), num, bt);
 }
 
 let lastFx = -1;
