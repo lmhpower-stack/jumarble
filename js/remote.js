@@ -489,6 +489,7 @@ function cardView(m) {
     if (ppl.length && !/전원/.test(m.x || '')) p.append(h('div', { class: 'involve' }, `🙋 우리 팀 ${ppl.join('·')} 님이 나가요!`));
     else if (S.cur !== me.team && (txt.includes(myT.name) || (m.who || '').includes(myT.name))) p.append(h('div', { class: 'involve soft' }, '🙋 우리 팀도 걸린 미션이에요'));
   }
+  if (m.pl) p.append(h('div', { class: 'txt cap pl', style: 'font-weight:800;text-align:center;margin:6px 0' }, m.pl)); // 👤 이번 담당자
   { const game = !isHost() && !!(m.q || (m.box || []).length); // ✨ 폰에서 할 게임이 있으면 긴 설명은 접고 게임만 크게
     if (m.d && !game) p.append(h('div', { class: 'card-d' }, m.d));
     if (isHost()) { if (m.x) p.append(h('div', { class: 'card-x' }, m.x)); }

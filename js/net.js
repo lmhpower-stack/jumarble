@@ -210,7 +210,7 @@ function snapshot() {
     roll: S.phase === 'play' && !busy && !$('rollBtn').disabled && !modalOn && !pickOn && !taxiOn,
     spin: spinOn ? ($('spinName').classList.contains('wheelHost') ? $('spinLbl').textContent : $('spinLbl').textContent + ' ' + $('spinName').textContent) : '',
     modal: modalOn ? {
-      who: $('mWho').textContent, e: $('mEm').dataset.e || $('mEm').textContent, t: $('mT').textContent, d: $('mD').dataset.full != null ? $('mD').dataset.full : $('mD').textContent,
+      who: $('mWho').textContent, e: $('mEm').dataset.e || $('mEm').textContent, t: $('mT').textContent, d: $('mD').dataset.full != null ? $('mD').dataset.full : $('mD').textContent, pl: (() => { const c = document.querySelector('#card .pchips.auto'); return c ? '👤 이번 선수: ' + [...c.querySelectorAll('.pchip')].map((x) => x.innerText.replace(/\s+/g, ' ').trim()).join(' · ') : ''; })(),
       x: shown($('mX')) ? $('mX').textContent : '', q: shown($('mQ')) ? $('mQ').textContent : '',
       def, box: shown(box) ? blocks(box, def) : [],
       sw: box.dataset.sw || '', swh: box.dataset.swh || '', react: box.dataset.react || '', react2: box.dataset.react2 || '', tap: box.dataset.tap || '',

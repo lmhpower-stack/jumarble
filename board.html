@@ -366,6 +366,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-o
 .numgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
 .numgrid button{padding:9px 0;font:inherit;font-size:16px;border-radius:10px;border:2px solid var(--center);background:var(--bg);color:var(--ink)}
 .numgrid button:disabled{opacity:.2}
+.plband{position:fixed;left:0;right:0;top:50%;transform:translateY(-50%);z-index:93;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 0 22px;background:linear-gradient(90deg,rgba(20,24,40,0),rgba(20,24,40,.78) 18%,rgba(20,24,40,.78) 82%,rgba(20,24,40,0));animation:plIn .3s ease both}
+.plband.out{animation:plOut .4s ease forwards}.plband .plh{font:400 clamp(24px,2.6vw,44px)/1 "Black Han Sans",sans-serif;color:#ffd84d;-webkit-text-stroke:2px #1d1530;paint-order:stroke fill}
+.plband .plr{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;max-width:92vw}.plband .plc{display:flex;flex-direction:column;align-items:center;padding:8px 26px 12px;border-radius:20px;border:4px solid #fff;box-shadow:0 8px 20px rgba(0,0,0,.35);font:400 clamp(34px,4.2vw,72px)/1.05 "Black Han Sans",sans-serif;animation:pcIn .5s cubic-bezier(.2,1.5,.4,1) both}
+.plband .plc small{font-size:.38em;opacity:.9;margin-bottom:2px}.plband.many .plc{font-size:clamp(26px,3vw,52px);padding:6px 18px 10px}
+@media (min-width:1100px) and (min-aspect-ratio:5/4){body:has(#modal.on) .plband{right:628px}}
+@keyframes plIn{from{opacity:0}}@keyframes plOut{to{opacity:0}}
 .setbtn{display:flex;flex-direction:column;align-items:center;gap:2px;margin:10px auto 4px}.setbtn small{font-size:12px;font-weight:600;color:var(--muted)}
 .setdlg{position:fixed;inset:0;z-index:70;background:rgba(10,15,25,.5);display:flex;align-items:center;justify-content:center;padding:16px}.setdlg[hidden]{display:none}
 .setbox{background:var(--card,#fff);border-radius:22px;padding:18px 20px 16px;width:min(760px,96vw);max-height:88vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:setIn .25s cubic-bezier(.2,1.3,.4,1)}
@@ -1197,6 +1203,11 @@ function hardWin(t,r,msg){if(true){r.textContent=msg+' 🛡️ 면제권 획득'
     S.teams.forEach(o=>{if(o===t||onIsland(o)||lostT(o))return;const b=mbtn(o.name,()=>fin(o));b.style.background=o.color;b.style.color=onColor(o.color);tg.appendChild(b)});r.after(tg);if(tg.children.length<2)fin(null)}));
   _ST(()=>{try{seeIt(row);stagePop('🎯','보상을 고르세요!',t.color,'res',1600)}catch(e){}},350);
   setTimeout(()=>fin(null),20000)}
+function playerBand(m,allIn){try{document.querySelectorAll('.plband').forEach(e=>e.remove());const o=document.createElement('div');o.className='plband';
+  const h=document.createElement('div');h.className='plh';h.textContent=allIn?'👥 모든 팀 참여!':'👤 이번 선수';o.appendChild(h);const row=document.createElement('div');row.className='plr';
+  Object.keys(m).forEach((ti,k)=>{const t=S.teams[ti];if(!t)return;const c=document.createElement('div');c.className='plc';c.style.background=t.color;c.style.color=onColor(t.color);c.style.animationDelay=(.12+k*.1)+'s';
+    const sm=document.createElement('small');sm.textContent=t.name;c.append(sm,document.createTextNode(m[ti]));row.appendChild(c)});
+  o.appendChild(row);if(Object.keys(m).length>3)o.classList.add('many');document.body.appendChild(o);try{sfx('flip')}catch(e){}_ST(()=>o.classList.add('out'),1700);_ST(()=>o.remove(),2100)}catch(e){}}
 function pickMember(t,ex){
   if(!t.members.length)return null;
   if(!t.cnt||t.cnt.length!==t.members.length)t.cnt=t.members.map(()=>0);
@@ -1596,6 +1607,7 @@ function makeAct(k,t,ctx){
         const pad=mk('button','tappad','👆');pad.dataset.teams='board';pad.style.background=o.color;pad.style.color=onColor(o.color);pad.disabled=true;pad.onpointerdown=e=>{e.preventDefault();hit(o,1)};
         const tr=mk('div','taptrack');tr.appendChild(bar);ln.append(nm,tr,n,pad);lanes.appendChild(ln);bars.set(o,{bar,n,pad})});
       const cd=mk('div','cd','5');cd.hidden=true;const go=mbtn('▶ 합동 연타 시작',null,'btn fill');go.style.cssText='width:100%;font-size:20px';
+      const pm=pickPlayers(pool);if(pm)box.appendChild(playerChips(pm)); /* 👤 연타할 선수를 시작 전에 정해요 · 실패하면 그 선수가 마셔요 */
       box.append(go,cd,tot,lanes);
       const draw=()=>{let sum=0;cnt.forEach((v,o)=>{sum+=v;const b=bars.get(o);b.bar.style.width=Math.min(100,100*v/GOAL*2)+'%';b.n.textContent=String(v)});tot.textContent=`${sum} / ${GOAL}`};
       const hit=(o,k2)=>{if(!open||!cnt.has(o))return;cnt.set(o,cnt.get(o)+k2);draw()};
@@ -2372,7 +2384,7 @@ const seeIt=el=>{try{el.scrollIntoView({behavior:reduce?'auto':'smooth',block:'c
     if(last)last.scrollIntoView({block:'nearest',behavior:reduce?'auto':'smooth'})}catch(e){}};
   const start=()=>{const mb=$('mBox');if(!mb)return _ST(start,500);new MutationObserver(()=>{clearTimeout(tm);tm=_ST(follow,200)}).observe(mb,{childList:true,subtree:true,characterData:true})};start()})();
 function clrBox(mb){['sw','react','react2','tap','tapLate'].forEach(k=>delete mb.dataset[k]);mb.__sw=mb.__react=mb.__react2=mb.__tap=mb.__swStart=null;document.querySelectorAll('.bigcd').forEach(e=>e.remove())}
-function modal({who,e,t,d,x,gold,act,rec,free}){window.__mOpenAt=Date.now();PL_PENDING=null;
+function modal({who,e,t,d,x,gold,act,rec,free}){window.__mOpenAt=Date.now();PL_PENDING=null;document.querySelectorAll('#card .pchips.auto').forEach(e=>e.remove());
 
   {const df=$('drinkFx');if(df)df.classList.add('mini')}
   MSEQ++;MOPEN=true;MDONE=!act;MFREE=!!free;okArm=0;mIdleSince=0;$('mOk').dataset.lbl='확인';
@@ -2384,7 +2396,7 @@ function modal({who,e,t,d,x,gold,act,rec,free}){window.__mOpenAt=Date.now();PL_P
   let rotUsed=false;if(x&&x.includes('{ROT}')){const rt=rotText(rec&&rec.only,rec&&rec.who);rotUsed=!!rt;x=x.replace('{ROT}',rt||PICK[Math.floor(Math.random()*PICK.length)])}
   $('card').className='card'+(gold?' goldc goldflip':'');if(gold)try{sfx('go')}catch(e){}
   if(S.phase==='play'&&!/미리 보기/.test(who||'')&&t&&!/건배|다 같이 한 잔/.test(t)){const ct=S.teams[S.cur];_ST(()=>stagePop(e,t,ct&&ct.color,gold?'enter goldc':'enter',gold?1800:1500),gold?700:60)}
-  {const allIn=/👥/.test(who||'');$('mWho').classList.toggle('allin',allIn);if(allIn&&S.phase==='play')_ST(()=>stagePop('👥','모든 팀 참여!','#7a4dd8','enter',1500),gold?2600:1700)} /* 👥 모든 팀이 하는 게임은 크게 알려요 */ // 🎬 미션 등장: 게임판 위에 큰 이모지+제목
+  {const allIn=/👥/.test(who||'');$('mWho').classList.toggle('allin',allIn)} /* 👥 모든 팀 참여 알림은 아래 ‘이번 선수’ 띠와 합쳐서 */ /* 👥 모든 팀이 하는 게임은 크게 알려요 */ // 🎬 미션 등장: 게임판 위에 큰 이모지+제목
   $('mWho').textContent=who||'';$('mEm').textContent=e==='🎡'?'':e;$('mEm').dataset.e=e||'';if(e==='🎡')$('mEm').appendChild(wheelIcon());$('mT').textContent=t;if(/건배|다 같이 한 잔/.test(t||''))setTimeout(clinkFx,gold?650:150);
   {const full=d||'',sh=shortDesc(full);const md=$('mD');md.dataset.full=full;md.textContent=(S.descFull||sh===full)?full:sh;
    if(!S.descFull&&sh!==full){const mb=document.createElement('button');mb.className='dmore';mb.textContent='📖 자세히';mb.onclick=()=>{md.textContent=full};md.appendChild(document.createTextNode(' '));md.appendChild(mb)}} /* 📖 미션 설명은 기본 한 줄 · 설정에서 ‘자세히’로 바꾸거나 카드에서 펼치기 */if(MOST()&&rec)x=[x,`🍻 부스터 레이스: 이 미션에서 이긴 쪽이 한 잔 마시고 🚀 ${DASH}칸 대시! 진 쪽은 패스`].filter(Boolean).join('\n');
@@ -2398,7 +2410,14 @@ function modal({who,e,t,d,x,gold,act,rec,free}){window.__mOpenAt=Date.now();PL_P
      if(S.phase==='play'){const oA=own(mm[1],tA),oB=own(mm[2],tB);_ST(()=>vsFx(oA,oB,mm[1],mm[2]),gold?2600:1600)}}} /* ⚔️ 1:1이면 게임판에 ‘B팀 영훈 VS C팀 미란’ 스플래시 */
   const rr=$('mReroll');rr.hidden=rotUsed||!(x&&/🎯 (걸린 사람|벌주가 나오면 마실 사람|지면 마실 사람): /.test(x));rr.onclick=()=>{const cur=$('mX').textContent;let p2;do{p2=PICK[Math.floor(Math.random()*PICK.length)]}while(cur.includes(p2));$('mX').textContent=cur.replace(/(🎯 (?:걸린 사람|벌주가 나오면 마실 사람|지면 마실 사람): )[^\n]*/,'$1'+p2)};
   setTimerBtn(d,act);
-  recSel=rec?{st:{},tg:{},re:{},only:rec.only||null,double:!!rec.double,who:(rec.who||PL_PENDING)?Object.assign({},rec.who||{},PL_PENDING||{}):null}:null;PL_PENDING=null;$('mRec').hidden=!rec;$('mRec').querySelector('span').textContent=JURU()?(SOLO()?'🍻 기록: 마실 사람(이긴 쪽)은 ‘마심’ · 진 쪽은 물':'🍻 기록: 마실 팀(이긴 쪽)은 ‘마심’ · 진 쪽은 물'):SOLO()?'🥃 기록: 마신 사람은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 사람에게':'🥃 기록: 마신 팀은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 팀에게';
+  recSel=rec?{st:{},tg:{},re:{},only:rec.only||null,double:!!rec.double,who:(rec.who||PL_PENDING)?Object.assign({},rec.who||{},PL_PENDING||{}):null}:null;PL_PENDING=null;
+  /* 👤 모든 미션: 카드가 열리면 관련 팀마다 담당자를 먼저 정해요 → 그 사람이 게임하고, 지면 그 사람이 마셔요 (끝나고 뽑지 않아요) */
+  if(recSel&&!SOLO()&&S.phase==='play'){const ids=(recSel.only||S.teams.map((_,i)=>i)).filter(i=>{const o=S.teams[i];return o&&o.members&&o.members.length&&!onIsland(o)&&!lostT(o)&&rotK(o)===1&&!(recSel.who&&recSel.who[i])});
+    const m={};ids.forEach(i=>{const n=pickMember(S.teams[i]);if(n)m[i]=n});
+    if(Object.keys(m).length){recSel.who=Object.assign(recSel.who||{},m);if(!document.querySelector('#card .vsban')&&!$('mBox').querySelector('.pchips')){const ch=playerChips(Object.assign({},recSel.who));ch.classList.add('auto');$('mX').after(ch)}}}
+  /* 📺 게임판 가운데 큰 띠: ‘👤 이번 선수 · 피트파 민준’ (모든 팀이면 ‘👥 모든 팀 참여!’) · 1:1은 VS 띠가 대신 */
+  if(S.phase==='play'&&!document.querySelector('#card .vsban')){const allIn=/👥/.test(who||''),pw=recSel&&recSel.who&&Object.keys(recSel.who).length?Object.assign({},recSel.who):null;
+    if(pw)_ST(()=>playerBand(pw,allIn),gold?2600:1600);else if(allIn)_ST(()=>stagePop('👥','모든 팀 참여!','#7a4dd8','enter',1500),gold?2600:1700)}$('mRec').hidden=!rec;$('mRec').querySelector('span').textContent=JURU()?(SOLO()?'🍻 기록: 마실 사람(이긴 쪽)은 ‘마심’ · 진 쪽은 물':'🍻 기록: 마실 팀(이긴 쪽)은 ‘마심’ · 진 쪽은 물'):SOLO()?'🥃 기록: 마신 사람은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 사람에게':'🥃 기록: 마신 팀은 ‘마심’ · 면제권이 있으면 🛡️로 막거나, 2개면 🔁 다른 팀에게';
   if(rec){(rec.pre||[]).forEach(i=>recSel.st[i]=1);drawRec()}
   if(rec&&!act&&(rec.pre||[]).length)setTimeout(()=>spotTeams(rec.pre),gold?700:200); // 🔦 바로 마시는 카드면 걸린 팀 말에 불빛
   $('modal').classList.add('on');updOk();setTimeout(()=>{try{$('mOk').focus({preventScroll:true})}catch(e){$('mOk').focus()}const c=$('card');if(c&&c.scrollTop)c.scrollTop=0},50); // 카드가 열릴 때 아래로 밀리지 않게
