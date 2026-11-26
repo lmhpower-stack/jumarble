@@ -1562,18 +1562,19 @@ function makeAct(k,t,ctx){
     const judge=()=>{if(phase==='idle'||done)return;clearTimeout(tm);clearTimeout(lim);phase='idle';delete box.dataset.react2;pd.forEach(b=>b.disabled=true);
       const v=[0,1].map(k=>got[k]==null?9999:got[k]);log.textContent=`${A.name} ${fmt(v[0])} · ${B.name} ${fmt(v[1])}`;
       const ok=v.map(x=>x>=0&&x<9000);let w=-1;
-      if(v[0]<0&&v[1]>=0)w=1;else if(v[1]<0&&v[0]>=0)w=0;else if(ok[0]&&ok[1])w=v[0]===v[1]?-1:(v[0]<v[1]?0:1);else if(ok[0])w=0;else if(ok[1])w=1;
+      if(v[0]<0&&v[1]>=0)w=1;else if(v[1]<0&&v[0]>=0)w=0;else if(v[0]<0&&v[1]<0){w=firstFalse===0?1:0;log.textContent+=` · 둘 다 부정출발! 먼저 누른 ${P[1-w].name} 패`} /* 🚫 둘 다 부정출발이면 먼저 누른 쪽이 져요 (무한 반복 방지) */
+      else if(ok[0]&&ok[1])w=v[0]===v[1]?-1:(v[0]<v[1]?0:1);else if(ok[0])w=0;else if(ok[1])w=1;
       if(w<0&&v[0]>=9000&&v[1]>=9000){idle++;if(idle>=2){w=Math.random()<.5?0:1;score[w]=Math.max(score[w],1);log.textContent+=' · 🎲 두 번 다 아무도 안 눌러서 앱이 승자를 뽑았어요'}}else idle=0; // 아무도 없으면 대결을 바로 끝내요 (점수 1 + 이번 판 1 = 2)
       if(w<0){st.className='react-st bad';st.textContent='🤝 승부 없음! 이 판 다시';round--;go.textContent=`▶ ${round+1}판 시작`;go.hidden=false;return}
       score[w]++;draw();st.className='react-st go';st.textContent=`${P[w].name} 1점!`;try{sfx(v[1-w]<0?'lose':'win')}catch(e){}
       if(score[w]>=2){done=true;const W0=P[w],l=P[1-w];res.textContent=JURU()?`🏆 ${W0.name} 최종 승리! 🍻 한 잔 · 💧 ${l.name} 물 한 잔 + ${LOSE_STEP()}칸 뒤로`:`🏆 ${W0.name} 최종 승리! · ${l.name} 벌주 한 잔 + ${LOSE_STEP()}칸 뒤로`;go.remove();duelResult(W0,l);return}
       go.textContent=`▶ ${round+1}판 시작`;go.hidden=false};
-    const put=(k,ms)=>{if(phase==='idle'||done||got[k]!=null)return;got[k]=ms;if(got[0]!=null&&got[1]!=null)judge()};
+    let firstFalse=-1;const put=(k,ms)=>{if(phase==='idle'||done||got[k]!=null)return;got[k]=ms;if(ms<0&&firstFalse<0)firstFalse=k;if(got[0]!=null&&got[1]!=null)judge()};
     // 게임판 버튼 (폰 없는 팀): 게임판 시계로 재요
     pd.forEach((b,k)=>b.onclick=()=>{if(phase==='wait')return put(k,-1);if(phase==='go')put(k,Math.round(performance.now()-t0))});
     // 폰에서 온 결과: {r: 판 번호, ms: 반응 시간(부정출발 -1)}
     box.__react2=(ti,r,ms)=>{const k=ix(A)===ti?0:ix(B)===ti?1:-1;if(k<0||r!==round)return;put(k,ms<0?-1:Math.max(0,Math.min(8999,Math.round(ms))))};
-    go.onclick=()=>{if(done||phase!=='idle'||MSEQ!==s0)return;round++;go.hidden=true;got={};phase='wait';log.textContent='';
+    go.onclick=()=>{if(done||phase!=='idle'||MSEQ!==s0)return;round++;go.hidden=true;got={};firstFalse=-1;phase='wait';log.textContent='';
       const d=1500+Math.floor(Math.random()*3000);
       // 폰에는 '몇 번째 판, 몇 ms 뒤 초록' 만 보내요. 폰은 받은 순간부터 직접 세요
       box.dataset.react2=JSON.stringify({r:round,d,t:[ix(A),ix(B)],seq:MSEQ});
