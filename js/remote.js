@@ -21,7 +21,12 @@ let me = { room: qRoom || (saved.room || '').toUpperCase(), role: saved.role || 
 // 다른 방 QR을 찍고 들어왔으면 예전 역할·팀은 잊어요
 if (qRoom && saved.room && qRoom !== saved.room) { me.role = ''; me.team = null; }
 const tagOf = (pid) => { let h = 7; for (const c of String(pid || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0; return pid ? h.toString(36) : ''; };
-let lastCur = null, wake = null;
+let lastCur = null, wake = null, lastRollLog = null;
+const PIPS = { 1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
+function dieEl(n) { const d = document.createElement('div'); d.className = 'pdie'; for (let k = 1; k <= 9; k++) { const c = document.createElement('i'); if (PIPS[n] && PIPS[n].includes(k)) c.className = 'on'; d.appendChild(c); } return d; }
+function dicePop(a, b, sum, dbl) { try { document.querySelectorAll('.dicepop').forEach((e) => e.remove()); const o = document.createElement('div'); o.className = 'dicepop' + (dbl ? ' dbl' : '');
+  const row = document.createElement('div'); row.className = 'dr'; row.append(dieEl(a), dieEl(b)); const t = document.createElement('div'); t.className = 'ds'; t.textContent = dbl ? `${sum}칸! 🎉 더블` : `${sum}칸!`;
+  o.append(row, t); document.body.appendChild(o); try { buzz(dbl ? [80, 50, 80, 50, 160] : [60]); } catch (e) { /* 무시 */ } setTimeout(() => o.remove(), 1700); } catch (e) { /* 무시 */ } }
 // 🧠 혼자 푸는 술 상식 (맥주·와인·칵테일 — 게임 OX(위스키)와 안 겹치게, 게임 승패 영향 없음)
 const QUIZ = [
   ['라거는 하면 발효, 에일은 상면 발효 맥주다', 'O'], ['IPA는 ‘인디아 페일 에일’의 줄임말이다', 'O'],
@@ -229,22 +234,26 @@ function render() {
   if (!$('teamPick').hidden && $('live').hidden) drawTeamPick();
   if ($('live').hidden || !S) return;
   const myT = S.teams && S.teams[me.team];
-  $('me').textContent = isHost() ? `🎮 진행폰 · ${S.room || me.room}` : me.role === 'watch' ? `👀 ${me.wnick || '관전자'} · ${S.room || me.room}` : `📱 ${myT ? myT.name : '플레이어'} · ${S.room || me.room}`;
+  $('me').textContent = isHost() ? `🎮 진행폰 · ${S.room || me.room}` : me.role === 'watch' ? `👀 ${me.wnick || '관전자'}` : `📱 ${myT ? myT.name : '플레이어'}`; // ✨ 팀 폰·관전자엔 방 코드 안 보여요 (TV에 있어요)
   // 우리 차례가 되면 화면을 팀 색으로 칠하고 한 번 진동
   const mine0 = !isHost() && S.phase === 'play' && S.cur === me.team;
-  document.body.classList.toggle('myturn', mine0); { const c = myT && /^#[0-9a-f]{6}$/i.test(myT.color) ? myT.color : '#e2571e'; document.documentElement.style.setProperty('--my', c); document.documentElement.style.setProperty('--myInk', inkOn(c)); }
+  document.body.classList.toggle('myturn', mine0); if (mine0 || S.phase !== 'play' || isHost()) document.body.classList.remove('nextturn'); { const c = myT && /^#[0-9a-f]{6}$/i.test(myT.color) ? myT.color : '#e2571e'; document.documentElement.style.setProperty('--my', c); document.documentElement.style.setProperty('--myInk', inkOn(c)); }
   if (mine0 && lastCur !== S.cur) { try { buzz([120, 60, 120]); } catch (e) { /* 무시 */ } }
   lastCur = S.phase === 'play' ? S.cur : null;
   // 상태
   const st = $('status'); st.innerHTML = '';
   if (isHost() && S.host && S.host !== tagOf(me.pid)) st.append(h('p', { class: 'warn' }, '⚠️ 이미 다른 진행폰이 연결돼 있어요. 이 폰의 버튼은 게임판에서 무시돼요. 게임판의 ‘📡 → 진행폰 바꾸기’를 누르거나, 나가기 후 플레이어로 들어오세요.'));
-  if (S.phase === 'setup') st.append(h('p', { class: 'wait' }, !isHost() && myT ? '우리 팀 이름과 멤버를 적어 주세요. 다 모이면 팀 폰에서 ‘🚀 게임 시작’ (게임판에서 눌러도 돼요)' : '팀 폰에서 팀 이름·멤버를 적고, 게임판에서 ‘게임 시작’을 누르면 시작돼요'));
+  if (S.phase === 'setup') st.append(h('p', { class: 'wait' }, !isHost() && myT ? '✏️ 팀 이름·팀원 적고 ✋ 준비 완료!' : '팀 폰에서 팀 이름·멤버를 적고, 게임판에서 ‘게임 시작’을 누르면 시작돼요'));
   else if (S.teams && S.teams[S.cur] && S.phase === 'play') {
     const ct = S.teams[S.cur];
     const n = S.teams.length; let wait = null;
-    if (!isHost() && myT && !mine0) { let k = 0, j = S.cur; while (k < n && j !== me.team) { j = (j + 1) % n; k++; } wait = k > 0 && k < n ? (k === 1 ? '⏭️ 다음이 우리 차례! 미리 준비하세요' : `우리 차례까지 ${k}팀 남았어요`) : null;
+    if (!isHost() && myT && !mine0) { let k = 0, j = S.cur; while (k < n && j !== me.team) { j = (j + 1) % n; k++; } document.body.classList.toggle('nextturn', k === 1 && n > 1); wait = k > 0 && k < n ? (k === 1 ? '⏭️ 다음이 우리 차례! 미리 준비하세요' : `우리 차례까지 ${k}팀 남았어요`) : null;
       // 🔔 다음이 우리 차례면 살짝 한 번 진동 (차례마다 한 번)
       if (k === 1 && n > 1 && lastNext !== (S.turnNo || 0) + ':' + S.cur) { lastNext = (S.turnNo || 0) + ':' + S.cur; try { buzz([60, 60, 60]); } catch (e) { /* 무시 */ } } }
+    if (!isHost() && me.role === 'player') { // ✨ 팀 폰: 지금 상황 한 줄만 (자세한 건 게임판에)
+      st.append(...[h('div', { class: 'disp', style: `font-size:${mine0 ? 34 : 22}px;color:${mine0 ? 'var(--myInk,#fff)' : ct.color};text-align:center` }, mine0 ? '🎲 우리 차례!' : `⏳ ${ct.name} 차례`),
+        wait ? h('p', { class: 'small' + (/다음이 우리/.test(wait) ? ' nextup' : ''), style: 'text-align:center;margin:6px 0 0;font-weight:700' }, wait) : null].filter(Boolean));
+    } else
     st.append(...[h('div', { class: 'disp', style: `font-size:${mine0 ? 30 : 22}px;color:${mine0 ? 'var(--myInk,#fff)' : ct.color};text-align:center` }, mine0 ? `🎲 우리 팀(${ct.name}) 차례예요!` : `🎲 ${ct.name} 차례`),
       wait ? h('p', { class: 'small' + (/다음이 우리/.test(wait) ? ' nextup' : ''), style: 'text-align:center;margin:4px 0 0;font-weight:700' }, wait) : null, h('p', { class: 'small muted', style: 'text-align:center;margin:4px 0 0' }, (S.modal || S.pick) && S.now ? S.now.replace(/^🎯 /, '') : (S.log || '')), S.cast ? h('p', { class: 'small cast', style: 'text-align:center;margin:4px 0 0;font-weight:700' }, S.cast) : null].filter(Boolean));
   }
@@ -265,6 +274,10 @@ function render() {
       clearTimeout(toastTimer); toastTimer = setTimeout(() => { f.className = ''; }, mineMsg ? 7000 : 4500);
     } }
   }
+  // 🎲 우리 팀이 굴리면 폰에도 주사위 눈을 크게 (1.6초)
+  { const mm = !isHost() && myT && S.phase === 'play' ? String(S.log || '').match(/^(.+?): (\d) \+ (\d) = (\d+)(.*)$/) : null;
+    if (mm && mm[1] === myT.name && lastRollLog !== S.log) { if (lastRollLog !== null) dicePop(+mm[2], +mm[3], +mm[4], /더블/.test(mm[5])); }
+    if (S.log !== undefined) lastRollLog = S.log; }
   // 본문
   const main = $('main');
   if (S.phase === 'setup' && !isHost() && myT) { setupView(main, myT); renderTeams(); return; }
@@ -311,17 +324,28 @@ function render() {
     shakeOn ? h('p', { class: 'small', style: 'margin:8px 0 0;font-weight:700' }, '📱 폰을 흔들어도 굴러가요!')
       : shakeAsk ? h('button', { class: 'btn', style: 'margin-top:8px;font-size:14px;min-height:0;padding:8px 12px', onclick: askShake }, '📱 흔들어서 굴리기 켜기') : null));
   else if (S.roll && isHost()) main.append(h('div', { class: 'panel wait' }, `🎲 ${S.teams[S.cur] ? S.teams[S.cur].name : '차례 팀'} 폰에서 굴려요`));
-  else if (S.phase === 'play') main.append(h('div', { class: 'panel wait' }, '👀 게임판을 봐 주세요'));
+  else if (S.phase === 'play' && (isHost() || me.role !== 'player')) main.append(h('div', { class: 'panel wait' }, '👀 게임판을 봐 주세요'));
+  else if (S.phase === 'play') { const st0 = $('status'); if (st0 && !st0.querySelector('.lookbd')) st0.append(h('p', { class: 'small muted lookbd', style: 'text-align:center;margin:6px 0 0' }, '👀 게임판을 봐 주세요')); }
   // 대기 중이면 위스키 상식, 게임 중엔 언제나 익명 응원
   const nothing = !main.querySelector('button:not([disabled]),input:not([disabled])');
-  if (!isHost() && S.phase === 'play' && !mine0 && !S.over && !S.modal && !S.pick && !S.taxi && nothing) main.append(quizView());
-  if (S.phase === 'play') { main.append(cheerBar()); main.append(sayBox(false)); }
-  if (!isHost() && !S.hostOn && S.phase === 'play' && !S.paused) main.append(h('div', { style: 'text-align:center;margin:6px 0' }, h('button', { class: 'btn' + (Date.now() - pauseArm < 3000 ? ' armed' : ''), style: 'font-size:13px;padding:6px 14px', onclick: () => { if (Date.now() - pauseArm < 3000) { pauseArm = 0; send({ op: 'pause', on: true }); return; } pauseArm = Date.now(); render(); setTimeout(render, 3100); } }, Date.now() - pauseArm < 3000 ? '⏸️ 한 번 더 누르면 멈춰요' : '⏸️ 잠시 멈춤 (화장실·안주 타임)'))); // 진행폰이 없으면 아무 팀이나 멈출 수 있어요
+  if (!isHost() && S.phase === 'play' && !mine0 && !S.over && !S.modal && !S.pick && !S.taxi && nothing) { const qd = h('details', { class: 'extras quiz' }, h('summary', {}, '🧠 기다리는 동안 술 상식 퀴즈'), quizView()); if (quizOpen) qd.open = true; qd.ontoggle = () => { quizOpen = qd.open; }; main.append(qd); }
+  // ✨ 응원·한마디·멈춤은 접어 둬요 (누르면 펼쳐짐 · 펼친 상태는 기억)
+  if (S.phase === 'play') { const ex = h('details', { class: 'extras' }, h('summary', {}, isHost() || S.hostOn ? '😀 응원 · 💬 한마디' : '😀 응원 · 💬 한마디 · ⏸️ 멈춤'), cheerBar(), sayBox(false),
+      !isHost() && !S.hostOn && !S.paused ? h('div', { style: 'text-align:center;margin:6px 0' }, h('button', { class: 'btn' + (Date.now() - pauseArm < 3000 ? ' armed' : ''), style: 'font-size:13px;padding:6px 14px', onclick: () => { if (Date.now() - pauseArm < 3000) { pauseArm = 0; send({ op: 'pause', on: true }); return; } pauseArm = Date.now(); render(); setTimeout(render, 3100); } }, Date.now() - pauseArm < 3000 ? '⏸️ 한 번 더 누르면 멈춰요' : '⏸️ 잠시 멈춤 (화장실·안주 타임)')) : null);
+    if (extrasOpen) ex.open = true; ex.ontoggle = () => { extrasOpen = ex.open; }; main.append(ex); }
   if (isHost() && S.phase === 'play' && S.now) main.prepend(h('div', { class: 'nowline' }, '📢 ' + S.now));
+  // 🎤 MC 대본: 읽어 주면 분위기 UP (진행폰에만)
+  if (isHost() && (S.phase === 'play' || S.phase === 'over') && S.mc) main.prepend(h('div', { class: 'mcline' }, h('div', { class: 'mch' }, '🎤 읽어 주세요'), h('div', { class: 'mct' }, S.mc)));
   if (isHost() && S.phase === 'play') main.append(h('div', { class: 'hostbar' },
     S.undo ? h('button', { class: 'btn' + (Date.now() - undoArm < 4000 ? ' armed' : ''), onclick: () => { if (Date.now() - undoArm < 4000) { undoArm = 0; send({ op: 'undo' }); return; } undoArm = Date.now(); render(); setTimeout(render, 4100); } }, Date.now() - undoArm < 4000 ? '↩️ 한 번 더 누르면 되돌려요' : '↩️ 방금 기록 되돌리기') : null,
     h('button', { class: 'btn', onclick: () => send({ op: 'pause', on: !S.paused }) }, S.paused ? '▶ 계속하기' : '⏸️ 잠시 멈춤'),
     h('button', { class: 'btn', onclick: () => send({ op: 'mute' }) }, '🔊 소리')));
+  // 🎁 깜짝 이벤트: 주사위 기다릴 때만 · 한 판 3번 · 대상은 앱이 정해요 (판정 없음)
+  if (isHost() && S.phase === 'play') { const left = S.mcLeft == null ? 3 : S.mcLeft, ok = !!S.roll && left > 0 && !S.paused;
+    const EV = [['cheers', '🍻 다 같이 건배'], ['boost', '🚀 꼴찌 팀 1칸 앞으로'], ...(S.juru ? [] : [['pass', '🛡️ 꼴찌 팀 면제권 +1']]), ['lucky', '🎰 행운의 팀 1칸 앞으로']];
+    main.append(h('div', { class: 'panel mcev' }, h('p', { class: 'sec', style: 'margin:0 0 6px' }, `🎁 깜짝 이벤트 · 남은 ${left}번`),
+      h('div', { class: 'mcgrid' }, EV.map(([k, l]) => h('button', { class: 'btn', disabled: !ok, onclick: () => { send({ op: 'mcev', ev: k }); try { buzz(40); } catch (e) { /* 무시 */ } } }, l))),
+      h('p', { class: 'small muted', style: 'margin:6px 0 0' }, left <= 0 ? '이번 판 이벤트를 다 썼어요' : ok ? '분위기 처질 때 하나 눌러 주세요 · 게임판에 크게 떠요' : '주사위 굴릴 차례일 때 누를 수 있어요'))); }
   // 📜 미션 버튼(OX·연타 등)이 화면 아래에 있으면 그 버튼이 처음 생길 때 한 번 화면 가운데로 올려요
   if (S.modal) { const tb = main.querySelector('.tapbig') || [...main.querySelectorAll('.panel button:not([disabled]), .panel input:not([disabled])')].find((b) => !/다른 조건/.test(b.textContent || ''));
     const k = S.mseq + ':' + (tb ? (tb.className + tb.textContent).slice(0, 40) : '');
@@ -331,7 +355,7 @@ function render() {
   if (S.drink && lastDrinkScroll !== S.drink.h + (S.drink.l || []).join()) { lastDrinkScroll = S.drink.h + (S.drink.l || []).join(); const dp = main.querySelector('.drinkPanel'); if (dp) setTimeout(() => dp.scrollIntoView({ block: 'center', behavior: 'smooth' }), 30); } // 🥃 마실 시간이 뜨면 화면 가운데로
   renderTeams();
 }
-let lastScrollK = '', lastDrinkScroll = '';
+let lastScrollK = '', lastDrinkScroll = '', extrasOpen = false, quizOpen = false;
 // 팀 현황
 // 😴 팀원 칩: 누르면 쉬기 ↔ 복귀 (쉬는 사람은 벌주 뽑기에서 빠져요)
 function restChip(t, n, pd) {
@@ -341,12 +365,29 @@ function restChip(t, n, pd) {
       send({ op: 'rest', ti: t.i, m: n, on }); t.out = t.out || {}; if (on) t.out[n] = 1; else delete t.out[n]; renderTeams(); } },
     `${out ? '😴 ' : ''}${n}${pd[n] ? ` ${S.juru ? '🍻' : '🥃'}${pd[n]}` : ''}${out ? ' 쉬는 중' : ''}`);
 }
-let restArm = 0;
+let restArm = 0, restOpen = false;
 const alertMsg = (t) => phoneFx({ t, k: 'info', teams: [] });
 function confirmRest(n) { const now = Date.now(); if (now - restArm < 4000) { restArm = 0; return true; } restArm = now; alertMsg(`${n}까지 쉬면 팀 전원이 쉬어요 → 벌주는 물로 마셔요. 한 번 더 누르면 적용`); return false; }
+
+// ✨ 한눈에 보기: 벌주 게이지 · 면제권 방패 · 미니 레이스
+function drinkGauge(t) { const lim = t.lim || S.cap || 0, n = t.drinks || 0;
+  if (S.juru || !lim) return h('span', {}, S.juru ? `🍻 ${n}잔` : `🥃 벌주 ${n}`);
+  const left = lim - n, g = h('span', { class: 'gauge' + (left <= 1 ? ' hot' : left <= 2 ? ' warm' : '') }, h('span', { class: 'gl' }, `🥃 ${n}/${lim}`));
+  const bar = h('span', { class: 'gb' }); for (let k = 0; k < lim; k++) bar.append(h('i', { class: k < n ? 'on' : '' })); g.append(bar); return g; }
+function shields(n, big) { if (S.juru) return null; n = n || 0;
+  if (!n) return big ? h('span', { class: 'shd zero' }, '🛡️ 0') : null;
+  return h('span', { class: 'shd' }, '🛡️'.repeat(Math.min(n, 4)) + (n > 4 ? `+${n - 4}` : ''), n >= 2 ? h('span', { class: 'rf' }, big ? '🔁 반사 가능' : '🔁') : null); }
+function raceTrack() { const G = Math.max(1, S.goal || 3) * 24, ts = (S.teams || []).filter((t) => !t.lost || true);
+  const tr = h('div', { class: 'race' }, h('span', { class: 'rs' }, '출발'), h('span', { class: 're' }, '🏁'));
+  const lane = h('div', { class: 'lane' }); tr.append(lane);
+  const pos = ts.map((t) => ({ t, p: Math.min(1, ((t.laps || 0) * 24 + (t.pos || 0)) / G) }));
+  let mo = 0; const placed = []; pos.forEach(({ t, p }) => { let same = 0; while (placed.some((o) => o.l === same && Math.abs(o.p - p) < 0.17)) same++; placed.push({ p, l: same }); mo = Math.max(mo, same);
+    lane.append(h('span', { class: 'rd' + (t.i === me.team ? ' me' : '') + (t.i === S.cur ? ' cur' : ''), style: `left:${(p * 100).toFixed(1)}%;--c:${t.color};--o:${same}`, title: t.name }, t.name.slice(0, 2))); });
+  tr.style.paddingTop = (32 + mo * 22) + 'px'; return tr; }
 function renderTeams() {
   const tb = $('teams'); tb.innerHTML = '';
   if (S.phase === 'setup') { (S.teams || []).forEach((t) => tb.append(h('div', { class: 'tm' + (t.i === me.team ? ' me' : ''), style: `--c:${t.color}` }, h('b', {}, t.name), h('br'), h('span', { class: 'small muted' }, S.solo ? (t.i === me.team ? '나' : '') : (t.mem ? `👥 ${t.mem.split(/[\s,]+/).filter(Boolean).length}명 · ${t.mem}` : '멤버 아직 없음')), isHost() ? phoneLine(t.i) : null))); return; }
+  if (S.phase === 'play' && (S.teams || []).length > 1) tb.append(raceTrack());
   // 👥 우리 팀 카드: 팀원별로 몇 번 마셨는지 · 벌주 상한까지 남은 수 · 면제권 · 지금 칸
   const myT = !isHost() && me.team != null ? S.teams[me.team] : null;
   if (myT) {
@@ -356,12 +397,32 @@ function renderTeams() {
       h('div', { class: 'mt-h' }, h('b', {}, `🏠 우리 팀 · ${myT.name}`, myT.i === S.cur && S.phase === 'play' ? h('span', { class: 'turnb' }, '🎲 차례') : null), h('span', {}, myT.cell ? `📍 ${myT.cell}` : '')),
       h('div', { class: 'mt-s' },
         h('span', {}, `🏁 ${Math.min(myT.laps, S.goal)}/${S.goal}바퀴`),
-        h('span', {}, S.juru ? `🍻 ${myT.drinks}잔` : (myT.lost ? '💧 패배' : `🥃 벌주 ${myT.drinks}${myT.lim ? '/' + myT.lim : ''}`)),
-        !S.juru ? h('span', {}, `🛡️ 면제권 ${myT.pass}`) : null,
+        myT.lost ? h('span', {}, '💧 패배') : drinkGauge(myT),
+        shields(myT.pass, true),
         left != null && !myT.lost && left <= 2 ? h('span', { class: 'warn' }, `⚠️ ${left}번 더 걸리면 물`) : null),
       mem.length ? h('div', { class: 'mt-m' }, mem.map((n) => restChip(myT, n, pd))) : null,
-      mem.length > 1 && !S.solo && S.phase === 'play' ? h('div', { class: 'mt-hint' }, S.juru ? '😴 팀원을 누르면 쉬기 ↔ 복귀 · 쉬는 사람은 마실 사람·선수로 안 뽑히고 남은 사람이 마셔요' : '😴 팀원을 누르면 쉬기 ↔ 복귀 · 쉬는 사람은 벌주·선수로 안 뽑히고 남은 사람이 마셔요') : null));
+      mem.length > 1 && !S.solo && S.phase === 'play' ? h('div', { class: 'mt-hint' }, '😴 이름을 누르면 쉬기 ↔ 복귀') : null));
   }
+  if (isHost() && S.phase === 'play') { // ✨ 진행폰: 팀마다 한 줄 + 폰 상태 (대신 하기) · 팀원 쉬기는 접어 둬요
+    (S.teams || []).forEach((t) => { const arr = (S.phones || {})[String(t.i)] || [], f = (S.forced || []).includes(t.i), on = arr.some((x) => x.on);
+      tb.append(h('div', { class: 'tmrow' + (t.i === S.cur ? ' cur' : ''), style: `--c:${t.color}` },
+        h('b', {}, t.name, t.i === S.cur ? h('span', { class: 'turnb' }, '🎲') : null),
+        h('span', {}, `🏁${Math.min(t.laps, S.goal)}/${S.goal}${t.fin ? ' 골인' : ''}`),
+        S.juru ? h('span', {}, `🍻${t.drinks}`) : (t.lost ? h('span', {}, '💧패배') : drinkGauge(t)),
+        shields(t.pass, false),
+        h('span', { class: 'pst ' + (f ? 'f' : on ? 'on' : arr.length ? 'off' : 'none') }, f ? '⏭️ 대신 중' : on ? '📱' : arr.length ? '📵' : '폰 없음'),
+        (on || f) ? h('button', { class: 'btn tko', onclick: () => send({ op: 'takeover', ti: t.i, on: !f }) }, f ? '돌려주기' : '대신') : null)); });
+    const anyMem = (S.teams || []).some((t) => (t.mem || '').trim());
+    if (anyMem && !S.solo) { const rd = h('details', { class: 'extras' }, h('summary', {}, '😴 팀원 쉬기 관리'), ...(S.teams || []).filter((t) => (t.mem || '').trim()).map((t) => h('div', { class: 'mt-m hostrest', style: `border-left:5px solid ${t.color};padding-left:8px;margin:6px 0` }, h('b', { style: 'margin-right:6px' }, t.name), (t.mem || '').split(/[\s,]+/).filter(Boolean).map((n) => restChip(t, n, t.pd || {})))));
+      if (restOpen) rd.open = true; rd.ontoggle = () => { restOpen = rd.open; }; tb.append(rd); }
+    return; }
+  if (!isHost()) { // ✨ 팀 폰: 다른 팀은 한 줄씩
+    (S.teams || []).filter((t) => !myT || t.i !== myT.i).forEach((t) => tb.append(h('div', { class: 'tmrow' + (t.i === S.cur && S.phase === 'play' ? ' cur' : ''), style: `--c:${t.color}` },
+      h('b', {}, t.name, t.i === S.cur && S.phase === 'play' ? h('span', { class: 'turnb' }, '🎲') : null),
+      h('span', {}, `🏁${Math.min(t.laps, S.goal)}/${S.goal}${t.fin ? ' 골인' : ''}`),
+      S.juru ? h('span', {}, `🍻${t.drinks}${t.fire ? '🔥'.repeat(t.fire) : ''}`) : (t.lost ? h('span', {}, '💧패배') : drinkGauge(t)),
+      shields(t.pass, false), t.island ? h('span', {}, '🏝️') : null)));
+    return; }
   (S.teams || []).filter((t) => !myT || t.i !== myT.i).forEach((t) => tb.append(h('div', { class: 'tm' + (t.i === me.team ? ' me' : '') + (t.i === S.cur && S.phase === 'play' ? ' cur' : '') + (S.juru && t.fire ? ' fire f' + t.fire : ''), style: `--c:${t.color}` },
     h('b', {}, t.name), t.i === S.cur && S.phase === 'play' ? h('span', { class: 'turnb' }, '🎲 차례') : null, h('br'), `🏁 ${Math.min(t.laps, S.goal)}/${S.goal}바퀴${t.fin ? ' 골인' : ''} · `,
     S.juru ? h('span', { class: 'nw' }, `🍻 ${t.drinks}잔${t.fire ? ' ' + '🔥'.repeat(t.fire) : ''}`) : (t.lost ? '💧 패배' : `🥃 ${t.drinks}${S.cap ? '/' + S.cap : ''}`),
@@ -428,8 +489,10 @@ function cardView(m) {
     if (ppl.length && !/전원/.test(m.x || '')) p.append(h('div', { class: 'involve' }, `🙋 우리 팀 ${ppl.join('·')} 님이 나가요!`));
     else if (S.cur !== me.team && (txt.includes(myT.name) || (m.who || '').includes(myT.name))) p.append(h('div', { class: 'involve soft' }, '🙋 우리 팀도 걸린 미션이에요'));
   }
-  if (m.d) p.append(h('div', { class: 'card-d' }, m.d));
-  if (m.x) p.append(h('div', { class: 'card-x' }, m.x));
+  { const game = !isHost() && !!(m.q || (m.box || []).length); // ✨ 폰에서 할 게임이 있으면 긴 설명은 접고 게임만 크게
+    if (m.d && !game) p.append(h('div', { class: 'card-d' }, m.d));
+    if (isHost()) { if (m.x) p.append(h('div', { class: 'card-x' }, m.x)); }
+    else if ((game && m.d) || m.x) p.append(h('details', { class: 'cardmore' }, h('summary', {}, game ? 'ℹ️ 미션 설명 보기' : 'ℹ️ 자세히'), game && m.d ? h('div', { class: 'card-d' }, m.d) : null, m.x ? h('div', { class: 'card-x' }, m.x) : null)); }
   if (m.reroll && (isHost() || sub())) p.append(h('div', { style: 'text-align:center;margin-top:6px' }, h('button', { class: 'btn', style: 'font-size:13px;min-height:0;padding:6px 10px', onclick: () => send({ op: 'click', rid: m.reroll }) }, '🎲 다른 조건으로')));
   if (m.q) p.append(h('div', { class: 'oxq' }, m.q));
   let acted = false;

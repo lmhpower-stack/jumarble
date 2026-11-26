@@ -53,7 +53,7 @@ function notePhone(m) {
   p.dup = null;
   p.team = tm; if (m.nick != null) p.nick = String(m.nick).slice(0, 8); if (m.t === 'hello') p.ready = !!m.ready; p.seen = Date.now();
   if (readyNow && !joinedNow && typeof toast === 'function' && S.phase === 'setup') { const n = teamNameAt(+tm); if (n) toast(`✅ ${n} 준비 완료!${p.nick ? ` (팀장 ${p.nick})` : ''}`); }
-  if (joinedNow && typeof toast === 'function') { const n = teamNameAt(+tm); if (n) toast(/^[A-F]팀$|^\d+번$/.test(n) && S.phase === 'setup' ? `📱 새 팀 폰이 들어왔어요 (팀 이름 정하는 중)` : `📱 ${n} 폰이 들어왔어요${p.nick ? ` (팀장 ${p.nick})` : ''}`); }
+  if (joinedNow && typeof toast === 'function' && typeof joinFx !== 'function') { const n = teamNameAt(+tm); if (n) toast(/^[A-F]팀$|^\d+번$/.test(n) && S.phase === 'setup' ? `📱 새 팀 폰이 들어왔어요 (팀 이름 정하는 중)` : `📱 ${n} 폰이 들어왔어요${p.nick ? ` (팀장 ${p.nick})` : ''}`); }
   if (changed) { drawPhones(); schedule(); }
 }
 // 팀별 폰 상태: on = 1분 안에 신호, 늦어도 3분까지는 '신호 끊김'으로 보여 줘요
@@ -85,13 +85,25 @@ function drawPhoneSum(L) {
 const setupText = (arr) => { const on = (arr || []).filter((x) => x.on); if (!on.length) return arr && arr.length ? '📱 폰 신호 끊김' : '📱 폰 없음 (게임판에서 적어도 돼요)';
   const nk = on.map((x) => x.nick).filter(Boolean); return `📱 접속${nk.length ? ` · 👑 팀장 ${nk.join('·')}` : ''} · ${on.some((x) => x.ready) ? '✅ 준비 완료' : '⏳ 준비 중'}`; };
 // 게임 중 팀 카드 배지: 짧게
-const chipText = (arr) => { const on = (arr || []).filter((x) => x.on); if (!arr || !arr.length) return '폰 없음'; if (!on.length) return '📱 끊김'; const nk = on.map((x) => x.nick).filter(Boolean); return `📱 ${nk.length ? nk.join('·') : '연결'}`; };
+const chipText = (arr) => { const on = (arr || []).filter((x) => x.on); if (!arr || !arr.length) return '폰 없음'; if (!on.length) return '📵 끊김'; const nk = on.map((x) => x.nick).filter(Boolean); return `📱 ${nk.length ? nk.join('·') : '연결'}`; };
 const phoneText = (arr) => { if (!arr || !arr.length) return '📱 폰 없음'; const on = arr.filter((x) => x.on), off = arr.length - on.length;
   const nm = on.map((x) => x.nick).filter(Boolean); return (on.length ? `📱 ${nm.length ? nm.join('·') + (on.length > nm.length ? ` 외 ${on.length - nm.length}대` : '') : on.length + '대'} 접속` : '📱 폰 신호 끊김') + (on.length && off ? ` · ${off}대 끊김` : ''); };
 // 게임판: 설정 화면 팀 칸 · 게임 중 팀 카드에 폰 상태를 붙여요
+const prevSt = {}; // 📱 팀별 지난 상태: '' 폰 없음 / on 연결 / off 끊김 → 바뀌면 게임판에 크게 알려요
+function phoneFx(L) {
+  if (typeof joinFx !== 'function') return;
+  const names = S.phase === 'setup' ? setupNames() : (S.teams || []).map((t) => t.name);
+  names.forEach((n, i) => { const arr = L[String(i)], st = arr && arr.some((x) => x.on) ? 'on' : arr && arr.length ? 'off' : '', was = prevSt[i] || ''; prevSt[i] = st; if (st === was) return;
+    const col = S.phase === 'setup' ? '' : (S.teams[i] && S.teams[i].color) || '', nk = (arr || []).filter((x) => x.on).map((x) => x.nick).filter(Boolean).join('·');
+    const nm = S.phase === 'setup' && /^[A-F]팀$|^\d+번$/.test(n) ? '새 팀' : n;
+    joinFx.idx = S.phase === 'setup' ? null : i;
+    if (st === 'on') joinFx(was === 'off' ? 'back' : 'join', nm, col, nk ? `팀장 ${nk}` : '');
+    else if (was === 'on') joinFx('lost', nm, col, st === 'off' ? '1분 넘게 신호가 없어요' : '나갔어요'); });
+}
+window.__drawPhones = () => drawPhones();
 function drawPhones() {
   if (!room) return;
-  const L = phoneList(); drawPhoneSum(L);
+  const L = phoneList(); drawPhoneSum(L); try { phoneFx(L); } catch (e) { /* 무시 */ }
   const put = (box, i) => { if (!box) return; let e = box.querySelector(':scope > .npPh'); if (!e) { e = document.createElement('div'); e.className = 'npPh'; box.appendChild(e); }
     const arr = L[String(i)]; const t = S.phase === 'setup' ? setupText(arr) : chipText(arr); if (e.textContent !== t) e.textContent = t; const c = arr && arr.some((x) => x.on) ? 'on' : arr && arr.length ? 'off' : ''; if (e.dataset.st !== c) e.dataset.st = c; };
   if (S.phase === 'setup') [...($('tlist') ? $('tlist').children : [])].forEach(put);
@@ -184,7 +196,7 @@ function snapshot() {
   if (modalOn && typeof recSel !== 'undefined' && recSel && recSel.only) def = recSel.only.join(',');
   const box = $('mBox');
   return {
-    t: 'state', seq: 0, room, host: tag(hostPid), hostOn: hostAlive(), subTm: subTeam(), judge: judgeTeam(), judgeAll: judgeTeam() === -1 ? judgeAll() : [], jv: jSeq === (typeof MSEQ !== 'undefined' ? MSEQ : 0) ? Object.keys(jVotes).map(Number) : [], boot: BOOT, dup: Object.entries(phones).filter(([, o]) => o.dup != null && Date.now() - (o.dupAt || 0) < 60000).map(([q]) => tag(q)), teamsOn: (S.teams || []).map((_, i) => i).filter(teamAlive), phones: phoneList(), forced: Object.keys(forced).map(Number), auto: autoTxt, now: window.__nowTxt || '', claims: S.phase === 'setup' ? claims : {}, turnNo: S.turnNo || 0, paused: !!window.__paused, fx: window.__fx || null, intro: $('introFx') ? [...$('introFx').querySelectorAll('.in-l')].map((d) => d.textContent) : null, undo: $('undoBtn') && !$('undoBtn').hidden ? ($('undoBtn').title || '방금 기록') : '',
+    t: 'state', seq: 0, room, host: tag(hostPid), hostOn: hostAlive(), subTm: subTeam(), judge: judgeTeam(), judgeAll: judgeTeam() === -1 ? judgeAll() : [], jv: jSeq === (typeof MSEQ !== 'undefined' ? MSEQ : 0) ? Object.keys(jVotes).map(Number) : [], boot: BOOT, dup: Object.entries(phones).filter(([, o]) => o.dup != null && Date.now() - (o.dupAt || 0) < 60000).map(([q]) => tag(q)), teamsOn: (S.teams || []).map((_, i) => i).filter(teamAlive), phones: phoneList(), forced: Object.keys(forced).map(Number), auto: autoTxt, now: window.__nowTxt || '', mc: hostAlive() && typeof mcText === 'function' ? mcText() : '', mcLeft: S.mcLeft == null ? 3 : S.mcLeft, claims: S.phase === 'setup' ? claims : {}, turnNo: S.turnNo || 0, paused: !!window.__paused, fx: window.__fx || null, intro: $('introFx') ? [...$('introFx').querySelectorAll('.in-l')].map((d) => d.textContent) : null, undo: $('undoBtn') && !$('undoBtn').hidden ? ($('undoBtn').title || '방금 기록') : '',
     drink: $('drinkFx') && !$('drinkFx').classList.contains('out') ? { ti: window.__drinkTi || [], h: $('drinkFx').querySelector('.dfx-h').textContent, l: [...$('drinkFx').querySelectorAll('.dfx-l div')].map((d) => d.textContent), cd: $('drinkFx').querySelector('.dfx-cd').textContent } : null, toast: window.__toast || null, mseq: typeof MSEQ !== 'undefined' ? MSEQ : 0,
     warn: autoWarn, wn: watchN(), chatOn: S.chatOn !== false, phrases: typeof SAY_PRESET !== 'undefined' ? SAY_PRESET : [],
     phase: S.phase, juru: JURU(), solo: SOLO(), cur: S.cur, goal: S.goal || 3, cap: S.cap || 0,
@@ -237,9 +249,10 @@ function schedule() {
 const watchers = {};
 function noteWatch(m) {
   if (!m || m.from !== 'watch' || !m.pid) return;
-  const was = watchN(); const w = watchers[m.pid] || (watchers[m.pid] = {});
+  const was = watchN(); const isNew = !watchers[m.pid] || Date.now() - (watchers[m.pid].seen || 0) > 70000; const w = watchers[m.pid] || (watchers[m.pid] = {});
   w.nick = cleanNick(m.nick); w.fan = fanOf(m.fan); w.seen = Date.now();
   if (m.op === 'bye') delete watchers[m.pid];
+  else if (isNew && typeof joinFx === 'function') { const f = fanOf(m.fan); joinFx('watch', w.nick || '', f != null ? S.teams[f].color : '', f != null ? `${S.teams[f].name} 응원` : ''); }
   if (watchN() !== was) { schedule(); updWatch(); }
 }
 function updWatch() { const c = $('watchChip'); if (c) { const n = watchN(); c.textContent = n ? `👀 관전 ${n}` : ''; } }
@@ -323,12 +336,15 @@ function run(c) {
       const now = Date.now(), live = Object.values(phones).filter((p) => p.team != null && now - (p.seen || 0) < 60000);
       const notReady = live.filter((p) => !p.ready).map((p) => teamNameAt(+p.team)).filter(Boolean);
       if (notReady.length) { if (typeof toast === 'function') toast(`⏳ 아직 준비 안 된 팀: ${[...new Set(notReady)].join(', ')}`); break; }
+      if ((SOLO() ? (S.solo || []).length : (S.setup || []).length) < 2) { if (typeof toast === 'function') toast(SOLO() ? '👥 2명 이상 있어야 시작할 수 있어요' : '👥 팀이 2개 이상 있어야 시작할 수 있어요'); break; }
       const b = $('startBtn'); if (b && !b.disabled) b.click(); break;
     }
     // 🔁 게임이 끝난 뒤 '같은 팀으로 한 판 더': 진행폰, 또는 진행폰이 없으면 아무 팀 폰에서
     case 'again': { if (S.phase === 'over' && (isHost || (team != null && !hostAlive()))) { const b = $('againBtn'); if (b && !b.disabled) b.click(); } break; }
     case 'bye': { if (isHost) { hostSeen = 0; updLock(); } else if (team != null) { teamSeen[team] = 0; if (pp) pp.seen = 0; } schedule(); break; } // 나가기·창 닫기
     case 'introgo': if ((isHost || team != null) && typeof window.__introEnd === 'function') window.__introEnd(); break;
+    // 🎤 진행폰 전용 깜짝 이벤트 (한 판 3번 · 주사위 기다릴 때만)
+    case 'mcev': if (isHost && typeof mcEvent === 'function') mcEvent(String(c.ev || '')); break;
     case 'pause': if ((isHost || sub || (team != null && !hostAlive())) && typeof setPause === 'function') setPause(!!c.on); break; // 진행폰이 없으면 아무 팀이나 멈춤·계속
     case 'undo': if (isHost && typeof undoRec === 'function') undoRec(); break;
     case 'drinkdone': { const df = $('drinkFx'); if (!df || typeof window.__drinkEnd !== 'function') break;
@@ -560,6 +576,12 @@ document.head.appendChild(lockCss);
 { const ln = document.createElement('div'); ln.id = 'lockNote'; ln.textContent = '🎮 진행폰으로 진행 중 · 게임판 버튼은 잠겨 있어요'; document.body.appendChild(ln); }
 st.textContent = `#setup .npPh{font-size:15px}
 #autoNote{position:fixed;left:50%;top:98px;transform:translateX(-50%);z-index:80;background:#1f2a33;color:#ffd84d;font-weight:700;font-size:16px;padding:6px 16px;border-radius:999px;pointer-events:none}
+#chips .npPh{position:absolute;top:7px;right:38px;display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:800;color:#8a96a3;margin:0;padding:3px 10px 3px 8px;border-radius:999px;background:#eef1f4;max-width:55%;overflow:hidden;white-space:nowrap}
+#chips.many .npPh{font-size:0;gap:0;padding:5px}#chips.many .npPh::before{width:12px;height:12px}
+#chips .npPh::before{content:'';width:10px;height:10px;border-radius:50%;background:#b5bec8;flex:none}
+#chips .npPh[data-st=on]{color:#0d7f53;background:#dff6ea}#chips .npPh[data-st=on]::before{background:#13A36B;box-shadow:0 0 0 0 rgba(19,163,107,.7);animation:npPulse 1.6s infinite}
+#chips .npPh[data-st=off]{color:#c23636;background:#ffe3e3}#chips .npPh[data-st=off]::before{background:#D64545;animation:npBlink 1s infinite}
+@keyframes npPulse{70%{box-shadow:0 0 0 8px rgba(19,163,107,0)}100%{box-shadow:0 0 0 0 rgba(19,163,107,0)}}@keyframes npBlink{50%{opacity:.25}}
 .npPh{font-size:13px;font-weight:700;color:#8a96a3;margin-top:4px}.npPh[data-st=on]{color:#13A36B}.npPh[data-st=off]{color:#D64545}
 #netDot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#bbb;margin-left:4px;vertical-align:middle}
 #netDot[data-st=online]{background:#13A36B}#netDot[data-st=offline]{background:#D64545}

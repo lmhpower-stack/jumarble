@@ -1,18 +1,13 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>주류마블</title>
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#eaf6ff;--card:#fff;--ink:#1d2b33;--muted:#5b6b75}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1b22;--card:#17262f;--ink:#e8f1f5;--muted:#9fb3bf;color-scheme:dark}}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));max-width:520px;margin:auto}
-h1{font-family:"Black Han Sans",sans-serif;color:#e2571e;font-size:40px;margin:10px 0 4px}
-a.card{display:block;text-decoration:none;color:var(--ink);background:var(--card);border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 4px 0 #d6e6ef}
-a.card b{font-family:"Black Han Sans",sans-serif;font-size:22px;font-weight:400}
-p{color:var(--muted);margin:6px 0 0;line-height:1.5}
-</style></head><body>
-<h1>🍺 주류마블</h1><p>어떤 화면을 열까요?</p>
-<a class="card" href="board.html"><b>🖥️ 게임판</b><p>노트북이나 TV에 띄워 다 같이 보는 화면. 여기서 방을 만들고 QR을 띄워요.</p></a>
-<a class="card" href="remote.html"><b>📱 폰으로 참가</b><p>진행폰(주사위·기록) 또는 플레이어(우리 팀 버튼)로 들어가요.</p></a>
-<a class="card" href="jumarble.html"><b>📴 한 폰으로만 하기</b><p>연결 없이 폰 한 대로 진행해요.</p></a>
+<script>
+/* 🍺 첫 화면 하나로: 방 코드가 붙은 주소(QR)면 폰 참가 화면, 아니면 바로 게임(게임판 = 한 폰 게임 겸용) */
+(function(){var q=location.search||'',h=location.hash||'';
+  location.replace((/[?&]room=/.test(q)?'remote.html':'board.html')+q+h)})();
+</script>
+<style>body{font-family:system-ui,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;text-align:center;padding:40px 16px;color:#5b6b75}a{color:#e2571e;font-weight:700}</style>
+</head><body>
+<p>🍺 주류마블 여는 중…</p>
+<noscript><p><a href="board.html">🎲 게임 시작</a></p></noscript>
 </body></html>
