@@ -2357,20 +2357,7 @@ function renderSetup(){seg('facSeg',[[1,'켜기 (추천)'],[0,'끄기 (칭호만
   if(JURU()&&!S.goalPicked&&(S.goal||3)===3)S.goal=2;
   goalInput(JURU()?2:3);
 }
-$('addT').onclick=()=>{if(SOLO()){if(S.solo.length<10){S.solo.push({name:''});save();renderSetup();
-(function(){
-  const g=document.getElementById('presetSeg');if(!g)return;
-  g.addEventListener('click',ev=>{
-    const btn=ev.target.closest('button[data-preset]');if(!btn)return;
-    const p=btn.dataset.preset;
-    if(p==='light'){S.win='least';S.goal=2;S.cap=5;S.goalPicked=S.capPicked=true;toast('🥃 가볍게 2바퀴 프리셋 적용');}
-    else if(p==='std'){S.win='least';S.goal=3;S.cap=0;S.goalPicked=S.capPicked=true;toast('🎲 기본 3바퀴 프리셋 적용');}
-    else if(p==='juru'){S.win='juru';S.goal=2;S.cap=SOLO()?5:12;S.goalPicked=S.capPicked=true;toast('🍻 폭주 술왕 프리셋 적용');}
-    g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));
-    save();if(typeof renderSetup==='function')renderSetup();
-  });
-})();
-const ins=$('tlist').querySelectorAll('.nm');ins[ins.length-1].focus()}return}
+$('addT').onclick=()=>{if(SOLO()){if(S.solo.length<10){S.solo.push({name:''});save();renderSetup();const ins=$('tlist').querySelectorAll('.nm');ins[ins.length-1].focus()}return}
   if(S.setup.length<6){S.setup.push({name:'',mem:''});save();renderSetup();
   const ins=$('tlist').querySelectorAll('.nm');ins[ins.length-1].focus()}};
 // 🚀 시작 조건: 팀(개인전은 사람)이 2개 이상일 때만 시작 버튼이 켜져요. 칸은 0개까지 지울 수 있어요
@@ -3893,6 +3880,20 @@ function castLine(){const T=S.teams;if(!T||!T.length||S.phase!=='play')return ''
   if(JURU()){const k=[...T].sort((a,b)=>(b.drinks||0)-(a.drinks||0))[0];if(k.drinks)lines.push(`🍻 술왕 후보 ${k.name} ${k.drinks}잔`)}
   else{const near=T.filter(t=>!lostT(t)&&CAP()-(t.drinks||0)===1);if(near.length)lines.push(`⚠️ ${near.map(t=>t.name).join(', ')} 상한까지 1잔!`)}
   if(S.final)lines.push('🏁 파이널 랩 진행 중');return lines.join('  ·  ')}
+
+(function(){
+  const g=document.getElementById('presetSeg');if(!g)return;
+  g.addEventListener('click',ev=>{
+    const btn=ev.target.closest('button[data-preset]');if(!btn)return;
+    const p=btn.dataset.preset;
+    if(p==='light'){S.win='least';S.goal=2;S.cap=5;S.goalPicked=S.capPicked=true;toast('🥃 가볍게 2바퀴 프리셋 적용');}
+    else if(p==='std'){S.win='least';S.goal=3;S.cap=0;S.goalPicked=S.capPicked=true;toast('🎲 기본 3바퀴 프리셋 적용');}
+    else if(p==='juru'){S.win='juru';S.goal=2;S.cap=SOLO()?5:12;S.goalPicked=S.capPicked=true;toast('🍻 폭주 술왕 프리셋 적용');}
+    g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));
+    save();if(typeof renderSetup==='function')renderSetup();
+  });
+})();
+
 function show(){
   setSub();watchSolo();
   document.body.classList.toggle('juru',JURU());document.body.classList.toggle('final',!!S.final&&S.phase==='play');$('muteBtn').textContent=S.mute?'🔇':'🔊';
