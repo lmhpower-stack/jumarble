@@ -1342,8 +1342,8 @@ let S={phase:'setup',setup:[{name:'',mem:''},{name:'',mem:''},{name:'',mem:''},{
 let busy=false;
 const $=id=>document.getElementById(id);
 
-const SOLO = () => (typeof S !== 'undefined' && S) ? S.mode === 'solo' : false;
-const JURU = () => (typeof S !== 'undefined' && S) ? (S.win === 'juru' || S.win === 'most') : false;
+function SOLO(){return ((typeof S !== 'undefined' && S) ? S.mode === 'solo' : false);}
+function JURU(){return ((typeof S !== 'undefined' && S) ? (S.win === 'juru' || S.win === 'most') : false);}
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // 공정한 섞기 (피셔-예이츠): 모든 순서가 같은 확률
@@ -2709,7 +2709,7 @@ function _passFx(kind,a,b){pushFx(kind,kind==='reflect'?`🔁 ${a.name} 반사! 
 // 많이 마시기 모드에서는 보상과 벌칙이 뒤집혀요: 이긴 쪽이 한 잔(= 점수)
 const CAP=()=>S.cap||Infinity; // 0 = 상한 없음
 const MOST=()=>false; // (이전 '부스터 레이스'는 많이 마시기 모드로 대체)
-var JURU=()=>S.win==='juru'||S.win==='most';
+function JURU(){return (S.win==='juru'||S.win==='most');}
 function addShard(tm,n=1){if(!tm||JURU()||lostT(tm))return;tm.shards=(tm.shards||0)+n;while(tm.shards>=4){tm.shards-=4;tm.pass=(tm.pass||0)+1;toast(`✨ ${tm.name} 방패 조각 4개 합체! 🛡️ 면제권 +1 획득!`);gainFx(tm)}save();renderBoard()}
 function grantPass(tm){mDone();
   if(JURU()){const i=S.teams.indexOf(tm);
@@ -3404,7 +3404,7 @@ const REC_ALL=['주사위 서바이벌','근접 서바이벌','룰렛','OX 퀴�
 const REC_NOTE='';
 const REC_VS=['순발력 대결','랜덤 결투','주사위전','순간 기억','합동','동맹 혹은 배신'];
 // ===== 개인전 =====
-var SOLO=()=>S.mode==='solo';
+function SOLO(){return (S.mode==='solo');}
 const SOLO_CELL={
   16:{e:'🍻',t:'짝꿍 건배',d:'앱이 짝꿍 한 명을 랜덤으로 뽑아요! 나와 짝꿍 둘이 같이 원샷. (둘 다 기록)',k:'buddy'}};
 // 개인전 지목·짝꿍은 앱이 랜덤으로 (카드 설명)
